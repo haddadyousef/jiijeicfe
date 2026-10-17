@@ -4,14 +4,14 @@
 //
 //  Where routes come from: the hand-verified file in the bundle (the demo), or live MapKit
 //  walking directions from the current GPS fix to a spoken / typed destination or a known
-//  entrance coordinate ("Navigate to CIF from here"), converted to the same `Route` so the
+//  entrance coordinate ("Directions from here"), converted to the same `Route` so the
 //  engine never knows the difference.
 //
 //  Owner: module `navigation-trip` (docs/CODE_REFERENCE.md). Stateless; called only by
 //  `AppModel.startDemoRoute()` (`bundled()`), `AppModel.navigateToCIFFromHere()` (`bundled()` for
 //  the route's last waypoint) and `AppModel.buildRoute(to:searchLine:)` (`walking(to:from:)` for
 //  the typed field, a tapped suggestion, Siri "Take me to …", the conversational fast path /
-//  `navigate_to` tool, and "Navigate to CIF from here"). `DestinationSearch` reads `searchRadiusM`.
+//  `navigate_to` tool, and "Directions from here"). `DestinationSearch` reads `searchRadiusM`.
 //
 //  Tests: `RouteTests` (`mapKitStepsBecomeWaypoints`, `shippedRouteFileIsConsistent`),
 //  `CampusPlacesTests` (`searchPicksTheNearestReasonableResult`,
@@ -41,7 +41,7 @@ import Foundation
 import MapKit
 
 /// What to walk to with MapKit directions. Built by `AppModel` (typed field, Siri intents,
-/// the "Navigate to CIF from here" button) and resolved by `RouteSource.walking(to:from:)`.
+/// the "Directions from here" button) and resolved by `RouteSource.walking(to:from:)`.
 enum RouteDestination: Sendable, Equatable {
     /// Free text: the campus gazetteer first, then MKLocalSearch near the walker.
     case query(String)
@@ -68,7 +68,11 @@ enum RouteSource {
     /// side; results outside `DestinationPicker.maxDistanceM` (the same 3 km) are rejected anyway.
     static let searchRadiusM: Double = 3000
 
-    /// The bundled ISR → CIF route (`Resources/route_isr_cif.json`, decoded by `Route.load(from:)`).
+    /// The demo route every "Start route" path walks (the Guide button, Siri, the voice "route", the
+    /// `CANEKIT_DEMO_ROUTE` hook, Simulate walk when idle).
+    /// waymark (owner + D-35, 2026-10-17): the Seattle Ave walk (`aveSeattle()`) by default;
+    /// `WAYMARK_DEMO_ROUTE=isr_cif` keeps the original UIUC route (`isrCif()`) — the XCUITests and
+    /// e2e.py set it, because they assert on that route's lines and replay UIUC GPS.
     /// Throws `RouteError.missingBundledRoute` when absent, or the decoder's error when malformed.
     /// Reads the file on every call (no cache); synchronous, main actor.
     static func bundled() throws -> Route {
@@ -80,7 +84,28 @@ enum RouteSource {
         if let path = ProcessInfo.processInfo.environment["CANEKIT_ROUTE_FILE"], !path.isEmpty {
             return try Route.load(from: Data(contentsOf: URL(fileURLWithPath: path)))
         }
+        if ProcessInfo.processInfo.environment["WAYMARK_DEMO_ROUTE"] == "isr_cif" { return try isrCif() }  // waymark:
+        return try aveSeattle()  // waymark: default demo route
+    }
+
+    /// The original UIUC route, ISR Townsend Hall → CIF (`Resources/route_isr_cif.json`). The indoor
+    /// ISR script hands over to it (`IndoorGuide.handOver`), whatever the default demo route is.
+    static func isrCif() throws -> Route {
+        // The Step 66 hook replaced "the bundled file", which was this one; keep that (review M2).
+        if let path = ProcessInfo.processInfo.environment["CANEKIT_ROUTE_FILE"], !path.isEmpty {
+            return try Route.load(from: Data(contentsOf: URL(fileURLWithPath: path)))
+        }
         guard let url = Bundle.main.url(forResource: "route_isr_cif", withExtension: "json") else {
+            throw RouteError.missingBundledRoute
+        }
+        return try Route.load(from: Data(contentsOf: url))
+    }
+
+    /// waymark: the Seattle demo route (`Resources/route_ave_seattle.json`, D-35): The Ave and NE 42nd
+    /// to The Ave and NE 50th, 727 m, a byte copy of `waymark/demo/route.json` (WaymarkRouteTests).
+    /// Same errors as `bundled()`; ignores `CANEKIT_ROUTE_FILE` (that hook replaces the UIUC file).
+    static func aveSeattle() throws -> Route {  // waymark:
+        guard let url = Bundle.main.url(forResource: "route_ave_seattle", withExtension: "json") else {
             throw RouteError.missingBundledRoute
         }
         return try Route.load(from: Data(contentsOf: url))

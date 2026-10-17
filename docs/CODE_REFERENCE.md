@@ -2918,6 +2918,19 @@ All members are `static let … : Color` built by `dynamic(...)`, so every colou
 | `danger` | = `laneUrgent` | | | | destructive button, pill tone |
 | `neutral` | = `surfaceRaised` | | | | pill tone |
 
+UI v2 (2026-10-17): `accent` `#1E40AF` / `#84ADF8` (HC `#1E3A8A` / `#A8C5FF`), `onAccent` white / near-black;
+`CKFont.cardTitle` (title3 rounded bold), `CKFont.button` bold; `CKRadius.button` 22, `card` 26;
+`CKMetrics.bigButton` 76, `tile` 124. `CKBigButton` rows: `CKButtonBadge` (40 pt) + title + subtitle +
+chevron; tiles: badge (46 pt) top-left, words below, left-aligned; secondary fill is `surface` with
+a border. `CKButtonBadge(systemImage:role:size:)` — translucent disc of the foreground colour.
+`CKIconBadge(systemImage:tinted:)` — `tinted` (card titles, `CKMoreSection` headers) = accent symbol on an
+accent wash. `CKSectionHeader` — title2 rounded bold heading, not small caps.
+`CKTileRow` — tile pairs, one column at accessibility sizes; `CKColor.controlBorder` (#8A8577 / #6E685E,
+≥ 3:1) outlines secondary buttons and section headers; dark-mode `accent` is ivory #F4F1EA.
+`RouteSource.bundled()` → the Seattle Ave route unless `WAYMARK_DEMO_ROUTE=isr_cif`; `isrCif()` (honours `CANEKIT_ROUTE_FILE`),
+`aveSeattle()`; `AppModel.demoRouteDestination` ("The Ave and NE 50th"); `startDemoRoute(_ load:)`,
+`startSimulatedWalk(speedMps:load:)`.
+
 UI rework 2026-10-17 (owner: colour friendly, simpler, nothing lost) — three additions in Theme.swift:
 - `struct CKMoreSection<Content: View>` — `init(title:caption:systemImage:storageKey:content:)`; a ≥ 60 pt
   header `Button` (badge, title, caption, turning chevron; a11y label = title, value "expanded" /

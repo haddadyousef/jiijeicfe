@@ -6,7 +6,7 @@
 //  Shortcuts) for everything the Guide card's buttons do. "Hey Siri, take me to Grainger in
 //  Waymark", "Next waypoint in Waymark", "Stop the route in Waymark".
 //
-//  Purpose: seven App Intents — Where am I / Start route to CIF / Navigate to CIF from here /
+//  Purpose: seven App Intents — Where am I / Start route / Directions from here /
 //  Take me to <place> / Repeat / Next waypoint / Stop route — plus the `AppShortcutsProvider`
 //  they share with the hands-free intents (`HandsFreeIntents.swift`). Each intent only forwards
 //  to a public `AppModel` method, so Siri, the Action button, the watch and the on-screen
@@ -70,13 +70,13 @@ struct WhereAmIIntent: AppIntent {
     }
 }
 
-/// Siri / Shortcuts "Start route to CIF" (the legacy "Start the demo route" phrase is still
-/// accepted): starts the bundled ISR Townsend Hall → CIF route.
+/// Siri / Shortcuts "Start my route" / "Start the demo route": starts the demo route
+/// (`RouteSource.bundled()`: the Seattle Ave walk by default — waymark, 2026-10-17).
 struct StartDemoRouteIntent: AppIntent {
     /// Shown in Shortcuts.
     static let title: LocalizedStringResource = "Start Waymark route"
     /// Subtitle in Shortcuts.
-    static let description = IntentDescription("Starts the recorded ISR Townsend Hall to CIF route.")
+    static let description = IntentDescription("Starts the demo route.")
     /// Foreground: guidance needs ARKit, the audio session and the screen kept awake.
     static let supportedModes: IntentModes = .foreground(.immediate)
 
@@ -89,20 +89,20 @@ struct StartDemoRouteIntent: AppIntent {
     }
 }
 
-/// Siri "Navigate to CIF from here": Apple Maps walking directions from the live GPS fix to the
-/// CIF east entrance (`AppModel.navigateToCIFFromHere()`), for when the walker is not at ISR.
+/// Siri "Directions from here" (was "Navigate to CIF from here"): Apple Maps walking directions from
+/// the live GPS fix to the end of the demo route (`AppModel.navigateToCIFFromHere()`: The Ave and
+/// NE 50th by default, the CIF east entrance under `WAYMARK_DEMO_ROUTE=isr_cif`).
 ///
 /// ⚠ Plain `AppIntent`, not an App Shortcut: the ten shortcut slots are full and the Action
 /// button needed "Talk to Waymark" more (see `CaneKitShortcuts`). Still in the Shortcuts app
 /// as an action (a one-step shortcut around it goes on the Action button), and the Guide card
-/// button is unchanged. The Siri phrase for the same destination is now "Take me to CIF in
-/// Waymark" (`TakeMeToIntent` + the gazetteer, whose CIF entry is this same route-file
-/// waypoint) — say that instead.
+/// button is unchanged. For CIF, "Take me to CIF in Waymark" (`TakeMeToIntent` + the gazetteer)
+/// still reaches the CIF entrance whatever the demo route is.
 struct NavigateToCIFIntent: AppIntent {
     /// Shown in Shortcuts.
-    static let title: LocalizedStringResource = "Navigate to CIF from here"
+    static let title: LocalizedStringResource = "Directions from here"
     /// Subtitle in Shortcuts.
-    static let description = IntentDescription("Walking directions from where you are to the CIF east entrance.")
+    static let description = IntentDescription("Walking directions from where you are to the end of the demo route.")
     /// Foreground, like every intent here (ARKit obstacle warnings need the app frontmost).
     static let supportedModes: IntentModes = .foreground(.immediate)
 
@@ -310,7 +310,7 @@ struct CaneKitShortcuts: AppShortcutsProvider {
         AppShortcut(intent: StartDemoRouteIntent(),
                     phrases: ["Start my route in \(.applicationName)",
                               "Start the demo route in \(.applicationName)",
-                              "Start route to CIF in \(.applicationName)"],
+                              "Start route in \(.applicationName)"],
                     shortTitle: "Start route",
                     systemImageName: "figure.walk")
         AppShortcut(intent: RepeatInstructionIntent(),

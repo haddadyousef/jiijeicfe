@@ -16,6 +16,14 @@ import CaneKitLogic
 
 extension AppModel {
 
+    /// Where the demo route ends, for the Guide's subtitles and "Directions from here": the part of
+    /// the route name after its last " to " ("The Ave and NE 50th"; "CIF" for the UIUC route).
+    /// Read once (the bundle cannot change). "" when the route file is missing.
+    static let demoRouteDestination: String = {
+        guard let name = try? RouteSource.bundled().name else { return "" }
+        return name.components(separatedBy: " to ").last?.trimmingCharacters(in: .whitespaces) ?? name
+    }()
+
     /// Wires the engine's speech, log and loaded outputs and marks its lines non-resumable. Called
     /// once from `init`, after `waymark` exists. Starts nothing: the stored switch is applied in
     /// `start()` (`applyWaymarkSwitch()`), so an App Intent wake or a preview never loads the bundle.

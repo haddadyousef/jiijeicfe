@@ -124,8 +124,8 @@ target, path, scheme or bundle id, it is CaneKit. Two traps worth knowing:
    is deaf while it plays (Step 55). One voice (Step 54): every line takes cache → 2.5 s race → system
    voice only on failure; only an uncached `.obstacle` / `.safety` line is the system voice at once. Keep
    `docs/design.md §5.1` and `SpeechQueue` in sync.
-9. **Accessibility labels are a test contract.** The strings in `CaneKitUITests` (Start route to CIF,
-   Navigate to CIF from here, Stop route, Repeat, Next, Recenter, Where am I, Go, Test
+9. **Accessibility labels are a test contract.** The strings in `CaneKitUITests` (Start route — was
+   "Start route to CIF" until Waymark UI v2 —, Directions from here — was "Navigate to CIF from here" —, Stop route, Repeat, Next, Recenter, Where am I, Go, Test
    left/center/right/head haptic, Silence haptics, Mirror left / right, Write trip log, Head row,
    Type a destination first, Destination, Simulate walk (`CaneKitIslandTour`), the root tabs Guide / Sense /
    Settings / Profile (`RootTab.title`; the tests drive the first three), the Cues picker
@@ -409,8 +409,10 @@ bench has *disproved* must never sit in the file as though it were settled — m
   gazetteer places ("Take me to Grainger in OpenCane"; App Shortcut phrases cannot hold a String);
   any other place goes through "Take me somewhere in OpenCane" and Siri asks where. Gazetteer
   entrances other than CIF / ISR are OSM entrance nodes, not yet walked.
-- "Navigate to CIF from here" routes with Apple Maps to the route file's last waypoint as a bare
-  coordinate (no search), so it can never pick a different "CIF". Starting the demo route also
+- "Directions from here" (was "Navigate to CIF from here") routes with Apple Maps to the demo route
+  file's last waypoint as a bare coordinate (no search), so it can never pick a different place.
+  Waymark: the demo route is the Seattle Ave walk (`RouteSource.bundled()`); `WAYMARK_DEMO_ROUTE=isr_cif`
+  (set by the XCUITests and e2e.py) keeps the UIUC route; adding a resource needs `make gen`. Starting the demo route also
   abandons an in-flight search, so a slow "Take me to …" cannot swap the walker onto another route
   mid-walk.
 - A trip-log line's `t` and `kind` always belong to the record: a caller's field of the same name is

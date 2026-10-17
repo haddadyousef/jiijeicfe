@@ -19,7 +19,7 @@
 //  `make uitest` runs it too (same target) — it must stay robust: `continueAfterFailure = true`,
 //  every island interaction is best-effort.
 //
-//  ⚠ test contract (AGENTS.md rule 9): "Start route to CIF", "Stop route", "Simulate walk" (the
+//  ⚠ test contract (AGENTS.md rule 9): "Start route", "Stop route", "Simulate walk" (the
 //  navigating variant, tapped only if present).
 //  Prerequisites: simulator location set (`xcrun simctl location <udid> set 40.1140,-88.2249`),
 //  `make sim-grant`. The simulator shows no system location indicator, so the blue background-
@@ -45,6 +45,10 @@ final class CaneKitIslandTour: XCTestCase {
         allowLocationPrompts()
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
+        // Waymark: the demo route defaults to the Seattle Ave walk; these tests assert on the UIUC
+        // route's lines ("Townsend", "Illinois Street"), so pin it (the Mac gate also parks the
+        // simulator at UIUC: SIM_LAT=40.1140 SIM_LON=-88.2249; the Makefile default is the Ave start).
+        app.launchEnvironment["WAYMARK_DEMO_ROUTE"] = "isr_cif"
         app.launch()
         springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
     }
@@ -56,8 +60,8 @@ final class CaneKitIslandTour: XCTestCase {
     ///
     /// Shot names: island-compact, island-expanded, island-walking, island-after-stop.
     func testDynamicIsland() {
-        XCTAssertTrue(app.buttons["Start route to CIF"].waitForExistence(timeout: 10))
-        app.buttons["Start route to CIF"].tap()
+        XCTAssertTrue(app.buttons["Start route"].waitForExistence(timeout: 10))
+        app.buttons["Start route"].tap()
         XCTAssertTrue(app.buttons["Stop route"].waitForExistence(timeout: 10))
         pause(2.0)
 
@@ -94,7 +98,7 @@ final class CaneKitIslandTour: XCTestCase {
         XCTAssertTrue(app.buttons["Stop route"].waitForExistence(timeout: 5))
         scrollTo(app.buttons["Stop route"]).tap()
         app.buttons["Stop route"].tap()
-        XCTAssertTrue(app.buttons["Start route to CIF"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Start route"].waitForExistence(timeout: 5))
         pause(1.0)
         XCUIDevice.shared.press(.home)
         pause(2.5)

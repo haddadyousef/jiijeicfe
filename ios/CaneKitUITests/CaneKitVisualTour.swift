@@ -19,7 +19,7 @@
 //
 //  Covers the screens of docs/design.md §6 for visual review (`make tour` → ios/build/shots).
 //  It reaches every control through the same VoiceOver labels as CaneKitUITests, so the ⚠ test
-//  contract strings there apply here too: "Guide" / "Details" / "Settings" / "Profile" tabs, "Start route to CIF",
+//  contract strings there apply here too: "Guide" / "Details" / "Settings" / "Profile" tabs, "Start route",
 //  "Stop route", "Repeat", "Next", "Recenter", "Test left/center/right/head haptic",
 //  "Silence haptics", "Where am I", "Go".
 //
@@ -42,6 +42,10 @@ final class CaneKitVisualTour: XCTestCase {
         allowLocationPrompts()
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
+        // Waymark: the demo route defaults to the Seattle Ave walk; these tests assert on the UIUC
+        // route's lines ("Townsend", "Illinois Street"), so pin it (the Mac gate also parks the
+        // simulator at UIUC: SIM_LAT=40.1140 SIM_LON=-88.2249; the Makefile default is the Ave start).
+        app.launchEnvironment["WAYMARK_DEMO_ROUTE"] = "isr_cif"
         app.launch()
     }
 
@@ -57,13 +61,13 @@ final class CaneKitVisualTour: XCTestCase {
     ///
     /// ⚠ test contract: every `app.buttons[...]` / `app.switches[...]` label used below.
     func testTour() {
-        XCTAssertTrue(app.buttons["Start route to CIF"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Start route"].waitForExistence(timeout: 10))
         snap("idle-top")
         scrollDown(); snap("idle-middle")
         scrollDown(); snap("idle-bottom")
         scrollToTop()
 
-        app.buttons["Start route to CIF"].tap()
+        app.buttons["Start route"].tap()
         XCTAssertTrue(app.buttons["Stop route"].waitForExistence(timeout: 10))
         pause(1.5); snap("navigating")
 
@@ -101,7 +105,7 @@ final class CaneKitVisualTour: XCTestCase {
         XCTAssertTrue(app.buttons["Stop route"].waitForExistence(timeout: 5))
         scrollTo(app.buttons["Stop route"]).tap()
         app.buttons["Stop route"].tap()
-        XCTAssertTrue(app.buttons["Start route to CIF"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Start route"].waitForExistence(timeout: 5))
         pause(0.5); snap("stopped")
 
         // Destination field: empty → error line; typed → route build attempt (no network in CI).
