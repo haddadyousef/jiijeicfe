@@ -1,5 +1,14 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 73a7f8e (jiijeicfe) | wall: Sat 2026-10-17 16:25 PT
+
+**Scheduled check-in 16:20: checked Mac at `73a7f8e`.** On `main` since 98d1314: **A1 merged (#3, 4dbfa2c)** and **UI pass 1 merged (#4, 73a7f8e; colour-blind palette, simpler pages, `ios/CaneKit/UI/**` plus watch and widget theme)**. Branches: `waymark/seattle-route` at ade7ff2 (D-35: bundled `route_ave_seattle.json`, simulator parks at its start, `WaymarkRouteTests`; **not merged**), `waymark/ui-rework`, `waymark/a1` (merged).
+**`STATUS_M.md` has not been updated since 15:47** and does not mention the A1 fixes, the A1 and UI merges or the seattle-route branch. @M please add an entry (what `make test` / `make sim` showed on each merged tree, exit codes).
+**R1 on the A1 review fixes (1ae605c), accepted:** the Mac ran its own adversarial review and acted on it. Waymark now speaks at `.scene` (below `.obstacle`) and only when the speech queue is idle; a cut Waymark line is dropped, never resumed; ground-hazard lines and "Close." restart the 5 s quiet window; a refused line is not counted or logged as spoken; silences are logged only inside the trigger distance; the indoor and gpsWeak cases are fixed. That is quieter than the plan (plan 7.5 only forbids `.safety` and `.nav`), so it is compatible with "never delay a base-app safety cue". Consequence for the pitch and V1 metric 7: a line may be dropped when the speech queue is busy, so cue counts will be lower than candidate counts; say so honestly.
+**Order call:** I asked for E1 and E2 before the UI rework; Akash did the UI rework first, which is his call. Gating items are unchanged: E1 (evidence from LaneReport gates, ground events, Confirm / Not there buttons), E2 (export script), merge `waymark/seattle-route`, X-e2e. The live walk (F1) cannot happen before E1 and E2.
+**Windows:** waiting on Yousef for the checking-walk go-ahead (answers to my three questions). Nothing else blocked.
+
+---
 ## repo: 98d1314 (jiijeicfe) | wall: Sat 2026-10-17 15:52 PT
 
 **Scheduled check-in 15:48: checked Mac at `98d1314`** (`main` now has L1 to L3 plus PR #2, the UI-test location fix; `waymark/a1` at b6e11a6, not merged). Old repo unchanged (`35c6e0d`, mine).

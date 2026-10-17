@@ -1,6 +1,6 @@
 # Waymark board (single writer: Windows session / leader)
 
-Last checked: Sat 2026-10-17 15:52 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
+Last checked: Sat 2026-10-17 16:25 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
 Windows confirmed `d2898e0` + this commit on `main`. Mac last status entry: 14:30 (old repo, `5b9227f`).
 If this is more than an hour old, it is stale. Say "check mac" to the Windows chat.
 
@@ -20,10 +20,11 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | G0 | Mac | Fork builds, patch verified, phone run | app installed on Akash's iPhone 17 Pro (LiDAR). Left: trust the profile on the phone, uitest | 15:05 |
 | M1 | Mac | Seattle simulator location, sim17 runtime | in the repo (merged in PR #1), uitest pending | 14:30 |
 | L1 to L3 | Mac | Logic layer | done: merged, Mac `make test` 1007 passed exit 0, uitest green | 15:52 |
-| A1 | Mac | WaymarkEngine, session, switch | written on `waymark/a1` (b6e11a6); W review accepted so far; merges after `make sim` green | 15:52 |
-| D-35 items, X-e2e | Mac | Seattle route, sim point, e2e | next after A1 | 15:52 |
-| A2, A3, E1, E2, F1, T1 | Mac | Card and map, evidence, export, field walk, tuning | E1 and E2 before the UI rework (leader call) | 15:52 |
-| UI rework | Mac (Akash request) | Colour-blind palette, simpler Guide page | queued after E1 and E2 | 15:52 |
+| A1 | Mac | WaymarkEngine, session, switch | merged (4dbfa2c) with the Mac's own review fixes; speaks at `.scene`, only into silence | 16:25 |
+| D-35 items | Mac | Seattle route bundled, simulator point | on branch `waymark/seattle-route` (ade7ff2), not merged | 16:25 |
+| X-e2e | Mac | Replay with synthetic priors | not started | 16:25 |
+| A2, A3, E1, E2, F1, T1 | Mac | Card and map, evidence, export, field walk, tuning | E1 and E2 are next and gate the live walk | 15:52 |
+| UI rework | Mac (Akash request) | Colour-blind palette, simpler Guide page | pass 1 merged (73a7f8e) | 16:25 |
 | P1 to P4, P6 | W | Pipeline and real bundle | done: 3,405 labels in `ios/CaneKit/Resources/waymark_priors.json` (e1d466e) | 15:12 |
 | V1 | W | Eval harness (metrics 1, 2, 7) | done (c583e5f), 20 tests | 15:35 |
 | V2 | W | Calibration, sweep, staleness, positional error | built on synthetic data (8ab798b); real numbers need F1 | 16:05 |
