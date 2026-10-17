@@ -4,13 +4,13 @@ Turns walk data into numbers we can defend. Python, no network. Owner: Windows.
 
 ```
 pip install -r requirements.txt
-py -m pytest -q                                       # 20 tests
+py -m pytest -q                                       # 35 tests
 py -m wm_eval.run --synthetic --out out/synthetic     # seeded fake walks, watermarked SYNTHETIC
 py -m wm_eval.run --priors ..\..\ios\CaneKit\Resources\waymark_priors.json ^
                   --evidence evidence.jsonl --records waymark_records.jsonl --out out\walk1 [--holdout]
 ```
 
-Outputs in `--out`: `summary.json` (sorted keys, byte-identical for identical inputs), `by_type.csv`, `report.md`, `outcome_rates.png`.
+Outputs in `--out`: `summary.json` (sorted keys, byte-identical for identical inputs), `by_type.csv`, `report.md`, `outcome_rates.png`, `calibration.png`, `threshold_sweep.png`, `threshold_sweep.csv` (the plots and the csv appear when there is data for them).
 The exit code is 1 if any evidence line fails the `waymark.evidence.v1` contract (use `--allow-rejected` to override).
 
 ## What V1 computes (design 10.2)
@@ -19,7 +19,12 @@ The exit code is 1 if any evidence line fails the `waymark.evidence.v1` contract
 2. **Sensor vs spotter**: per sensor group (lidar = torso + head, ground, vision) a 2x2 matrix with the spotter as reference, agreement and Cohen's kappa. Needs 5 paired labels. Several lines per label are reduced to one verdict by majority; a tie is left out and counted.
 7. **Load and latency** from exported `waymark_load` / `waymark_cue` records.
 
-Metrics 3 to 6 (calibration, threshold sweep, staleness, positional error) are V2 and need real evidence from the F1 walk.
+3. **Calibration** (V2): predicted p, read from the reference belief just before each decisive spotter tap, against what the tap said. Brier score and a reliability plot. Fewer than 30 passes: raw counts only.
+4. **Threshold sweep** (V2): tau 0.05 to 0.95 in steps of 0.01 per hazard type, cost = C_miss x misses + C_fa x false alarms, minimizer (ties to the smaller tau), cost at the default tau, and the minimizer at half and double C_miss. Needs 10 passes per type. With `--holdout` the minimizer comes from the tuning labels and the cost is reported on the hold-out labels.
+5. **Staleness** (V2): confirm rate of spotter taps by imagery age, with a plain-words trend statement ("no clear trend" when the intervals overlap).
+6. **Positional error** (V2): along-track offset of confirming sensor events; suggests `label_error` (90th percentile of the absolute offset) only with 20 or more events.
+
+Calibration, sweep and the rest are built and tested on synthetic data; real numbers need the F1 walk. Expect the sweep to be flat until real contradicting evidence exists (see D-31).
 
 ## Input contract for metric 7 (asks of the Mac, E2 / A1)
 

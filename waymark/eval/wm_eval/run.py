@@ -38,7 +38,13 @@ def main(argv: list[str] | None = None) -> int:
     summary = report.build_summary(priors, evidence, records, rejected=len(rejected), skipped_records=skipped,
                                    holdout=a.holdout, seed=a.seed,
                                    synthetic=report.is_synthetic(evidence, a.synthetic))
-    files = report.write_all(summary, a.out)
+    tune_ev = None
+    if a.holdout:
+        from .stats import holdout_split
+        _, hold = holdout_split([e["label_id"] for e in evidence], 0.3, a.seed)
+        tune_ev = [e for e in evidence if e["label_id"] not in set(hold)]
+    tune_items, _ = report.v2_items(priors, [e for e in evidence if not a.holdout or e["label_id"] in set(hold)], tune_ev)
+    files = report.write_all(summary, a.out, tune_items)
     print(f"wrote {', '.join(files)} to {a.out}" + ("  [SYNTHETIC]" if summary["synthetic"] else ""))
     for r in rejected[:5]:
         print(f"rejected {r['file']}:{r['line']}: {'; '.join(r['errors'])}", file=sys.stderr)
