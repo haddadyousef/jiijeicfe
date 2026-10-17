@@ -158,6 +158,8 @@ final class AppModel {
     /// Settings, the JSONL trip log, mobility, posts and conversations stay local. Inert when
     /// `Secrets.plist` has no keys, and never on the cue path.
     let cloud = CloudSync()
+    /// Sidewalk memory: Project Sidewalk labels spoken ahead (`Waymark/WaymarkEngine.swift`). // waymark:
+    let waymark = WaymarkEngine()  // waymark:
     /// Last LiDAR ground hazard spoken ("Two meters ahead, drop-off."), for the Hazards card's
     /// LIDAR row. Set by `groundHazardFound`; cleared by `startRouteNow` so a new route never shows
     /// the previous route's drop-off.
@@ -276,7 +278,9 @@ final class AppModel {
     /// after `TorsoHapticPolicy` — a torso cue the level, place or crossing settle suppressed shows
     /// `.clear`, a Standard onset tap shows `.center` until the decider's `.stop`. `.clear` when
     /// nothing is in range or after any ARKit pause.
-    private(set) var activeCue: CueKind = .clear
+    private(set) var activeCue: CueKind = .clear {
+        didSet { waymark.lidarCue(active: activeCue != .clear) }  // waymark: 5 s quiet after any LiDAR cue
+    }
 
     // MARK: Device capabilities (fixed for the life of the process)
 
@@ -475,6 +479,11 @@ final class AppModel {
     /// Default OFF until validated on the phone.
     var hazardWatchEnabled: Bool = Settings.bool("hazardWatchEnabled", default: false) {
         didSet { Settings.set(hazardWatchEnabled, "hazardWatchEnabled"); hazards.watchEnabled = hazardWatchEnabled }
+    }
+    /// waymark: "Sidewalk memory" (Sense → Hazards). Default OFF until tuned on a walk; cleared
+    /// after a crash loop (`LaunchRecovery.optionalFeatureKeys`).
+    var waymarkEnabled: Bool = Settings.bool("waymarkEnabled", default: false) {
+        didSet { Settings.set(waymarkEnabled, "waymarkEnabled"); waymark.enabled = waymarkEnabled }  // waymark:
     }
     /// "Flashlight on in the dark (routes)" (Settings → Mount card, Step 49).
     ///
@@ -1033,6 +1042,7 @@ final class AppModel {
         sounds = SoundWatcher(speech: speech)
         hazards.signsEnabled = signsEnabled
         hazards.watchEnabled = hazardWatchEnabled
+        wireWaymark()                                 // waymark: outputs + stored switch
         applyCueRules()                               // the stored level / place into the engines
         context.setPeopleEnabled(namePeopleEnabled)
         pushDepthSettings()
@@ -2849,6 +2859,7 @@ final class AppModel {
     /// (the next one starts at once) and cancels the trip tracker synchronously.
     private func endRouteQuietly() {
         routeSessionGeneration &+= 1
+        waymark.routeEnded()                 // waymark:
         speech.routeLines = []               // no route: nothing standing to re-request
         nav.stop()
         releaseAppTorch()                    // Step 49: the new route decides again from its own start
@@ -3086,6 +3097,7 @@ final class AppModel {
             self.nav.update(fix: fix)
             self.trip.ingest(fix)
             self.indoor.ingest(fix)          // Step 62: indoor handover gate + recording exit window
+            self.ingestWaymark(fix)          // waymark: sidewalk memory (silent unless enabled)
             if self.nav.isNavigating {
                 let rep = self.depth.report
                 let obsStatus: LiveActivityObstacleGlance
@@ -3233,6 +3245,7 @@ final class AppModel {
         }
         nav.onArrived = { [weak self] in
             guard let self else { return }
+            self.waymark.routeEnded()        // waymark:
             // Capture the route identity before the HealthKit await below. A replacement route
             // increments this generation; the old summary must then become a no-op rather than
             // speaking/appending/closing data for the new walk.
@@ -3546,6 +3559,7 @@ final class AppModel {
     /// Speaks even with no route running (it doubles as "cancel whatever I asked for").
     func stopRoute() {
         indoor.stop(reason: "stop_route")    // Step 62: Stop route ends the indoor leg too
+        waymark.routeEnded()                 // waymark:
         stopSimulatedWalk()
         cancelRouteBuild()
         cancelPendingRouteStart()
@@ -4040,6 +4054,7 @@ final class AppModel {
     /// Callers: `beginRoute` (degraded paths), `depthReadinessChanged(.ready)`.
     private func startRouteNow(_ route: Route, announce: String? = nil) {
         routeSessionGeneration &+= 1
+        waymark.routeStarted()               // waymark:
         markSensorModeRouteStarted()
         // A previous route's AR failure must not make the first trusted frame of this new route
         // speak a stale recovery line while the route intro is still being delivered.

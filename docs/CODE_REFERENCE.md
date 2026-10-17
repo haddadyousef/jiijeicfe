@@ -25,6 +25,7 @@ wins wherever the two disagree.
 - [Module `family-alerts` — cane events → the Grok Bot routine (Step 39)](#module-family-alerts--cane-events--the-grok-bot-routine-step-39)
 - [Module `conversation` — `ios/CaneKit/Conversation/` ("Talk to OpenCane", Step 23)](#module-conversation--ioscanekitconversation-talk-to-opencane-step-23)
 - [Module: ui-tests-build — Phone UI, XCUITests, XcodeGen build, CI](#module-ui-tests-build--phone-ui-xcuitests-xcodegen-build-ci)
+- [Module: waymark — sidewalk memory (`Waymark/` in Logic and app)](#module-waymark--sidewalk-memory-waymark-in-logic-and-app)
 
 ## Data flow
 
@@ -3439,3 +3440,40 @@ CI does not run `make uitest` / `make tour` / `make e2e` (no simulator test step
 - **Cue mapping** (§5): 25° on-course tolerance for the bearing pill; TRUSTED/SWEEPING pill flips on `isTrusted`; no VoiceOver announcements duplicating `SpeechQueue` — screen state is exposed via `accessibilityValue` + `.updatesFrequently` only.
 - **Accessibility** (§6/§7): action buttons have a visible word plus a symbol and a hint; the root tab bar is icon-only with VoiceOver words `Guide` / `Sense` / `Settings` / `Profile`; pills carry `spoken` when terse; cards are `.contain` containers with `.isHeader` titles; rows of the grid are single elements; developer-only views and the HazardsCard live camera image are `accessibilityHidden`; no `accessibilitySortPriority` (visual order is focus order); no colour-only meaning; no text under 15 pt for the user; no custom fonts.
 - **Divergence to know**: design.md §6 matches the shipped four icon-only root tabs (Guide / Sense / Settings / Profile, each a scroll of the cards documented above) and the shipped labels ("Where am I", "Repeat", "Next", "Recenter", "Start route to CIF", "Cancel route start", "Stop route"). Profile coverage lives in `CaneKitUITests.testAccessibilityLabelsExist`. What is still out of step: design.md §3 says 48 pt minimum on the watch, while `WatchTheme.swift` uses `WKSpacing.touchTarget = 44`. The tests follow the code; per the file header, the Swift wins.
+
+## Module: waymark — sidewalk memory (`Waymark/` in Logic and app)
+
+Waymark fork feature (plans in `waymark/docs/`). Project Sidewalk labels ahead of the walker are
+spoken at `.obstacle` priority, never `.safety` / `.nav`, and never within 5 s of a LiDAR cue.
+Off by default (`AppModel.waymarkEnabled`, cleared by `LaunchRecovery`). Every base-file edit is
+marked `// waymark:`.
+
+### Logic — `ios/Logic/Sources/CaneKitLogic/Waymark/`
+- `WaymarkPrior.swift` — `WaymarkLabelType` (7 types, unknown → `.other`), `WaymarkPrior`,
+  `WaymarkPriorSet.decode(_:byteLimit:)` (strict `waymark.priors.v1`; `WaymarkPriorError`).
+- `WaymarkIndex.swift` — grid index (`cellDegrees` 0.0005); `within(_:of:)` sorted by distance, id.
+- `WaymarkBelief.swift` — Beta belief with half-life decay (`read`, `update`), sensors, outcomes;
+  `WaymarkThreshold.tau(for:)` = C_fa / (C_fa + C_miss).
+- `WaymarkAhead.swift` — `select(from:at:speedMps:headingDeg:legs:)`: labels in a 35 m × ±12 m
+  corridor along the route legs, else along the heading; nothing below 0.5 m/s.
+- `WaymarkLines.swift` — the five spoken lines (`WaymarkLine`), in `SpokenPhrases.warningLines`.
+- `WaymarkAlertPolicy.swift` — `decide(_:p:inputs:)` → `.speak` / `.silent(reason:)`; spacing
+  20 s, 6 per route, trigger `triggerDistanceM(speedMps:gpsAccuracyM:)`.
+- `WaymarkRecord.swift` — `cue(...)` (the `waymark_cue` fields) and `evidence(...)` (one
+  `waymark.evidence.v1` JSON line).
+- `WaymarkSession.swift` (A1) — `step(fix:context:)`: closest hit first, at most one line per fix,
+  silences logged once per (label, reason) per route, `not_yet` never logged; `record(...)` adds
+  field evidence; `routeStarted()` / `routeEnded()`.
+- Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
+
+### App — `ios/CaneKit/Waymark/`
+- `WaymarkEngine.swift` — `@MainActor @Observable`. `load()` (off-main decode of
+  `WAYMARK_PRIORS_FILE` or the bundled `waymark_priors.json`, logs `waymark_load {labels, load_ms}`),
+  `ingest(fix:route:waypointIndex:crossingSettle:voiceHeld:gpsWeak:cueLevel:cuePlace:)` (logs
+  `waymark_cue` + `lookup_ms`, + `latency_ms` when spoken), `lidarCue(active:)`, `routeStarted()`,
+  `routeEnded()`; `state`, `lastLine`, `spokenCount` for the UI; outputs `onSpeak`, `onLog`.
+- `AppModel+Waymark.swift` — `wireWaymark()` (init: `onSpeak` → `speech.say(line, .obstacle,
+  ttl: 6)`, `onLog` → `logger.event`) and `ingestWaymark(_:)` (every `location.onFix`).
+- Base edits: `AppModel` (`waymark`, `waymarkEnabled`, `activeCue.didSet`, route start / stop /
+  arrival / quiet end), `SpeechQueue.isVoiceHeld`, `HazardsCard` "Sidewalk memory" switch + status
+  caption, `LaunchRecovery.optionalFeatureKeys`.

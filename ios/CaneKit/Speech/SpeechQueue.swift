@@ -371,6 +371,8 @@ final class SpeechQueue {
     /// Repeat) is unaffected: an explicit request wins. Owner: `VoiceInputEngine`, set where
     /// `isListening` flips and cleared in `cleanupAudioPipeline` (every exit path).
     @ObservationIgnored private var voiceHeld = false
+    /// waymark: read-only view of `voiceHeld` for `WaymarkEngine` (it must not talk over dictation).
+    var isVoiceHeld: Bool { voiceHeld }
     /// 15 s timer armed on `.began` that drains the queue if `.ended` never arrives (the
     /// interrupting app is not obliged to deactivate its session). Cancelled on `.ended`.
     @ObservationIgnored private var interruptionFallback: Task<Void, Never>?

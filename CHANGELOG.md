@@ -2,6 +2,21 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark A1 — sidewalk memory wired into the app (Sat Oct 17)
+
+- `WaymarkSession` (Logic, 11 tests): one fix in, at most one line out; per-route log dedupe.
+- `WaymarkEngine` + `AppModel+Waymark`: loads the 3,405-label Seattle bundle on first enable,
+  speaks at `.obstacle`, silent within 5 s of any LiDAR cue, during crossing settle, voice hold,
+  weak or stale GPS. Logs `waymark_load` / `waymark_cue` with `load_ms`, `lookup_ms`, `latency_ms`.
+- Sense → Hazards: "Sidewalk memory" switch (off by default) with a status line.
+- `LaunchRecovery` clears `waymarkEnabled` after a crash loop.
+- UI tests answer the location prompt themselves (`allowLocationPrompts()`): on a brand-new
+  simulator the `sim-grant` grant did not stick and XCTest tapped "Don't Allow" (G0 uitest, 4
+  failures, not caused by the rename).
+
+Test on the phone: Sense → turn on Sidewalk memory → the caption shows "3405 sidewalk reports
+loaded." Walk toward a known label on The Ave; one line, at most every 20 s, never over a LiDAR cue.
+
 ## Step 69 — adversarial audit hardening (Tue Sep 22)
 
 Audit scope: Logic stress tests, route-history data flow, cloud consent boundaries, iOS 26 SDK
