@@ -52,7 +52,8 @@ measurement, a state, or a button. No marketing surfaces.
    STOP) **and** a number; a pill is always a word on a fill (the SF Symbol is a companion).
 3. Big and few. The Guide is one giant microphone (the voice tile, Step 58) with a compact row
    under it (idle: Where am I + Start route to CIF; navigating: Repeat + Next + Stop route — the one
-   three-per-row exception, §6.1), then Recenter and Simulate walk below the fold; never more than
+   three-per-row exception, §6.1), then Recenter and Simulate walk below the fold (idle: Simulate
+   walk in the collapsible "Demo" section, 2026-10-17); never more than
    two per row anywhere else; everything else lives in the cards below it.
 4. Ivory on near-black. The white cane is the brand; the accent is *cane white on ink*, not a hue.
 5. Nothing animates that carries meaning. The grid updates at 30 Hz with no transitions.
@@ -137,7 +138,8 @@ green / yellow / orange / red; simulated with Machado et al. 2009 (severity 1.0)
 OKLab was CLEAR/NEAR at 0.071 for deuteranopes and NEAR/STOP at 0.058 for tritanopes, i.e. two states
 that read as the same colour. The new blue / lemon / amber / rose set was chosen by a search over
 hue / saturation / value for the largest worst-case pair distance under normal, protan, deutan and
-tritan vision with every fill ≥ 7:1 against `ink`: the worst pair is now 0.128 (far/near, deutan).
+tritan vision with every fill ≥ 7:1 against `ink`: the worst pair is now 0.116 (far/near, deutan;
+0.128 without gamut clamping), against 0.059 before.
 The script is in the Mac session's notes (STATUS_M 2026-10-17). HC variants are the same hex: every
 fill already exceeds 8:1 against HC's pure-black ink, and HC adds the thicker borders. Words, numbers
 and (since 2026-10-17) the NEAR / STOP glyphs and the STOP border mean no state depends on colour.
@@ -203,7 +205,7 @@ when the screen is a gauge.
 
 ## 4. Motion
 
-Motion never carries information. The app owns two animations, and both honour Reduce Motion
+Motion never carries information. The app owns three animations, and all honour Reduce Motion
 (`accessibilityReduceMotion`):
 
 | Event | Normal | Reduce Motion |
@@ -211,6 +213,7 @@ Motion never carries information. The app owns two animations, and both honour R
 | Depth grid update (30 Hz) | **None.** Fill, word and number change instantly. | Same |
 | Big button press (`CKBigButtonStyle`, also Go and the test buttons) | Scale 0.97 on a 0.12 s spring; `.sensoryFeedback(.impact(weight: .light))` on **press-down** (`trigger: isPressed` with the condition `$0 == false && $1`, i.e. the not-pressed → pressed edge; an earlier revision of this file said "on release" — the code is the truth) | Opacity 0.85 only; haptic kept |
 | Root tab switch (`CKTabBar` + `ContentView` page) | Incoming page **fades in** over 0.16 s (`.transition(.asymmetric(insertion: .opacity, removal: .identity))`); the accent capsule slides between icons (`matchedGeometryEffect`, 0.16 s spring) so pill and page land together; `.sensoryFeedback(.selection)` | Instant page swap; capsule jumps; selection haptic kept |
+| `CKMoreSection` open / close (UI rework 2026-10-17) | Content fades in / out over 0.2 s; the chevron turns 180° | Instant; the chevron flips without turning |
 | Everything else (pills, distance, instruction, cards appearing) | Instant | Instant |
 
 Never animate layout of the grid. Never animate colour of a lane tile (a fade through orange
@@ -470,14 +473,15 @@ tab bar is last on every page.
 **Progressive disclosure (UI rework 2026-10-17, owner: "simpler, don't lose any functionality").**
 Each page shows what a walk needs; everything else sits in a `CKMoreSection` — a ≥ 60 pt header
 ("<title>, collapsed / expanded" to VoiceOver) whose open state is remembered per section. No
-control was removed or renamed, and **no ⚠ test-contract control is inside a section** (the
-XCUITests never open one).
+control was removed or renamed; **no ⚠ test-contract control, warning, or switch that is on is
+inside a closed section** (the XCUITests never open one; under `CANEKIT_UITEST=1` every section
+starts closed whatever was stored).
 
 | Page | Always shown | In a section (closed by default) |
 |---|---|---|
 | Guide, idle | Guide card, microphone, Where am I / Start route, Where to (destination, Navigate to CIF) | **Demo**: Simulate walk |
-| Guide, walking | Guide card, microphone, Repeat / Next / Stop route, Recenter, error line | **More route tools**: beacon and headphone pills, Simulate walk |
-| Details | status, Obstacles grid, Hazards card (incl. Sidewalk memory) | **Hands-free and camera**; **Diagnostics** (Recent activity / Scene engine) |
+| Guide, walking | everything, unchanged (Route tools: Recenter, beacon / headphone pills, Simulate walk) | — (a test contract and two warning pills live here) |
+| Details | status, Obstacles grid, Hazards card (incl. Sidewalk memory); Hands-free and Camera cards whenever any of their switches is on | **Hands-free and camera** (only while all off); **Diagnostics** (Recent activity / Scene engine) |
 | Settings | Alerts, Voice, Phone on cane, Vibration | **Family alerts**; **Testing tools** (Watch, Record an indoor route, This phone) |
 | Profile | unchanged | — |
 
@@ -528,7 +532,7 @@ While a route runs                                  Idle (before a route / after
 │ ─ ─ ─ ─ ─ ─ below the fold ─ ─ ─ ─ ─ ─ │          │ ─ ─ ─ ─ ─ ─ below the fold ─ ─ ─ ─ ─ ─ │
 │ [ ⌖ Recenter                         ] │          │ [ ⟲ Repeat                           ] │ ← only after arrival
 │ (BEACON 40%) (HEAD TRACKED)            │          │ [ ◎ Navigate to CIF from here          ] │
-│ [ ▶ Simulate walk                    ] │          │ [ ▶ Simulate walk                      ] │
+│ [ ▶ Simulate walk                    ] │          │ ( ▸ Demo — Play the route…          ⌄ ) │ ← CKMoreSection
 └────────────────────────────────────────┘          │ [ ⌕ grainger             ⓧ] [ Go ]     │
                                                     │ ⚠ Type a destination first             │
                                                     └────────────────────────────────────────┘
@@ -538,7 +542,7 @@ While a route runs                                  Idle (before a route / after
 - Distance row: only with a GPS-derived distance (never in the simulator without a fix): hero integer metres + "m", and the bearing pill when there is a heading and a target (hidden on a curved leg and while silent at a crossing).
 - **The voice tile (Step 58, owner decision 2026-09-13)**: a giant round microphone in the middle of the page inside ~40 thin, hand-drawn-looking concentric contour rings (a `Canvas`, seeded per-ring noise — the same drawing every launch). The whole ring square, at least 60 % of the page height, is one button → `toggleVoiceInput()`; a thumb anywhere near the middle of the phone talks. Rings **ripple outward while listening**, **breathe while the app speaks**, and are **still when idle**; Reduce Motion keeps them still. Disc: `accent` (ink / ivory), `danger` while listening or starting. VoiceOver sees one button ("Talk to OpenCane" / "Listening…" / "Starting…" / "Thinking…"). Under it one status line: the assistant's last answer, or "Say route, where am I, or help." before the first.
 - **The compact row, directly under the tile**: idle → Where am I | Start route to CIF; navigating → Repeat | Next | Stop route. Tiles (`CKBigButton(layout: .tile)`), one `HStack` fixed vertically so they are one shape. **This is the one exception to "never more than two per row"**: tiles wrap "Stop route" onto two lines instead of hyphenating, and a sighted spotter needs Stop reachable without scrolling now that the microphone owns the top of the page. Trade-off, accepted: Stop sits beside Next (Guided Access on the walk).
-- **Below the fold**, labels unchanged (hard rule 9; the UI tests `scrollTo` them): navigating → Recenter, the beacon / head pills, Simulate walk / Stop simulation; idle → Repeat (after arrival only), Cancel route start (while waiting), Navigate to CIF from here, Simulate walk, the route-start status, the destination field. Route buttons are full-width rows with a subtitle (Step 46).
+- **Below the fold**, labels unchanged (hard rule 9; the UI tests `scrollTo` them): navigating → Recenter, the beacon / head pills, Simulate walk / Stop simulation; idle → Repeat (after arrival only), Cancel route start (while waiting), the destination field, Navigate to CIF from here, the route-start status, then the collapsible **Demo** section holding Simulate walk (UI rework 2026-10-17). Route buttons are full-width rows with a subtitle (Step 46).
 - **Indoor state (Step 62)**, while an indoor step script is walked (`AppModel.indoor.isActive`): the instruction line is the current indoor step's `say`; directly under it a plain status line **"Indoors · step 3 of 5"** ("Indoors · at the exit" once the last step is done); the compact row is the navigating one, **Repeat | Next | Stop route** with the same labels (hard rule 9) acting on the indoor step; no distance row, beacon, Recenter or route picker; below the fold only **Simulate walk** / **Stop simulation** (synthetic steps). After the GPS handover the card is the ordinary navigating card of the outdoor route.
 - The Talk tile of Step 47 is gone (the microphone replaces it); Where am I is in the idle compact row, and by voice ("where am I") in both states.
 
@@ -558,7 +562,7 @@ While a route runs                                  Idle (before a route / after
 | 10 | Recenter | "Recenter" | hint "Sets straight ahead as the beacon's forward direction" | button |
 | 11 | Beacon pill | "Beacon: Beacon N%" / "Beacon: Beacon paused" / "Beacon: Beacon off" / "Beacon: Beacon idle" | — | `.updatesFrequently` |
 | 12 | Headphone pill | "<output name>, head tracking on" / "<output name>, no head tracking" / "No headphones connected; beacon paused" | — | — |
-| 12b | Simulate walk / Stop simulation (navigating, between the pills and Stop route) | "Simulate walk" / "Stop simulation" (`AppModel.isSimulatingWalk`) | hint "Simulates walking along the active route indoors" / "Pauses the walk simulation" | button; **no test uses either label** |
+| 12b | Simulate walk / Stop simulation (navigating, between the pills and Stop route) | "Simulate walk" / "Stop simulation" (`AppModel.isSimulatingWalk`) | hint "Simulates walking along the active route indoors" / "Pauses the walk simulation" | button; `CaneKitIslandTour` taps "Simulate walk" when it exists (⚠ keep it outside any collapsible section) |
 | 13 | Stop route (navigating compact row) | "Stop route" | first tap: "Arms route stop; tap again within 3 seconds to end guidance"; armed state: "Confirms ending guidance when tapped again within 3 seconds" | two-tap confirmation button |
 | — | Cancel route start (idle, only while a route start waits for the depth interlock) | "Cancel route start" | hint "Stops waiting for obstacle detection and does not start guidance"; the status line under the route buttons says why the route has not started | button (destructive); **no test uses it** (§9) |
 | — | Start route to CIF (idle compact row) | "Start route to CIF" | hint "Starts the recorded ISR Townsend Hall to CIF route" | button |
@@ -797,7 +801,7 @@ Debug controls (sighted teammate / developer):
 - **Hazards card**: two neutral pills, the hazard watch backend (the provider name, e.g. "ON-DEVICE"; spoken "Hazard watch uses …") and "N MAPPED" (spoken "N hazards on the map"); one detection row per source that has spoken, LIDAR / SIGN / WATCH / SOUND in the `pill` font and `textSecondary` followed by the last line in `body` (one VoiceOver element per row); an error line in red; "Share hazard map" (60 pt, secondary style, a `ShareLink` of this session's GeoJSON, shown once the file exists, hint "Shares a GeoJSON map of every hazard found on this walk"); the sound watch's status rows; under "Live camera view" ARKit's own frames on the GPU (`LiveCameraView`, 3:4, at the camera's frame rate — 30, or 60 with the Mount switch; hidden from VoiceOver; captions "Live view paused: phone is hot" / "Camera off"); the front-camera readout while head tracking without AirPods is on ("Front camera is detecting …. Head direction only; no front camera picture."); the two-camera picture and its red caption (§5.4); the grey captions that explain a refused mode, read by VoiceOver. "Both cameras self test" / "Front camera self test" appear only under the `--sensor-selftest` launch flag.
 - **Watch card**: link pill REACHABLE / ASLEEP / APP NOT INSTALLED / NOT PAIRED / UNSUPPORTED and the last watch command; the link error in red; "Mirror obstacle cues to the watch"; four buttons "Send left / right / cross / arrive cue to the watch" (disabled when unreachable).
 - **Mount card**: first row the live aim, e.g. "Camera tilt 5° down, good · 30 fps" (`MountTilt.status`; "Camera tilt: hold the cane still for a reading" before a trusted frame), then the six switches above (portrait, mirror, 60 fps, beacon, auto-torch and trip log).
-- **Family alerts card**: the four controls and the emails editor in the table above; no pills. Its captions are the only red text on Settings ("No webhook key…" and an Add refusal), and both are words, never a red border alone (§7).
+- **Family alerts card**: the four controls and the emails editor in the table above; no pills. Its refusal and "Not saved yet" lines use `CKErrorText` (glyph + primary text, UI rework 2026-10-17); no red text remains on Settings. Words, never a red border alone (§7).
 - **This phone**: "LiDAR depth", "Mesh classification (door / wall / seat)", "Logic package linked", each read as "<name>: available / not available".
 - **Debug footer**: removed (`DebugFooter.swift` is gone). Depth fps is only on the Mount card's aim row; thermal and battery are in the trip log's `lanes` records; the log file is found in the Files app.
 
@@ -826,7 +830,7 @@ fire). The watch is always dark: black ground (OLED, wrist-down power).
 ```
 
 Tokens (`WatchTheme.swift`): `WKColor` background black, surface `#26231F`, text / accent `#F4F1EA`,
-ink `#17140F`, trusted `#4ADE80`, danger `#F87171` (warning `#FBBF24` and secondary `#B5AFA3` are defined
+ink `#17140F`, trusted `#84ADF8`, danger `#FD748F` (warning `#F8BA48` and secondary `#B5AFA3` are defined
 but unused); `WKFont` instruction `.title3` semibold, button `.headline` rounded semibold, footnote, plus `distance` (`.title` rounded heavy, tabular digits) and `pill` (`.caption` rounded bold), both defined but unused — the distance is drawn by the inline navigation title in the system font and no pill is drawn on the watch face;
 `WKSpacing` 4 / 8 / 12, touch target 44 pt; `WKBigButton` radius 14, roles primary / secondary /
 destructive, `compact` = half width.
@@ -871,9 +875,12 @@ audit found a safety bug — a green "Path clear" on the lock screen while depth
 **Colours (UI rework 2026-10-17, `IslandPalette`).** Same colour-blind-safe set as the phone
 ladder: clear `#84ADF8` blue, torso warning `#F8BA48` amber, head / stop `#FD748F` rose, drop-off
 `#5FE0C8` teal (was lavender, which merged with the new blue), sensing paused `#FCF855` lemon (kept
-apart from the torso amber), voice ivory with its waveform / ellipsis glyph (the old blue merged with
-clear). Worst pair under deutan simulation 0.100 (was 0.020: drop-off vs voice). Every state also has
-its own glyph and word, so none depends on colour.
+apart from the torso amber), voice `#CCA13D` ochre (the old blue merged with clear). Measured with
+gamut clamping: worst pair among the six tints 0.082 (voice/warning, tritan), was 0.020 (drop-off /
+voice, deutan). **Known limit:** lemon "paused" vs the ivory default keyline is only 0.031 apart for
+tritanopes (~0.01 % of people). Everywhere but the minimal presentation the paused state also has
+its ⏸ glyph and "Sensing paused" words; a joint search found no paused colour that fixes this
+without turning it green, and a green "paused" was the Step 64 safety bug, so the limit is accepted.
 
 **States (Step 64).** One activity per walk, from the warm-up to a closing card. `IslandPhasePolicy`
 (CaneKitLogic) decides the phase with the priority listening > thinking > warming > indoor > walking;
@@ -888,8 +895,8 @@ WALKING live    ◎ ↱ 42 m                 ◕ ✓ (blue only live)   ◎ ivor
 WALKING locked  ◎ ↑ 120 m                ◕ ⏸ (lemon)            ◎ lemon        [⏸ Obstacles paused — unlock]
 ALERT stop/head ◎ ↑ 42 m                 ⚠ HEAD / ✋ STOP (rose)  ◎ rose         [⚠ Head height 0.8 m] (rose keyline)
 INDOOR          ◎ ↰ 3/5                  ◔ (ring)               ◎ ivory        "Step 3 of 5" + the step's line
-LISTENING       ◎ ≋                      Listening (ivory)      ◎ ivory
-THINKING        ◎ …                      Thinking (ivory)       ◎ ivory
+LISTENING       ◎ ≋                      Listening (ochre)      ◎ ochre
+THINKING        ◎ …                      Thinking (ochre)       ◎ ochre
 ARRIVED         ◎ ⚑                      Arrived (blue)         ◎ blue         60 s on the lock screen
 STOPPED         ◎ ⏹                      Stopped                ◎ ivory        "Route stopped", 10 s
 
@@ -911,7 +918,7 @@ StandBy (isActivityFullscreen): giant glyph · 56 pt figure · glance word · ma
 Watch Smart Stack / CarPlay (.supplementalActivityFamilies([.small])): mark + glyph + figure over the glance word
 ```
 
-- **⚠ Never green unless sensing is live.** `ContentState.sensing` is `live | paused | none` (default
+- **⚠ Never the "clear" colour (blue since 2026-10-17, green before) unless sensing is live.** `ContentState.sensing` is `live | paused | none` (default
   `none`, decoded leniently). The widget draws "Path clear" / the green check only when
   `sensing == .live` and the activity is not stale (`NavIslandSensing.showsClear`, mirroring
   `IslandPhasePolicy.showsClear`, pinned by `showsClearOnlyWhenLive`). The app backgrounded with a
@@ -922,8 +929,9 @@ Watch Smart Stack / CarPlay (.supplementalActivityFamilies([.small])): mark + gl
 - **The brand is on every presentation.** `OpenCaneMark` — four static contour rings from the voice
   tile's ring math (ios/Shared/Brand/ContourRingGeometry.swift, shared with `ContourRings`) — sits in
   compact leading, alone in minimal, beside the glyph in expanded and at the top of the lock-screen
-  card. `.keylineTint` and the mark's stroke follow the level: alert tint (orange near / purple curb /
-  red stop or head) > voice blue > arrived green > paused amber > ivory.
+  card. `.keylineTint` and the mark's stroke follow the level: alert tint (amber near / teal curb /
+  rose stop or head) > voice ochre > arrived blue > paused lemon > ivory (colours since the UI rework
+  2026-10-17).
 - **Warm-up has a face.** `AppModel.queueRouteStart` requests the activity in `warming` with
   `warmupEndsAt = now + DepthReadiness.standardConfiguration.timeout`; the countdown is
   `Text(timerInterval:countsDown:)`, so it ticks with no updates. `startRouteNow` updates that same
@@ -959,7 +967,8 @@ Watch Smart Stack / CarPlay (.supplementalActivityFamilies([.small])): mark + gl
   button control "Talk to OpenCane" (`TalkControl` → `TalkControlIntent`, opens the app listening)
   and a lock-screen accessory widget with the mark (`OpenCaneAccessoryWidget`, `opencane://talk`).
 - Colours are fixed, not `CKColor`: ink ground ≈ `#171410`, ivory text ≈ `#F5F2EB`; tints clear
-  `#4ADE80`, near `#FB923C`, stop / head `#F87171`, curb `#BF8CFA`, paused `#FCCC4D`, voice `#73B3FF`.
+  `#84ADF8`, near `#F8BA48`, stop / head `#FD748F`, curb `#5FE0C8`, paused `#FCF855`, voice `#CCA13D`
+  (UI rework 2026-10-17; the paragraph above the state table has the measurements).
 - VoiceOver reads one sentence per presentation, phase-specific ("OpenCane, on route …: in 120
   meters, turn right. … Path is clear." / "… obstacle detection warming up. The route starts
   automatically." / "Obstacle warnings are paused until you unlock."), never a raw kind.
@@ -1138,7 +1147,7 @@ free to improve, but keep them in step with §6.
 
 ## 10. Open design gaps (code ≠ intent, not yet fixed)
 
-- Error lines use `laneUrgent` as text colour: fine on dark cards (6.4:1) but 2.8:1 on the white light-mode card, below WCAG AA. **Fixed for the Guide's route error line** (Step 14: `textPrimary` text plus a `danger` warning glyph); the describer error line on Guide and the Hazards card's error line still use red text.
+- ~~Error lines use `laneUrgent` as text colour~~ **Fixed everywhere (UI rework 2026-10-17):** every error / attention line is `CKErrorText` (`textPrimary` words + a `danger` glyph); no lane colour is used as text.
 - The lane-ladder contrast ratios quoted in `Theme.swift` / `CODE_REFERENCE.md` comments (11.4 / 15.2 / 8.9 / 7.1) are overstated; the recomputed values are in §2.
 - The watch cuts a long instruction after two lines (≈ 70 % scale) — Repeat is the recovery.
 - ~~The Live Activity glyph's VoiceOver label is the raw kind string ("turnLeft", "straight").~~ Fixed in Step 47: every presentation reads one natural sentence (§6.7).

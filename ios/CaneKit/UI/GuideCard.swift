@@ -17,9 +17,9 @@
 //  ≥ 60 % of the page height) → the compact row (idle: Where am I | Start route to CIF; navigating:
 //  Repeat | Next | Stop route) → describer text → everything else below the fold, labels unchanged.
 //
-//  UI rework 2026-10-17 (owner: simpler, nothing lost): walking shows Recenter directly and puts the
-//  beacon / headphone pills and Simulate walk in a "More route tools" `CKMoreSection`; idle puts
-//  Simulate walk in a "Demo" section under "Where to". Every label and action is unchanged.
+//  UI rework 2026-10-17 (owner: simpler, nothing lost): idle puts Simulate walk in a "Demo"
+//  `CKMoreSection` under "Where to". The walking layout is unchanged (review: Simulate walk is a
+//  test contract there and its pills are warnings). Every label and action is unchanged.
 //
 //  Step 62 indoor state (`model.indoor.isActive`): the instruction shows the indoor step's line, a
 //  status line "Indoors · step 3 of 5" follows it, the compact row is the navigating one (Repeat |
@@ -69,9 +69,9 @@ struct GuideCard: View {
     /// GPS pills; the `VoiceTile` microphone with the assistant's last answer; the compact row
     /// (navigating: Repeat / Next / Stop route; idle: Where am I / Start route to CIF); the
     /// describer's result / error; then either the rest of the route controls (Recenter, beacon +
-    /// head pills, Simulate walk) or the rest of the idle picker (Repeat after arrival, Cancel route
-    /// start, Navigate to CIF from here, Simulate walk, the route-start status, `DestinationField`);
-    /// last, the route / location error line.
+    /// head pills, Simulate walk) and the error line, or the idle "Where to" card (Repeat after
+    /// arrival, Cancel route start, `DestinationField`, the error line, Navigate to CIF from here,
+    /// the route-start status) followed by the "Demo" section (Simulate walk, UI rework 2026-10-17).
     ///
     /// UI audit 2026-09-13: one tall card became a stack of focused pieces — a status card
     /// (instruction, distance, pills), the microphone and the compact row on the page ground, then
@@ -82,18 +82,11 @@ struct GuideCard: View {
         VStack(alignment: .leading, spacing: CKSpacing.lg) {
             statusCard
             voiceAndActions
-            if model.nav.isNavigating {
-                // UI rework 2026-10-17: only Recenter stays out (⚠ test contract, the tests
-                // `scrollTo` it); the beacon / headphone pills and Simulate walk are one tap away.
-                CKBigButton(title: "Recenter", systemImage: "location.north.line", role: .secondary,
-                            hint: "Sets straight ahead as the beacon's forward direction") { model.recenter() }
-                errorLine
-                CKMoreSection(title: "More route tools",
-                              caption: "Direction sound, headphones and the walk simulation.",
-                              systemImage: "slider.horizontal.3", storageKey: "guide.route") {
-                    routeToolsCard
-                }
-            } else if model.indoor.isActive {
+            if model.nav.isNavigating || model.indoor.isActive {
+                // Unchanged by the UI rework (review H1 / M1 / M2): while walking, Simulate walk is a
+                // test contract (CaneKitIslandTour), Stop simulation must be reachable when the
+                // indoor handover starts a simulation by itself, and the No AirPods / Beacon paused
+                // pills are the only on-screen warning of those states — so nothing here is tucked.
                 routeToolsCard
                 errorLine
             } else {
@@ -240,13 +233,15 @@ struct GuideCard: View {
         }
     }
 
-    /// "Route tools" card: while a route runs (inside "More route tools"), the beacon / headphone
-    /// pills and Simulate walk — Recenter sits above the section since the UI rework; indoors, only
-    /// the step simulation, shown directly.
+    /// "Route tools" card while a route (or the indoor leg) runs: Recenter, the beacon / headphone
+    /// pills and Simulate walk; indoors only the step simulation.
     private var routeToolsCard: some View {
         CKCard(title: "Route tools", systemImage: "slider.horizontal.3") {
             if model.nav.isNavigating {
                 // Repeat / Next / Stop route live in the compact row under the microphone (Step 58).
+                // ⚠ test contract: "Recenter" (below the fold now: the tests `scrollTo` it).
+                CKBigButton(title: "Recenter", systemImage: "location.north.line", role: .secondary,
+                            hint: "Sets straight ahead as the beacon's forward direction") { model.recenter() }
                 // Beacon pill: warning without headphones (the beacon cannot play), trusted while it
                 // plays, neutral when off or idle. Head pill: warning without headphones.
                 HStack(spacing: CKSpacing.sm) {

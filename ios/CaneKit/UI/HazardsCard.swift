@@ -42,7 +42,7 @@
 //  VoiceOver (they carry nothing a blind user needs) but the front-camera readout is not — it is
 //  the only proof a blind walker has that their head direction is being followed.
 //
-//  Owner / caller: `SensePage` in ContentView.swift (last card, after the obstacle grid).
+//  Owner / caller: `SensePage` in ContentView.swift (after the obstacle grid, before "Diagnostics").
 //  Tests: the view decisions are pure — `LiveViewTests` (`LiveView.state`, `BothCameras.state`,
 //  `FaceTrackingChange`, `BothCamerasLayout`), `HazardTests` (signs, hazard watch),
 //  `SoundAlertsTests`, `HeadNodDetectorTests`. No XCUITest queries this card's strings yet, so
@@ -76,13 +76,23 @@ struct HazardsCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: CKSpacing.xl) {
             hazardsCard
-            // UI rework 2026-10-17: the helper / power-user switches sit one tap away. No test queries
-            // them; every label, binding and refusal caption inside is unchanged.
-            CKMoreSection(title: "Hands-free and camera",
-                          caption: "Nod to talk, head tracking, live camera view and the flashlight.",
-                          systemImage: "hand.raised", storageKey: "details.handsfree") {
+            // UI rework 2026-10-17: the helper / power-user switches sit one tap away — but only
+            // while every one of them is off. When any is on (Both cameras pauses obstacle
+            // detection; the app may light the torch by itself; the live view and front-camera
+            // tracking have state a helper must see), the cards show directly so the
+            // "Obstacle detection is paused" caption and every off switch can never be collapsed
+            // away (review H2; header rule "⚠ Never make this quieter"). Labels, bindings and
+            // refusal captions inside are unchanged.
+            if handsFreeOrCameraActive {
                 handsFreeCard
                 cameraCard
+            } else {
+                CKMoreSection(title: "Hands-free and camera",
+                              caption: "Nod to talk, head tracking, live camera view and the flashlight.",
+                              systemImage: "hand.raised", storageKey: "details.handsfree") {
+                    handsFreeCard
+                    cameraCard
+                }
             }
         }
     }
@@ -189,6 +199,13 @@ struct HazardsCard: View {
             }
             frontCameraReadout
         }
+    }
+
+    /// True while any switch in the Hands-free / Camera cards is on (or a self test runs): those cards
+    /// are then never inside the collapsible section.
+    private var handsFreeOrCameraActive: Bool {
+        model.bothCamerasEnabled || model.torchEnabled || model.liveViewEnabled
+            || model.faceHeadTrackingEnabled || model.selfTestRunning
     }
 
     /// "Camera": live view, both cameras (with its safety caption), the flashlight, and the debug

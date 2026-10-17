@@ -70,9 +70,11 @@ enum IslandPalette {
     static let dropOff = Color(red: 0.37, green: 0.88, blue: 0.78)   // teal `#5FE0C8`: lavender merged with the new blue
     /// Sensing paused (screen locked) — lemon `#FCF855`, kept apart from the torso amber.
     static let paused = Color(red: 0.99, green: 0.97, blue: 0.33)
-    /// Voice shell (listening / thinking) — ivory with the waveform / ellipsis symbol; the old calm
-    /// blue was indistinguishable from the new clear blue.
-    static let voice = Color(red: 0.96, green: 0.95, blue: 0.92)
+    /// Voice shell (listening / thinking) — ochre `#CCA13D`. The old calm blue merged with the new
+    /// clear blue, and ivory (first try) made the minimal presentation's mark identical to walking
+    /// (UI review M6). Best of a search for a seventh colour ≥ 7:1 on ink: ≥ 0.08 OKLab from every
+    /// other island colour under all four simulations, 0.24+ from ivory.
+    static let voice = Color(red: 0.80, green: 0.63, blue: 0.24)
 
     /// Tint for an alert level; nil when there is no alert.
     static func tint(_ level: NavIslandAlert) -> Color? {
@@ -326,7 +328,8 @@ struct NavLiveActivity: Widget {
         .supplementalActivityFamilies([.small])
     }
 
-    /// Keyline / mark tint: alert colour, else paused amber, else voice blue, else ivory.
+    /// Keyline / mark tint: alert colour, else voice ochre (listening / thinking), else arrived blue,
+    /// else paused lemon, else ivory.
     fileprivate static func keyline(_ state: NavActivityAttributes.ContentState, glance: Glance) -> Color {
         if glance.isAlert { return glance.tint }
         switch state.phase {

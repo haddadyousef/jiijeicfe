@@ -143,6 +143,8 @@ struct LaneTile: View {
                 Text(levelWord)
                     .font(.caption2.weight(.bold))
             }
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)       // glyph + word in a third of the width at large text
         }
         .foregroundStyle((level == .noData || level == .noCover) ? CKColor.textSecondary : CKColor.ink)
         .frame(maxWidth: .infinity)
@@ -187,7 +189,7 @@ struct LaneTile: View {
         }
     }
 
-    /// Lane-ladder fill for the level (identical in light and dark; brighter under HC).
+    /// Lane-ladder fill for the level (identical in light, dark and Increase Contrast).
     private var fill: Color {
         switch level {
         case .urgent: return CKColor.laneUrgent

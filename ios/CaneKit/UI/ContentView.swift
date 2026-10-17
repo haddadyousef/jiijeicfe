@@ -279,7 +279,7 @@ private struct FamilyContactsEditor: View {
             } label: {
                 Image(systemName: "trash")
                     .font(CKFont.secondary)
-                    .foregroundStyle(CKColor.textPrimary)   // UI rework: a rose glyph was 2.4:1 on white
+                    .foregroundStyle(CKColor.textPrimary)   // UI rework: a rose glyph is 2.6:1 on white
                     .frame(width: 44, height: 44)       // full hit target, small glyph
             }
             .buttonStyle(.plain)
@@ -341,9 +341,8 @@ private struct FamilyContactsEditor: View {
         .disabled(saving || !model.family.isConfigured)
 
         if model.familyContactsNeedSave {
-            Text("Not saved yet — tap Save.")
-                .font(CKFont.secondary)
-                .foregroundStyle(CKColor.laneNear)
+            // UI rework review M3: amber text was 1.7:1 on white.
+            CKErrorText(text: "Not saved yet — tap Save.", systemImage: "exclamationmark.circle")
         }
     }
 
@@ -455,10 +454,10 @@ private struct SettingsPage: View {
     /// Made `@Bindable` in `body` so the pickers and toggles get two-way bindings.
     @Environment(AppModel.self) private var model
 
-    /// Cues first (the settings a walker changes most), then Haptics, Voice (Step 53), Watch, Mount,
-    /// Family alerts, Record indoor route (Step 62), This phone.
+    /// Order since the UI rework (2026-10-17): Alerts, Voice, Phone on cane, Vibration, then the
+    /// "Family alerts" and "Testing tools" sections (see the last paragraph).
     ///
-    /// UI audit 2026-09-13: two labelled groups. "Everyday" holds what a walker or family member
+    /// History — UI audit 2026-09-13: two labelled groups. "Everyday" holds what a walker or family member
     /// changes (Alerts, Voice, Phone on cane, Family alerts); "Testing tools" holds the
     /// team's check buttons (Vibration, Watch, Record an indoor route, This phone). The
     /// XCUITest labels are unchanged; `testHapticTestButtonsAndSilenceToggle` taps elements (which
