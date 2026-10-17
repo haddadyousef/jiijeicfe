@@ -65,16 +65,30 @@ def find_turns(pts: list[tuple[float, float]], min_turn_deg: float = 40.0, spaci
     return sorted(turns)
 
 
-def crossing_alongs(pts: list[tuple[float, float]], crosswalks: list[tuple[float, float]]) -> list[float]:
-    """Along-route distance of each crosswalk cluster (crosswalk labels within the corridor, merged when 20 m apart)."""
-    al = sorted(a for c, a in (project_on(pts, lng, lat) for lng, lat in crosswalks) if c <= CORRIDOR_M)
+def _group_alongs(pts: list[tuple[float, float]], points: list[tuple[float, float]], min_group: int) -> list[float]:
+    al = sorted(a for c, a in (project_on(pts, lng, lat) for lng, lat in points) if c <= CORRIDOR_M)
     groups: list[list[float]] = []
     for a in al:
         if groups and a - groups[-1][-1] <= 20.0:
             groups[-1].append(a)
         else:
             groups.append([a])
-    return [sum(g) / len(g) for g in groups]
+    return [sum(g) / len(g) for g in groups if len(g) >= min_group]
+
+
+def crossing_alongs(pts: list[tuple[float, float]], crosswalks: list[tuple[float, float]],
+                    ramps: list[tuple[float, float]] | None = None, min_ramps: int = 3) -> list[float]:
+    """Along-route distance of each street crossing. A crossing is a crosswalk label within the corridor, or a group
+    of at least `min_ramps` curb-ramp labels within 20 m of each other (the corners of an intersection; a lone ramp
+    is usually a driveway). Crossings closer than 20 m to each other are merged."""
+    found = sorted(_group_alongs(pts, crosswalks, 1) + _group_alongs(pts, ramps or [], min_ramps))
+    out: list[float] = []
+    for a in found:
+        if out and a - out[-1] <= 20.0:
+            out[-1] = (out[-1] + a) / 2
+        else:
+            out.append(a)
+    return out
 
 
 SAY = {"start": "Starting the route. Walk straight ahead.", "straight": "Keep going straight.", "left": "Turn left.",
@@ -83,7 +97,7 @@ SAY = {"start": "Starting the route. Walk straight ahead.", "straight": "Keep go
 
 
 def make_route_json(name: str, source: str, pts: list[tuple[float, float]], crosswalks: list[tuple[float, float]],
-                    max_gap_m: float = 150.0) -> dict:
+                    max_gap_m: float = 150.0, ramps: list[tuple[float, float]] | None = None) -> dict:
     """Waypoints at the start, at each turn, at each crosswalk cluster (crossing = true), every max_gap_m on long
     straights, and at the end. A crosswalk within 25 m of a turn marks that turn as the crossing instead."""
     total = polyline_len(pts)
@@ -94,7 +108,7 @@ def make_route_json(name: str, source: str, pts: list[tuple[float, float]], cros
     marks.append((total, "end"))
     marks.sort()
     wp = [{"s": s, "kind": k, "crossing": False} for s, k in marks]
-    for c in crossing_alongs(pts, crosswalks):
+    for c in crossing_alongs(pts, crosswalks, ramps):
         near = [w for w in wp if w["kind"] not in ("start", "end") and abs(w["s"] - c) <= 25.0]
         if near:
             near[0]["crossing"] = True
@@ -175,10 +189,10 @@ def dump(o) -> str:
 
 
 def write_demo(out_dir: Path, name: str, source: str, pts: list[tuple[float, float]], crosswalks: list[tuple[float, float]],
-               generated_at: str) -> list[str]:
+               generated_at: str, ramps: list[tuple[float, float]] | None = None) -> list[str]:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    route = make_route_json(name, source, pts, crosswalks)
+    route = make_route_json(name, source, pts, crosswalks, ramps=ramps)
     (out_dir / "route.json").write_text(dump(route), encoding="utf-8")
     (out_dir / "route_trace.json").write_text(dump(make_trace_json(name, "waymark/demo/route.json", source, pts)), encoding="utf-8")
     (out_dir / "route.gpx").write_text(make_gpx(name, pts), encoding="utf-8")

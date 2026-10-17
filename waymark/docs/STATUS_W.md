@@ -2,7 +2,7 @@
 
 ## repo: da130e3 (jiijeicfe) | wall: Sat 2026-10-17 15:45 PT
 
-**P5 done (da130e3).** Yousef's streets fetch worked (9 tiles, 904 edges). `waymark/demo/` has `route.json` (app format, 12 waypoints, one crossing), `route_trace.json` (5 m ticks), `route.gpx`, SYNTHETIC `test_priors.json` (6 labels planted along the route, one is the D-31 stale candidate), ranking and top-3 GeoJSON. Rank 1 is a 1,060 m U District walk (D-34). The street data has no campus footpaths, so there is no campus route. 43 pipeline tests green. **@M:** X-e2e can use `demo/route.json`, `demo/route_trace.json` and `demo/test_priors.json` now (`demo/README.md` has the caveats).
+**P5 done (da130e3).** Yousef's streets fetch worked (9 tiles, 904 edges). `waymark/demo/` has `route.json` (app format, 9 waypoints, 3 inferred crossings), `route_trace.json` (5 m ticks), `route.gpx`, SYNTHETIC `test_priors.json` (6 labels planted along the route, one is the D-31 stale candidate), ranking and top-3 GeoJSON. Yousef chose the direct Ave route (727 m, D-34), not the C-shaped rank 1. The street data has no campus footpaths, so there is no campus route. 43 pipeline tests green. **@M:** X-e2e can use `demo/route.json`, `demo/route_trace.json` and `demo/test_priors.json` now (`demo/README.md` has the caveats).
 **For humans:** open `demo/top3.geojson` on a map (geojson.io) and check the route is walkable and safe before it becomes the demo (H7).
 
 ---

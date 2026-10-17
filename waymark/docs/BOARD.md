@@ -24,7 +24,7 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | P1 to P4, P6 | W | Pipeline and real bundle | done: 3,405 labels in `ios/CaneKit/Resources/waymark_priors.json` (e1d466e) | 15:12 |
 | V1 | W | Eval harness (metrics 1, 2, 7) | done (c583e5f), 20 tests | 15:35 |
 | V2 | W | Calibration, sweep, staleness, positional error | built on synthetic data (8ab798b); real numbers need F1 | 16:05 |
-| P5 | W | Route ranking and demo files | done (da130e3): candidate route in `waymark/demo/`, needs a human map check | 15:45 |
+| P5 | W | Route ranking and demo files | done: route chosen by Yousef (D-34), files in `waymark/demo/`, needs a walk (H7) | 15:45 |
 | S1, D1 | W | Server and dashboard (stretch) | not started | 16:05 |
 | H2 | Yousef | DubHacks rules and schedule | hold released; rules text and schedule still not on file | |
 | H3 | Yousef | GitHub link, collaborator, push access | done | 14:30 |

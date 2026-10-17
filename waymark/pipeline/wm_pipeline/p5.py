@@ -77,5 +77,7 @@ def write_pick(ranked: list[dict], pick: int, labels: list[dict], out_dir: Path,
     pts = [tuple(p) for p in r["points"]]
     crosswalks = [(l["lng"], l["lat"]) for l in labels if l["type"] == "crosswalk"
                   and routes.project_on(pts, l["lng"], l["lat"])[0] <= routes.CORRIDOR_M]
+    ramps = [(l["lng"], l["lat"]) for l in labels if l["type"] == "curb_ramp"
+             and routes.project_on(pts, l["lng"], l["lat"])[0] <= routes.CORRIDOR_M]
     src = "Project Sidewalk street centrelines (CC0), shortest path between two campus landmarks; ranked by P5"
-    return demo.write_demo(out_dir, r["name"], src, pts, crosswalks, generated_at)
+    return demo.write_demo(out_dir, r["name"], src, pts, crosswalks, generated_at, ramps)

@@ -230,3 +230,15 @@ def test_crosswalk_mid_block_becomes_its_own_crossing_waypoint():
     assert not any(w["crossing"] for w in far["waypoints"])
     ends = demo.make_route_json("T", "s", pts, [pt(0, 0)], max_gap_m=150)                        # at the very start: not a crossing waypoint
     assert not any(w["crossing"] for w in ends["waypoints"])
+
+
+def test_curb_ramp_groups_mark_intersections_but_a_lone_ramp_does_not():
+    pts = [pt(0, 0), pt(4, 0)]
+    corner = [(pt(1, 0)[0] + d / routes.M_PER_DEG_LNG, pt(1, 0)[1] + s / routes.M_PER_DEG_LAT) for d, s in ((0, 4), (3, -4), (6, 4))]   # 3 ramps at one corner
+    lone = [(pt(3, 0)[0], pt(3, 0)[1] + 4 / routes.M_PER_DEG_LAT)]                                                                     # one ramp: a driveway
+    al = demo.crossing_alongs(pts, [], corner + lone)
+    assert len(al) == 1 and al[0] == pytest.approx(100, abs=8)
+    r = demo.make_route_json("T", "s", pts, [], ramps=corner + lone)
+    assert sum(w["crossing"] for w in r["waypoints"]) == 1
+    both = demo.crossing_alongs(pts, [(pt(1, 0)[0], pt(1, 0)[1] + 3 / routes.M_PER_DEG_LAT)], corner)
+    assert len(both) == 1                                                                                                              # crosswalk and ramps at the same corner merge
