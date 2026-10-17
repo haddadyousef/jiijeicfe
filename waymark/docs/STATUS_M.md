@@ -4,6 +4,32 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
+## repo: 5b9227f (L1-L3 on branch `waymark/l1-l3` at 1846d24) | wall: Sat 15:05 PT
+
+**Done (evidence):**
+- **G0 device build signed and installed.** `make build install launch` (14:50, main 5b9227f, `WATCH=0` gen): `** BUILD SUCCEEDED **`; `devicectl` "App installed: bundleID com.akashtadikonda.waymark" on Akash's **iPhone 17 Pro (iPhone18,1), physical — LiDAR model**. Launch refused (exit 2): "profile has not been explicitly trusted by the user" (CoreDevice 10002). That is the one-time free-team step (Settings → General → VPN & Device Management → trust the developer), not a code problem. @H
+- **L1 to L3 written test-first** (build lane released by Yousef, relayed by Akash at 14:29; @W please record it in `DECISIONS.md` D-04). All in `ios/Logic/Sources/CaneKitLogic/Waymark/`, Foundation only, base-repo types used: `Coordinate`, `GeoMath` (plan 1.4):
+  - L1 2bb5d83 `WaymarkLabelType`, `WaymarkPrior`, `WaymarkPriorSet.decode` (strict 5.2), `WaymarkIndex` (grid, equals brute force).
+  - L2 59a9836 `WaymarkBelief` (5.3), `WaymarkThreshold` (5.4), `WaymarkAhead` (route legs or heading).
+  - L3 1846d24 `WaymarkLines` (Appendix A, appended to `SpokenPhrases.warningLines`: budget 1,856 / 2,000, `SpokenPhrasesTests` updated 1,718 → 1,856 and 74 → 79), `WaymarkAlertPolicy`, `WaymarkRecord` (evidence line equals the design doc 7.2 example byte for byte).
+  - Red first each time ("cannot find type … in scope"), then `swift test` on Linux Swift 6.0.3: **989 passed, exit 0** (912 base + 77 new; HeadNodDetectorTests set aside for the Linux run only). **Not yet run on the Mac** (`make test`); the branch merges to `main` only after it is.
+- Every row of the plan 5.3 worked table and the four 5.4 values are tests (tolerance 1e-9 / 1e-12). `belief_vectors.json` / golden priors will be added as test inputs as soon as `waymark/contracts/` exists.
+
+**Failed / fixed:**
+- `make sim17` (14:28): Xcode 27.1 refused "iPhone 17 Pro Max" on the iOS 27.1 runtime ("Incompatible device", code 403), so both `make uitest` runs stopped at `sim-grant` ("Invalid device"). Not a test failure. Fix in this commit: `waymark_g0.sh uitest` falls back to the first available iPhone Pro simulator (Akash has an "iPhone 18 Pro" one). UI tests not run yet.
+
+**Design choices in L3 that need a W ack (plan 7.3 says the doc decides; the doc was not explicit):** @W
+1. `curb_ramp` has no tau (5.4), so at Detailed it speaks without a p gate. Alternative: require p ≥ 0.5.
+2. "LiDAR already warned about the same obstacle within 5 s" (8.3): the app cannot match identities, so **any** LiDAR cue in the last 5 s silences Waymark. Only makes it quieter.
+3. "Trigger distance reduced by position uncertainty" (8.3) read as: speak **earlier** by √(gps² + 8²) m, capped at the 35 m look-ahead. Earlier is the safe direction; tell me if you meant later.
+4. Design doc 8.1 says Standard = "high-severity only"; plan 5.2 says Standard = obstacle / missing curb ramp / no sidewalk. I followed plan 5.2 (precedence).
+
+**Blocked:** I cannot reach `haddadyousef/jiijeicfe` (Akash says both sessions should use it). `add_repo` refuses ("no access") and `list_repos` does not show it. Until access works, the Mac keeps using `haddadyousef/Waymark`. @H @W
+
+**Next:** Akash trusts the profile and opens Waymark on the phone (screenshot = G0 done); `make test` on `waymark/l1-l3`; `waymark_g0.sh uitest`. Then A1 (WaymarkEngine + store + setting, AppModel wiring per `M_NOTES.md` §8).
+
+---
+
 ## repo: 622ba38 | wall: Sat 14:30 PT
 
 **G0 simulator half is green** (logs in Akash's `waymark/logs/mac/`, git-ignored, read over the file bridge):
