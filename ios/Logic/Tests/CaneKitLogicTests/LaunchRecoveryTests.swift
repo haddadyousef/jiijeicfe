@@ -89,7 +89,7 @@ import Testing
 /// ⚠ Adding a persisted optional feature to `AppModel` means adding its key here.
 @Test func recoveryClearsEveryPersistedOptionalFeature() {
     for key in ["faceHeadTrackingEnabled", "groundHazardsEnabled", "hazardWatchEnabled",
-                "signsEnabled", "highFrameRateCamera"] {
+                "signsEnabled", "highFrameRateCamera", "waymarkEnabled"] {
         #expect(LaunchRecovery.optionalFeatureKeys.contains(key),
                 "\(key) starts a sensor at launch and must be cleared after a failed launch")
     }
