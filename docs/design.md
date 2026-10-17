@@ -38,7 +38,7 @@ of it below says so.
 
 | Viewer | Situation | What it forces |
 |---|---|---|
-| **The blind user** | Never looks. Phone is clamped to the cane; they use speech, the cane's buzz, the watch, or the Action button ("Where am I"). | Every state has words: speech via `SpeechQueue`, and a VoiceOver label / value on screen. VoiceOver order is the selected tab's cards, then the tab bar (Guide / Sense / Settings / Profile). Our own buttons are ≥ 60 pt (big buttons 72 pt). Nothing is colour-only. |
+| **The blind user** | Never looks. Phone is clamped to the cane; they use speech, the cane's buzz, the watch, or the Action button ("Where am I"). | Every state has words: speech via `SpeechQueue`, and a VoiceOver label / value on screen. VoiceOver order is the selected tab's cards, then the tab bar (Guide / Sense / Settings / Profile). Our own buttons are ≥ 60 pt (big buttons 76 pt, UI v2). Nothing is colour-only. |
 | **The sighted judge / teammate** | Glances at the phone on the cane from ~1 m, in a dark room (demo) or in sunlight (walk). | The Guide instruction, the distance and the depth tiles must be readable at arm's length: tile numerals 28 pt bold, hero distance 64 pt, fills ≥ 6.5:1 against their `ink` text, no thin type, no mid-grey. Dark surfaces for the demo (a bright screen in a dark room blinds the room). |
 | **The developer** | Reads engine health, speech backend, watch link and the hazard detections while walking behind. | The debug cards on the **Sense** tab (Hazards) and the **Settings** tab (Haptics, Watch, Mount, This phone). There is no debug footer any more (removed): depth fps is shown on the Mount card's aim row, while thermal and battery remain in the trip log's `lanes` records. |
 
@@ -55,7 +55,7 @@ measurement, a state, or a button. No marketing surfaces.
    three-per-row exception, §6.1), then Recenter and Simulate walk below the fold (idle: Simulate
    walk in the collapsible "Demo" section, 2026-10-17); never more than
    two per row anywhere else; everything else lives in the cards below it.
-4. Ivory on near-black. The white cane is the brand; the accent is *cane white on ink*, not a hue.
+4. Calm and clear. Ivory ground, ink text; since UI v2 (2026-10-17) the accent is deep blue in light mode and cane ivory in dark mode (never a lane colour).
 5. Nothing animates that carries meaning. The grid updates at 30 Hz with no transitions.
 
 ---
@@ -114,11 +114,12 @@ and the widget use fixed colours, §6.6 / §6.7). Contrast ratios are WCAG 2.x, 
 | `background` | `#F4F1EA` | `#0E0D0B` | `#FFFFFF` | `#000000` | Screen ground |
 | `surface` | `#FFFFFF` | `#1A1816` | `#FFFFFF` | `#0A0A0A` | Cards |
 | `surfaceRaised` | `#EAE6DD` | `#26231F` | `#E3DED3` | `#141210` | Secondary buttons, no-data tiles, neutral pills |
-| `border` | `#C9C3B6` | `#3A362F` | `#000000` | `#FFFFFF` | Card hairline 1 pt (3 pt in HC); secondary-button border 2 pt (4 pt in HC) |
+| `border` | `#C9C3B6` | `#3A362F` | `#000000` | `#FFFFFF` | Card hairline 1 pt (3 pt in HC) |
+| `controlBorder` | `#8A8577` | `#6E685E` | `#000000` | `#FFFFFF` | Secondary buttons and section headers, 1.5 pt (3.5 pt in HC); ≥ 3:1 on card and ground (UI v2) |
 | `textPrimary` | `#17140F` | `#F4F1EA` | `#000000` | `#FFFFFF` | 16.3:1 / 17.2:1 on background |
 | `textSecondary` | `#5C574D` | `#B5AFA3` | `#3A362F` | `#D9D4C9` | Hints, card titles, the Hazards card's source words. 6.4:1 on light background, 7.2:1 on a light card, 8.1:1 on a dark card |
-| `accent` | `#17140F` | `#F4F1EA` | `#000000` | `#FFFFFF` | Primary button fill. **Ink in light, ivory in dark.** |
-| `onAccent` | `#F4F1EA` | `#0E0D0B` | `#FFFFFF` | `#000000` | Text on `accent` |
+| `accent` | `#1E40AF` | `#F4F1EA` | `#1E3A8A` | `#FFFFFF` | Primary button fill, selected tab, voice disc, card-title badges. **UI v2 (2026-10-17): deep blue in light** (white text 8.7:1; blue is seen as itself by every colour-vision type), **cane ivory in dark** (a sky blue there equalled the CLEAR tile, review M5). |
+| `onAccent` | `#FFFFFF` | `#0E0D0B` | `#FFFFFF` | `#000000` | Text on `accent` |
 | `ink` | `#17140F` | `#17140F` | `#000000` | `#000000` | Text on every coloured fill (tiles, trusted / warning / danger pills, Stop button). One rule, no exceptions. |
 
 ### Lane ladder (same in light and dark; the fill is the signal, so it does not flip)
@@ -182,13 +183,13 @@ OKLab lightness: far (0.95) > near (0.83) > clear (0.75) > urgent (0.73).
 | `CKRadius` | pt | Use |
 |---|---|---|
 | `tile` | 14 | Depth tiles |
-| `button` | 18 | Big buttons (72 pt tall → radius ≈ ¼ height, reads as a slab not a pill) |
+| `button` | 22 | Big buttons (76 pt tall; UI v2, was 18) |
 | `card` | 20 | Cards |
 | `pill` | 999 | Declared for pills; the pill view draws a `Capsule` |
 
 All shapes use `.continuous` corners. Watch buttons use radius 14.
 
-Touch targets (`CKMetrics`): `CKBigButton` is ≥ 72 pt tall (`bigButton`), full width or half width (two per row with
+Touch targets (`CKMetrics`): `CKBigButton` is ≥ 76 pt tall (`bigButton`, UI v2), full width or half width (two per row with
 `lg` between them); a `layout: .tile` big button in a compact row (the Guide's row under the voice
 tile, Step 58: two tiles idle, three navigating) is ≥ 108 pt tall (`CKMetrics.tile`), and the row's
 `HStack` stretches every tile to the tallest one. The voice tile itself is one button at least 60 %
@@ -470,6 +471,20 @@ VoiceOver because the bar already reads it): Guide = "OpenCane", Sense = **"Deta
 "Settings", Profile = "Profile". Card order *inside the selected page* is the VoiceOver order; the
 tab bar is last on every page.
 
+**UI v2 (2026-10-17, owner: "not just colours — the button format and the whole app simpler and
+better").** One button format everywhere (`CKBigButton`): the symbol in a round badge, a bold title,
+a one-line subtitle saying what it does, a chevron on rows; tiles put the badge top-left with the
+words under it. Cards are rounder (26 pt) with a bold rounded title beside a blue-tinted badge;
+section headers are real headings. Guide: a status card with a round accent symbol and "Ready" / "Next
+step" / "Arrived" / "Indoors"; idle tiles **Where am I** ("Describe what's ahead") | **Start route**
+("To The Ave and NE 50th"); walking, a **2 × 2 grid — Repeat | Stop route / Next | Recenter**
+(Stop on the top row so it is above the fold; "Tap twice to end"); tile pairs stack into one column at
+accessibility text sizes (`CKTileRow`); "Navigate to CIF from here" is **Directions from here** ("Walk to … with
+Apple Maps"). Details: "Obstacles" is **What's ahead**, rows read "Head height" / "Body height" on
+screen ("Head row" / "Body row" to VoiceOver), with a colour key including "Not seen". Tabs: larger icons, the word under each,
+selected in blue. **Demo route:** The Ave and NE 42nd → NE 50th by default (`RouteSource.bundled()`);
+`WAYMARK_DEMO_ROUTE=isr_cif` keeps the UIUC route for the XCUITests and e2e.py.
+
 **Progressive disclosure (UI rework 2026-10-17, owner: "simpler, don't lose any functionality").**
 Each page shows what a walk needs; everything else sits in a `CKMoreSection` — a ≥ 60 pt header
 ("<title>, collapsed / expanded" to VoiceOver) whose open state is remembered per section. No
@@ -607,7 +622,7 @@ lane. The Mount card then reads "Camera tilt N° down: too steep for head-height
 | Card title | "Obstacles" | — | `.isHeader` |
 | Trust pill | "Depth trusted" / "Sweeping, warnings paused" | — | `.updatesFrequently` |
 | Head row (one element; tiles hidden) | "Head row" | "left one meter, center clear, right 3 meters" or "no depth data" | `.updatesFrequently` |
-| Torso row (one element) | "Torso row" | same format | `.updatesFrequently` |
+| Body row (one element; "Torso row" before UI v2) | "Body row" | same format | `.updatesFrequently` |
 
 Rows are one VoiceOver element each on purpose: reading three cells is slower than one sentence.
 
@@ -1075,7 +1090,7 @@ tiles' 1.2 m/s placeholder is still indistinguishable from a measurement.
   the tab-bar `.selection` tick, the watch's `.click` send confirm and the system crown detents
   are the only non-cue haptics.
 - No sounds except speech and the beacon. No earcons. The beacon never plays through the phone speaker.
-- No `CKBigButton` under 72 pt and no other phone button under 60 pt; no watch button under 44 pt.
+- No `CKBigButton` under 76 pt and no other phone button under 60 pt; no watch button under 44 pt.
 - No double-speak: cue speech comes from `SpeechQueue`, never also from a VoiceOver announcement.
 - No truncation of an instruction on the phone: it wraps, it is never cut with "…".
 - No `accessibilitySortPriority`. The visual order is the focus order; if that's wrong, fix the layout.

@@ -28,7 +28,7 @@
 //       places, posts) with no wake word and no screen.
 //  What did NOT get a slot, and why: Recenter (the watch has it, and the app re-zeroes itself
 //  after three straight-walking fixes), the hazard switches (configuration, set before the
-//  walk, not during it), and "Navigate to CIF from here" (the Guide card button is unchanged
+//  walk, not during it), and "Directions from here" (the Guide card button is unchanged
 //  and "Take me to CIF in Waymark" reaches the same route-file waypoint by Siri). All are
 //  still reachable hands-free — as plain `AppIntent`s, which the Shortcuts app lists as actions
 //  and which can be put on the Action button by building a one-step shortcut around them. Only

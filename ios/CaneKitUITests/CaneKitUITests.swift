@@ -5,7 +5,7 @@
 //  Drives the real app in the simulator the way a person would: starts the demo route and checks
 //  the waypoint lines appear, exercises Next / Repeat / Recenter / Stop, "Where am I" without a
 //  key (and, opt-in, on a Street View frame), the haptic test buttons, the Mount toggles, the
-//  Cues pickers, the four root tabs, "Navigate to CIF from here", and the destination field's
+//  Cues pickers, the four root tabs, "Directions from here", and the destination field's
 //  error line and campus suggestions. LiDAR, haptics and the watch need a phone; everything else
 //  here runs on `make uitest`.
 //
@@ -65,18 +65,41 @@ final class CaneKitUITests: XCTestCase {
         allowLocationPrompts()
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
+        // Waymark: the demo route defaults to the Seattle Ave walk; these tests assert on the UIUC
+        // route's lines ("Townsend", "Illinois Street"), so pin it (the Mac gate also parks the
+        // simulator at UIUC: SIM_LAT=40.1140 SIM_LON=-88.2249; the Makefile default is the Ave start).
+        app.launchEnvironment["WAYMARK_DEMO_ROUTE"] = "isr_cif"
         app.launch()
     }
 
     /// Start → instruction shows waypoint 1 → Next → waypoint 2 → Repeat does not advance →
     /// Recenter → Stop → idle again with no Repeat.
     ///
-    /// ⚠ test contract: buttons "Start route to CIF", "Stop route", "Next", "Repeat", "Recenter"
+    /// ⚠ test contract: buttons "Start route", "Stop route", "Next", "Repeat", "Recenter"
     /// (GuideCard); instruction texts containing "Townsend" / "Illinois Street" come from the
     /// `say` lines of CaneKit/Resources/route_isr_cif.json waypoints 1 and 2. Note waypoint 1's
     /// line already mentions "Illinois Street", so that wait alone does not prove Next advanced.
+    func testDefaultRouteIsTheAveWalk() {
+        // Waymark (UI v2 review H2): every other test pins the UIUC route, so this one relaunches
+        // without the pin and proves the default demo route is bundled and starts: its first line
+        // is route_ave_seattle.json waypoint 1, "Starting the route. Walk straight ahead."
+        app.terminate()
+        app.launchEnvironment["WAYMARK_DEMO_ROUTE"] = nil
+        app.launch()
+        let start = app.buttons["Start route"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10), "Start button should be on the guide card")
+        start.tap()
+        XCTAssertTrue(app.buttons["Stop route"].waitForExistence(timeout: 10), "the default route must start (route_ave_seattle.json in the bundle — run make gen)")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] 'Starting the route'")).firstMatch
+            .waitForExistence(timeout: 5), "first line of the Ave route")
+        let stop = scrollTo(app.buttons["Stop route"])
+        stop.tap()
+        app.buttons["Stop route"].tap()
+        XCTAssertTrue(app.buttons["Start route"].waitForExistence(timeout: 10))
+    }
+
     func testGuideStartsAndStopsDemoRoute() {
-        let start = app.buttons["Start route to CIF"]
+        let start = app.buttons["Start route"]
         XCTAssertTrue(start.waitForExistence(timeout: 10), "Start button should be on the guide card")
         start.tap()
 
@@ -249,7 +272,7 @@ final class CaneKitUITests: XCTestCase {
     /// buttons on launch, "Head row" after opening Sense, "Write trip log" after opening Settings,
     /// and Profile's Medical ID actions and metric tile (only the selected page is in the tree).
     ///
-    /// ⚠ test contract: tabs "Guide", "Details", "Settings", "Profile"; button "Start route to CIF",
+    /// ⚠ test contract: tabs "Guide", "Details", "Settings", "Profile"; button "Start route",
     /// element "Head row" (LaneGridView row label), button "Where am I",
     /// switch "Write trip log" (Settings Mount card), buttons "Edit Medical ID" / "Announce Medical ID",
     /// and the Profile metric label beginning "Steps Today:".
@@ -258,7 +281,7 @@ final class CaneKitUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Details"].exists)
         XCTAssertTrue(app.buttons["Settings"].exists)
         XCTAssertTrue(app.buttons["Profile"].exists)
-        XCTAssertTrue(app.buttons["Start route to CIF"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Start route"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["Where am I"].exists)
         openTab("Details")
         // Rows expose a combined spoken value ("left clear, center clear, right clear" or "no depth data").
@@ -296,17 +319,17 @@ final class CaneKitUITests: XCTestCase {
         tab.tap()
     }
 
-    /// "Navigate to CIF from here" is on the idle guide, enabled, and gives way to the route
+    /// "Directions from here" is on the idle guide, enabled, and gives way to the route
     /// controls while a route runs. Not tapped: it would send a real Apple Maps walking-directions
     /// request to the route file's last waypoint and start that route.
     ///
-    /// ⚠ test contract: button "Navigate to CIF from here" (GuideCard; its label is its text),
-    /// "Start route to CIF", "Stop route".
+    /// ⚠ test contract: button "Directions from here" (GuideCard; its label is its text),
+    /// "Start route", "Stop route".
     func testNavigateToCIFButtonIsOnTheIdleGuide() {
-        let cif = app.buttons["Navigate to CIF from here"]
+        let cif = app.buttons["Directions from here"]
         XCTAssertTrue(cif.waitForExistence(timeout: 10), "CIF-from-here button should be on the idle guide")
         XCTAssertTrue(scrollTo(cif).isEnabled)
-        scrollTo(app.buttons["Start route to CIF"]).tap()
+        scrollTo(app.buttons["Start route"]).tap()
         XCTAssertTrue(app.buttons["Stop route"].waitForExistence(timeout: 10))
         XCTAssertFalse(cif.exists, "route controls replace the picker while navigating")
         scrollTo(app.buttons["Stop route"]).tap()

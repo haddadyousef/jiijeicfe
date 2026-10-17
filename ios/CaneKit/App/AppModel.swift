@@ -191,7 +191,7 @@ final class AppModel {
     /// `announceLocationDenied`, `failQueuedRouteStart` and the both-cameras refusals; cleared by
     /// `clearRouteError` (every keystroke), a new build and `startRouteNow`.
     private(set) var routeError: String?
-    /// True while a MapKit build (`buildRoute`: typed field, Siri, "Navigate to CIF from here")
+    /// True while a MapKit build (`buildRoute`: typed field, Siri, "Directions from here")
     /// waits for a fix and MapKit directions (UI shows progress, Go / CIF buttons disabled).
     private(set) var isBuildingRoute = false
     /// Visible state while a route request waits for post-camera-transition depth evidence.
@@ -3377,24 +3377,27 @@ final class AppModel {
         logger.event("recenter", ["auto": true])
     }
 
-    /// Start the bundled demo route (ISR Townsend Hall → CIF).
-    /// Triggered by the "Start route to CIF" button, `StartDemoRouteIntent`, and at launch by the
+    /// Start the demo route (waymark: `RouteSource.bundled()` — the Seattle Ave walk by default, the
+    /// UIUC ISR Townsend Hall → CIF route under `WAYMARK_DEMO_ROUTE=isr_cif`).
+    /// Triggered by the "Start route" button, `StartDemoRouteIntent`, and at launch by the
     /// `--demo-route` / `CANEKIT_DEMO_ROUTE=1` automation hook. On failure sets `routeError` and
     /// says "Route file missing."
     /// ⚠ Abandons an in-flight MapKit build first: a "Take me to …" search that returned *after*
     /// the demo route started would otherwise call `beginRoute` again and silently swap the walker
     /// onto the searched route mid-walk. A route already queued behind the depth interlock is
     /// cancelled too, for the same reason (the newest request wins).
-    /// The name inside `Resources/route_isr_cif.json`, so an uploaded route can be labelled
+    /// The demo route's name (`RouteSource.bundled()`), so an uploaded route can be labelled
     /// `bundled` rather than `mapkit`. Read once (the file is in the app bundle and cannot
     /// change); "" when the file is missing, which simply makes every route read as `mapkit`.
     static let bundledRouteName: String = (try? RouteSource.bundled().name) ?? ""
 
-    func startDemoRoute() {
+    /// - Parameter load: which bundled route (default the demo route; the indoor ISR handover passes
+    ///   `RouteSource.isrCif`).
+    func startDemoRoute(_ load: @MainActor () throws -> Route = RouteSource.bundled) {  // waymark: route loader
         cancelRouteBuild()
         cancelPendingRouteStart()
         do {
-            let route = try RouteSource.bundled()
+            let route = try load()  // waymark:
             beginRoute(route)
         } catch {
             routeError = error.localizedDescription
@@ -3452,9 +3455,10 @@ final class AppModel {
                    searchLine: "Finding a route to \(place.name).")
     }
 
-    /// "Navigate to CIF from here": Apple Maps walking directions from the live GPS fix to the
-    /// CIF east entrance — the last waypoint of the bundled route file, as a coordinate (no
-    /// search, so MapKit cannot pick a different "CIF"). GuideCard button and
+    /// "Directions from here" (was "Navigate to CIF from here"): Apple Maps walking directions from
+    /// the live GPS fix to the last waypoint of the demo route (`RouteSource.bundled()`: The Ave and
+    /// NE 50th by default, the CIF east entrance under `WAYMARK_DEMO_ROUTE=isr_cif`), as a coordinate
+    /// (no search, so MapKit cannot pick a different place). GuideCard button and
     /// `NavigateToCIFIntent`. Missing route file → `routeError` + "Route file missing."
     func navigateToCIFFromHere() {
         guard let entrance = try? RouteSource.bundled().waypoints.last else {
@@ -3462,8 +3466,12 @@ final class AppModel {
             speech.say("Route file missing.", .nav)
             return
         }
-        buildRoute(to: .place(name: entrance.placeName, coordinate: entrance.coordinate),
-                   searchLine: "Finding a walking route to CIF from here.")
+        // waymark: a named last waypoint keeps its name ("the CIF east entrance"); the Ave route's has
+        // none (its placeName would be "You have arrived"), so it uses the route name's last part.
+        let place = (entrance.name?.isEmpty == false || Self.demoRouteDestination.isEmpty)
+            ? entrance.placeName : Self.demoRouteDestination  // waymark:
+        buildRoute(to: .place(name: place, coordinate: entrance.coordinate),  // waymark:
+                   searchLine: "Finding a walking route to \(place) from here.")  // waymark:
     }
 
     /// The in-flight MapKit build (fix wait + search + directions). Cancelled by `stopRoute()` and
@@ -3477,7 +3485,7 @@ final class AppModel {
     /// a replacement route cannot inherit the previous route's spoken summary or cloud close.
     @ObservationIgnored private var routeSessionGeneration: UInt64 = 0
 
-    /// Shared MapKit path for the typed field, Siri and "Navigate to CIF from here".
+    /// Shared MapKit path for the typed field, Siri and "Directions from here".
     /// Location refused → spoken now (not after a 15 s wait for a fix that never comes). Else
     /// starts location, says `searchLine`, waits up to 30 × 500 ms (15 s) for a first fix, asks
     /// `RouteSource.walking(to:from:)`, then `beginRoute(_:announce:)` with "Walking to <place>,
@@ -3604,7 +3612,9 @@ final class AppModel {
 
     /// Starts an on-device walk simulation along the active route (or starts the bundled demo route if idle).
     /// Advances synthesized GPS fixes between waypoints at `simulationSpeedMps` (default 1.4 m/s).
-    func startSimulatedWalk(speedMps: Double? = nil) {
+    /// - Parameter load: the route to start when idle (waymark: the indoor ISR handover passes
+    ///   `RouteSource.isrCif`; everything else the default demo route).
+    func startSimulatedWalk(speedMps: Double? = nil, load: @MainActor () throws -> Route = RouteSource.bundled) {  // waymark:
         if indoorHandlesSimulate() { return } // Step 62: synthetic steps while indoors
         stopSimulatedWalk()
         simulatedWalkGeneration &+= 1
@@ -3613,7 +3623,7 @@ final class AppModel {
         isSimulatingWalk = true
 
         if !nav.isNavigating {
-            startDemoRoute()
+            startDemoRoute(load)  // waymark:
         }
 
         simulatedWalkTask = Task { @MainActor [weak self] in
