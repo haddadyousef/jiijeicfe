@@ -70,25 +70,34 @@ enum CKColor {
     /// Text on every coloured fill (lane tiles, pills, banners). One rule, no exceptions.
     static let ink      = dynamic(0x17140F, 0x17140F, hcLight: 0x000000, hcDark: 0x000000)
 
-    // Lane ladder: identical in light and dark (the fill *is* the signal), brighter in HC.
+    // Lane ladder: identical in light and dark (the fill *is* the signal).
     // Thresholds live in CaneKitLogic.TileLevel: clear ≥ 2.0 m, far ≥ 1.2, near ≥ 0.7, urgent < 0.7.
-    /// Tile ≥ 2.0 m (level word CLEAR). 11.4:1 against `ink`. Also the `trusted` pill tone.
-    static let laneClear  = dynamic(0x4ADE80, 0x4ADE80, hcLight: 0x22D36B, hcDark: 0x22D36B)
-    /// Tile 1.2–2.0 m (level word FAR). 15.2:1 against `ink`.
-    static let laneFar    = dynamic(0xFDE047, 0xFDE047, hcLight: 0xFFD500, hcDark: 0xFFD500)
-    /// Tile 0.7–1.2 m (level word NEAR). 8.9:1 against `ink`. Close in hue to `laneFar` for
-    /// deuteranopes, which is why the tile's word and number are mandatory.
-    static let laneNear   = dynamic(0xFB923C, 0xFB923C, hcLight: 0xFF7A00, hcDark: 0xFF7A00)
-    /// Tile < 0.7 m (level word STOP). 7.1:1 against `ink`. Also error-line text and `danger`.
-    static let laneUrgent = dynamic(0xF87171, 0xF87171, hcLight: 0xFF6B6B, hcDark: 0xFF6B6B)
+    //
+    // Waymark UI rework (2026-10-17): colour-blind-safe ladder, blue → yellow → amber → rose. The old
+    // green / yellow / orange / red ladder put CLEAR and NEAR 0.071 apart (OKLab) for deuteranopes and
+    // NEAR and STOP 0.059 apart for tritanopes. This set keeps every pair ≥ 0.116 apart for normal,
+    // protan, deutan and tritan vision (Machado 2009 simulation, gamut-clamped, design.md §2) and every fill
+    // ≥ 7:1 against `ink`. Blue for CLEAR also stops "green = go" being the only reading of safe.
+    // The tile still carries a word and a number, and NEAR / STOP add a glyph and STOP a border,
+    // so no state depends on colour alone (LaneTile).
+    /// Tile ≥ 2.0 m (level word CLEAR). Sky blue, 8.1:1 against `ink`. Also the `trusted` pill tone.
+    static let laneClear  = dynamic(0x84ADF8, 0x84ADF8, hcLight: 0x84ADF8, hcDark: 0x84ADF8)
+    /// Tile 1.2–2.0 m (level word FAR). Lemon, 16.4:1 against `ink`.
+    static let laneFar    = dynamic(0xFCF855, 0xFCF855, hcLight: 0xFCF855, hcDark: 0xFCF855)
+    /// Tile 0.7–1.2 m (level word NEAR). Amber, 10.6:1 against `ink`. Also the `warning` tone.
+    static let laneNear   = dynamic(0xF8BA48, 0xF8BA48, hcLight: 0xF8BA48, hcDark: 0xF8BA48)
+    /// Tile < 0.7 m (level word STOP). Rose, 7.1:1 against `ink`. Also `danger` (Stop route).
+    /// Never used as text colour: rose on a white card is 2.6:1 — errors use `CKErrorText`.
+    static let laneUrgent = dynamic(0xFD748F, 0xFD748F, hcLight: 0xFD748F, hcDark: 0xFD748F)
     /// Tile with no depth data ("—" / NO DATA); text on it is `textSecondary`, not `ink`.
     static let laneNoData = surfaceRaised
 
     // Status.
     /// Pill tone for a healthy state (TRUSTED, Engine OK, Reachable, GPS within 15 m).
     static let trusted = laneClear
-    /// Pill tone for a degraded-but-working state (SWEEPING, GPS weak, Speaking, No AirPods).
-    static let warning = dynamic(0xFBBF24, 0xFBBF24, hcLight: 0xFFB000, hcDark: 0xFFB000)
+    /// Pill tone for a degraded-but-working state (SWEEPING, GPS weak, Speaking, No AirPods). The
+    /// same amber as NEAR (one "caution" colour instead of two that colour-blind eyes merge).
+    static let warning = laneNear
     /// Destructive button fill (Stop route) and failure pills (Engine down).
     static let danger  = laneUrgent
     /// Idle / informational pill tone; text on it is `textPrimary` (the only non-ink pill).
@@ -617,6 +626,142 @@ struct CKSectionHeader: View {
             .padding(.top, CKSpacing.sm)
             .padding(.bottom, -CKSpacing.sm)
             .accessibilityAddTraits(.isHeader)
+    }
+}
+
+// MARK: - Waymark UI rework (2026-10-17): progressive disclosure and error text
+
+/// A collapsible group of cards on a page: one tappable header ("More settings", "Diagnostics")
+/// and, when open, its cards below it. Used to keep each page to what a walk needs while every
+/// control stays one tap away (owner request 2026-10-17: simpler, nothing removed).
+///
+/// Rules: never put a ⚠ test-contract control inside one (the XCUITests do not open sections), nor a
+/// warning or a control the app may need the walker to reach while something is on (callers show
+/// those cards directly instead — HazardsCard); the open / closed state is remembered per section
+/// (`@AppStorage("ui.more.<storageKey>")`), so a teammate who opened Diagnostics once finds it open
+/// next launch — except under `CANEKIT_UITEST=1`, where a throwaway store keeps every run closed
+/// (deterministic tests); the header is ≥ 60 pt, a VoiceOver heading (rotor), carries a chevron
+/// that turns (no motion under Reduce Motion), and speaks "<title>, collapsed / expanded".
+struct CKMoreSection<Content: View>: View {
+    /// Header text and the button's VoiceOver label.
+    let title: String
+    /// One plain sentence under the title: what is inside.
+    var caption: String? = nil
+    /// Header badge symbol.
+    var systemImage: String = "ellipsis.circle"
+    /// The section's cards, shown only while open.
+    @ViewBuilder let content: () -> Content
+    /// Open / closed, persisted per section.
+    @AppStorage private var expanded: Bool
+    /// Reduce Motion: open and close without the chevron turn and the fade.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Increase Contrast thickens the header border.
+    @Environment(\.colorSchemeContrast) private var contrast
+
+    /// - Parameters:
+    ///   - title: header text and VoiceOver label.
+    ///   - caption: optional sentence under the title.
+    ///   - systemImage: header badge symbol.
+    ///   - storageKey: stable id for the remembered state (`ui.more.<storageKey>`).
+    ///   - content: the cards inside.
+    init(title: String, caption: String? = nil, systemImage: String = "ellipsis.circle",
+         storageKey: String, @ViewBuilder content: @escaping () -> Content) {
+        self.title = title
+        self.caption = caption
+        self.systemImage = systemImage
+        self.content = content
+        _expanded = AppStorage(wrappedValue: false, "ui.more.\(storageKey)", store: Self.store)
+    }
+
+    /// `.standard`, or under `CANEKIT_UITEST=1` a suite emptied once per launch, so a section a
+    /// person opened on that simulator cannot change what a UI test sees (review H1).
+    private static var store: UserDefaults { CKMoreSectionStore.shared }
+
+    /// Header button, then the content when open, spaced like the page's cards.
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: CKRadius.card, style: .continuous)
+        VStack(alignment: .leading, spacing: CKSpacing.xl) {
+            Button {
+                if reduceMotion { expanded.toggle() } else {
+                    withAnimation(.easeOut(duration: 0.2)) { expanded.toggle() }
+                }
+            } label: {
+                HStack(spacing: CKSpacing.md) {
+                    CKIconBadge(systemImage: systemImage)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(CKFont.label)
+                            .foregroundStyle(CKColor.textPrimary)
+                        if let caption {
+                            Text(caption)
+                                .font(CKFont.secondary)
+                                .foregroundStyle(CKColor.textSecondary)
+                                .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.down")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(CKColor.textSecondary)
+                        .rotationEffect(.degrees(expanded ? 180 : 0))
+                        .accessibilityHidden(true)
+                }
+                .padding(CKSpacing.lg)
+                .frame(maxWidth: .infinity, minHeight: CKMetrics.touchTarget, alignment: .leading)
+                .contentShape(shape)
+            }
+            .buttonStyle(.plain)
+            .background(CKColor.surfaceRaised, in: shape)
+            .overlay(shape.strokeBorder(CKColor.border, lineWidth: CKMetrics.border(for: contrast)))
+            .accessibilityLabel(title)
+            .accessibilityValue(expanded ? "expanded" : "collapsed")
+            .accessibilityHint(expanded ? "Hides this section" : "Shows \(caption.map { $0.lowercased() } ?? "more")")
+            .accessibilityAddTraits(.isHeader)
+            if expanded {
+                content()
+                    .transition(reduceMotion ? .identity : .opacity)
+            }
+        }
+    }
+}
+
+/// The one `UserDefaults` store behind every `CKMoreSection` (a generic type cannot hold a static
+/// stored property, so it lives here). `.standard` normally; under `CANEKIT_UITEST=1` the
+/// "waymark.uitest.sections" suite, emptied the first time it is read in each launch.
+enum CKMoreSectionStore {
+    /// See the type doc. Main actor (UI only).
+    static let shared: UserDefaults = {
+        guard ProcessInfo.processInfo.environment["CANEKIT_UITEST"] == "1",
+              let suite = UserDefaults(suiteName: "waymark.uitest.sections") else { return .standard }
+        suite.removePersistentDomain(forName: "waymark.uitest.sections")
+        return suite
+    }()
+}
+
+/// An error, failure or attention line: a glyph (hidden from VoiceOver) and the message in
+/// `textPrimary`. Replaces red / rose / amber text, which is 1.7–2.8:1 on a white card and
+/// unreadable for many low-vision and colour-blind readers (design.md §10). The text stays a plain
+/// `Text` whose label is its content, so tests that match an error string still find it.
+struct CKErrorText: View {
+    /// The message, shown and spoken as written.
+    let text: String
+    /// The glyph: a warning triangle by default; `exclamationmark.circle` for a reminder that is not
+    /// a failure ("Not saved yet").
+    var systemImage: String = "exclamationmark.triangle.fill"
+
+    /// Glyph in `danger`, words in `textPrimary`, wrapping, never truncated.
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: CKSpacing.sm) {
+            Image(systemName: systemImage)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(CKColor.danger)
+                .accessibilityHidden(true)
+            Text(text)
+                .font(CKFont.secondary)
+                .foregroundStyle(CKColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 

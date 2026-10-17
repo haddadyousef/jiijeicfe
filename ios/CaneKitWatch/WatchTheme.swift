@@ -41,11 +41,11 @@ enum WKColor {
     /// Text on every coloured fill (primary / destructive buttons).
     static let ink        = rgb(0x17140F)
     /// "Phone connected" glyph (= phone `laneClear`).
-    static let trusted    = rgb(0x4ADE80)
+    static let trusted    = rgb(0x84ADF8)   // UI rework 2026-10-17: colour-blind-safe ladder
     /// Degraded-state colour (= phone `warning`). Currently unused on the watch face.
-    static let warning    = rgb(0xFBBF24)
+    static let warning    = rgb(0xF8BA48)
     /// "Phone not connected" glyph, error line, destructive fill (= phone `laneUrgent`).
-    static let danger     = rgb(0xF87171)
+    static let danger     = rgb(0xFD748F)
 
     /// 0xRRGGBB → opaque sRGB `Color`. `nonisolated`: a pure helper callable from any isolation.
     nonisolated private static func rgb(_ hex: UInt32) -> Color {

@@ -41,7 +41,7 @@ struct WatchCard: View {
                 }
             }
             if let err = model.watch.lastError {
-                Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+                CKErrorText(text: err)
             }
             CKToggleRow(title: "Also tap my wrist", subtitle: "Sends obstacle taps to the watch too",
                         isOn: $model.fallbackToWatch,

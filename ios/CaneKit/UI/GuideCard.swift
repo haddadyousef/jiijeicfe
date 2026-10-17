@@ -17,6 +17,10 @@
 //  ≥ 60 % of the page height) → the compact row (idle: Where am I | Start route to CIF; navigating:
 //  Repeat | Next | Stop route) → describer text → everything else below the fold, labels unchanged.
 //
+//  UI rework 2026-10-17 (owner: simpler, nothing lost): idle puts Simulate walk in a "Demo"
+//  `CKMoreSection` under "Where to". The walking layout is unchanged (review: Simulate walk is a
+//  test contract there and its pills are warnings). Every label and action is unchanged.
+//
 //  Step 62 indoor state (`model.indoor.isActive`): the instruction shows the indoor step's line, a
 //  status line "Indoors · step 3 of 5" follows it, the compact row is the navigating one (Repeat |
 //  Next | Stop route — same labels, hard rule 9, routed to the indoor step by AppModel+Indoor's
@@ -65,9 +69,9 @@ struct GuideCard: View {
     /// GPS pills; the `VoiceTile` microphone with the assistant's last answer; the compact row
     /// (navigating: Repeat / Next / Stop route; idle: Where am I / Start route to CIF); the
     /// describer's result / error; then either the rest of the route controls (Recenter, beacon +
-    /// head pills, Simulate walk) or the rest of the idle picker (Repeat after arrival, Cancel route
-    /// start, Navigate to CIF from here, Simulate walk, the route-start status, `DestinationField`);
-    /// last, the route / location error line.
+    /// head pills, Simulate walk) and the error line, or the idle "Where to" card (Repeat after
+    /// arrival, Cancel route start, `DestinationField`, the error line, Navigate to CIF from here,
+    /// the route-start status) followed by the "Demo" section (Simulate walk, UI rework 2026-10-17).
     ///
     /// UI audit 2026-09-13: one tall card became a stack of focused pieces — a status card
     /// (instruction, distance, pills), the microphone and the compact row on the page ground, then
@@ -79,11 +83,28 @@ struct GuideCard: View {
             statusCard
             voiceAndActions
             if model.nav.isNavigating || model.indoor.isActive {
+                // Unchanged by the UI rework (review H1 / M1 / M2): while walking, Simulate walk is a
+                // test contract (CaneKitIslandTour), Stop simulation must be reachable when the
+                // indoor handover starts a simulation by itself, and the No AirPods / Beacon paused
+                // pills are the only on-screen warning of those states — so nothing here is tucked.
                 routeToolsCard
                 errorLine
             } else {
                 // Idle: the error line sits inside "Where to", right under the field that caused it.
                 whereToCard
+                CKMoreSection(title: "Demo", caption: "Play the route without moving.",
+                              systemImage: "play.circle", storageKey: "guide.demo") {
+                    CKCard {
+                        CKBigButton(title: "Simulate walk",
+                                    subtitle: "Demo: plays the route without moving",
+                                    systemImage: "play.circle.fill",
+                                    role: .secondary,
+                                    hint: "Simulates walking the demo route indoors step by step without moving") {
+                            model.startSimulatedWalk()
+                        }
+                        .disabled(model.routeStartWaiting || model.isBuildingRoute)
+                    }
+                }
             }
         }
         .onChange(of: model.nav.isNavigating) { _, navigating in
@@ -207,7 +228,7 @@ struct GuideCard: View {
             }
             // Describer error, e.g. "No camera frame" (the no-key UI test accepts "camera" or "Scene:").
             if let err = model.describer.lastError {
-                Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+                CKErrorText(text: err)
             }
         }
     }
@@ -254,7 +275,7 @@ struct GuideCard: View {
     }
 
     /// "Where to" card on the idle Guide. Order (owner request 2026-09-13): the destination field
-    /// first, then Navigate to CIF from here, then Simulate walk.
+    /// first, then Navigate to CIF from here (Simulate walk moved to the "Demo" section, 2026-10-17).
     private var whereToCard: some View {
         CKCard(title: "Where to", systemImage: "mappin.and.ellipse") {
                 if model.nav.arrived {
@@ -286,15 +307,7 @@ struct GuideCard: View {
                             hint: "Builds a walking route with Apple Maps from where you are to the CIF east entrance",
                             value: model.isBuildingRoute ? "finding a route" : nil) { model.navigateToCIFFromHere() }
                     .disabled(model.isBuildingRoute || model.routeStartWaiting)
-
-                CKBigButton(title: "Simulate walk",
-                            subtitle: "Demo: plays the route without moving",
-                            systemImage: "play.circle.fill",
-                            role: .secondary,
-                            hint: "Simulates walking the demo route indoors step by step without moving") {
-                    model.startSimulatedWalk()
-                }
-                .disabled(model.routeStartWaiting || model.isBuildingRoute)
+                // UI rework 2026-10-17: idle "Simulate walk" moved to the "Demo" section below this card.
                 // Why a route has not started yet (waiting for depth, or timed out); not an error,
                 // so primary text, spoken as written.
                 if let status = model.routeStartStatus {

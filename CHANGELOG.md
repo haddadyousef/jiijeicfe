@@ -2,6 +2,37 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark UI rework — colour-blind-safe and simpler (Sat Oct 17)
+
+Owner request: "more colour friendly, simpler to use, don't lose any functionality".
+- **Palette.** Lane ladder green / yellow / orange / red → sky blue / lemon / amber / rose, chosen by a
+  colour-vision-deficiency simulation (Machado 2009) for the largest worst-case pair distance with
+  every fill ≥ 7:1 against ink. The worst pair was 0.059 (tritan near/stop); now 0.116 (deutan
+  far/near), gamut-clamped OKLab.
+  `warning` = the NEAR amber (one caution colour). Watch and Live Activity follow the same set; the
+  island's drop-off became teal and voice ochre (the old ones merged with the new blue). Known
+  limit, accepted: lemon "paused" vs the ivory keyline is 0.031 apart for tritanopes in the minimal
+  island only (a green "paused" would fix it, and that was the Step 64 safety bug).
+- **Shape cues.** NEAR tiles show a triangle glyph, STOP tiles an octagon and a 3 pt ink border.
+- **Error text.** Red / rose / amber text (1.7–2.8:1 on white) → `CKErrorText`: glyph in danger
+  colour, words in primary text colour. Eleven call sites.
+- **Simpler pages.** New `CKMoreSection` (remembered per section; a VoiceOver heading; always closed
+  under `CANEKIT_UITEST=1`): Guide "Demo" (idle Simulate walk), Details "Hands-free and camera"
+  (only while all its switches are off) / "Diagnostics", Settings "Family alerts" / "Testing tools".
+  No control removed or renamed. Details now shows the Obstacles grid before the engine read-out.
+- **Review of the first cut (adversarial, every finding checked):** fixed H1 (walking "Simulate
+  walk", a CaneKitIslandTour contract, had gone into a closed section — the walking layout is back
+  to unchanged), H2 (the "Obstacle detection is paused" caption and the torch switch could be
+  collapsed away — those cards now show directly while anything in them is on), M1/M2 (Stop
+  simulation and the No AirPods / Beacon paused pills, same fix as H1), M3 ("Not saved yet" amber
+  text), M4/M5 (CODE_REFERENCE and design.md passages), M6 (island voice ochre, not ivory), L1
+  (section headers are headings), L2/L3 (stale comments, numbers), L4 (tile word scales instead of
+  wrapping). Accepted: the tritan paused/ivory limit above.
+- Docs: design.md §2 tables and the colour-blind check, §6 disclosure table, §6.7 island colours.
+
+Test on the phone: Settings → Accessibility → Display & Text Size → Color Filters → Red/Green and
+Green/Red: CLEAR, FAR, NEAR and STOP tiles stay four different colours; open and close each section.
+
 ## Waymark A1 — sidewalk memory wired into the app (Sat Oct 17)
 
 - `WaymarkSession` (Logic, 11 tests): one fix in, at most one line out; per-route log dedupe.

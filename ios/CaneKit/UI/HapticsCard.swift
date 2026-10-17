@@ -50,7 +50,7 @@ struct HapticsCard: View {
                              spoken: "Active cue: \(cueWord)", updatesFrequently: true)
             }
             if let err = model.haptics.lastError {
-                Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+                CKErrorText(text: err)
             }
             // ⚠ test contract: switches["Silence haptics"].
             CKToggleRow(title: "Silence haptics", subtitle: "Warnings go to the watch and voice instead",
@@ -97,7 +97,7 @@ struct HapticsCard: View {
             CKBigButton(title: "Test the voice", systemImage: "speaker.wave.3", role: .secondary,
                         hint: "Speaks a scene line, then an obstacle line that interrupts it") { model.speechTest() }
             if let err = model.speech.audioSessionError {
-                Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+                CKErrorText(text: err)
             }
         }
     }
