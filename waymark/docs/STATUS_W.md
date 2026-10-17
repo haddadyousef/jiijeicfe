@@ -1,5 +1,15 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: f1404da + branches (jiijeicfe) | wall: Sat 2026-10-17 16:55 PT
+
+**Scheduled check-in 16:51: checked Mac at `f1404da` (`main`) and branches `waymark/e1` 4ba2cd9, `waymark/ui-v2` 54f753b, `waymark/next` b2a8de7 (e1 + ui-v2 merged together).** `STATUS_M` is now current (16:30 entry with per-merge `make test` / `make sim` / `make uitest` exit codes; thank you).
+**D-35 items 1 and 2 are done on `waymark/ui-v2`:** `route_ave_seattle.json` is byte-identical to `waymark/demo/route.json` (I ran `cmp`), `RouteSource.aveSeattle()` added, `WAYMARK_DEMO_ROUTE=isr_cif` keeps the UIUC route for tests and e2e, simulator point = route start. Item 3 (X-e2e with SYNTHETIC priors) is not started. Not on `main` yet: merge needs Akash.
+**R1 on E1 (`WaymarkEvidence.swift`), accepted with notes:** matches design 9.1 to 9.3. LiDAR obstacle pass over an 8 m window; confirm below 2.0 m, contradict only on a finished, clean pass of at least 5 trusted frames with torso band covered, GPS at most 20 m, fresh, walking, and nothing under 2.5 m; everything else is unverifiable (a no-op in the belief). Ground curb events confirm the nearest curb-ramp / missing-curb-ramp label ahead. Spotter reach 15 m. Pure logic with tests. Notes, none blocking: (a) a LiDAR "confirm" can be a pedestrian or parked car, which is what the spotter buttons are for, so V1 should report lidar-vs-spotter agreement per label, not trust lidar alone; (b) a contradiction needs a clean pass, so expect many unverifiable on a real walk and report that rate; (c) `decided` is cleared on route start, so one label yields at most one verdict per route, as the contract needs.
+**R1 on E2 (`ios/scripts/waymark_export.py`):** strips and then re-verifies absence of lat / lng / lon / coordinate keys, validates schema `waymark.evidence.v1` and label ids `ps:<n>`, writes canonical sorted-key JSON (byte-stable), exits 2 if a coordinate survives. That satisfies the eval input contract. I will run it against a real log file when one exists; no real log exists yet.
+**Open:** none of E1 / E2 / UI v2 is on `main` yet and the Mac has not reported `make test` on `waymark/next` (only the earlier trees). @M when you merge, give exit codes for the merged tree. F1 (live walk) can follow once `next` is merged and X-e2e passes, or sooner if Akash accepts a walk without X-e2e.
+**Windows:** still waiting on Yousef for Walk 1 go-ahead (where, can walk ~1 km, who spots).
+
+---
 ## repo: 73a7f8e (jiijeicfe) | wall: Sat 2026-10-17 16:25 PT
 
 **Scheduled check-in 16:20: checked Mac at `73a7f8e`.** On `main` since 98d1314: **A1 merged (#3, 4dbfa2c)** and **UI pass 1 merged (#4, 73a7f8e; colour-blind palette, simpler pages, `ios/CaneKit/UI/**` plus watch and widget theme)**. Branches: `waymark/seattle-route` at ade7ff2 (D-35: bundled `route_ave_seattle.json`, simulator parks at its start, `WaymarkRouteTests`; **not merged**), `waymark/ui-rework`, `waymark/a1` (merged).
