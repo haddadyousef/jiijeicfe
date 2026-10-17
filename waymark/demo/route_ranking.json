@@ -1,0 +1,2314 @@
+[
+  {
+    "by_type": {
+      "crosswalk": 3,
+      "curb_ramp": 55,
+      "missing_curb_ramp": 7,
+      "obstacle": 11,
+      "surface_problem": 7
+    },
+    "crosswalks": 3,
+    "from": "The Ave and NE 42nd",
+    "hazard_labels": 25,
+    "hazard_types": [
+      "missing_curb_ramp",
+      "obstacle",
+      "surface_problem"
+    ],
+    "labels": [
+      {
+        "along_m": 0.0,
+        "cross_m": 10.8,
+        "id": "ps:13290839",
+        "imagery_date": "2019-06",
+        "n_agree": 11,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 10.0,
+        "id": "ps:13291004",
+        "imagery_date": "2019-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 12.0,
+        "id": "ps:13291344",
+        "imagery_date": "2020-03",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 10.0,
+        "id": "ps:13291502",
+        "imagery_date": "2019-08",
+        "n_agree": 8,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 6.8,
+        "cross_m": 9.2,
+        "id": "ps:13291318",
+        "imagery_date": "2019-08",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 6.9,
+        "cross_m": 9.5,
+        "id": "ps:13291345",
+        "imagery_date": "2019-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 9.8,
+        "cross_m": 6.3,
+        "id": "ps:13290838",
+        "imagery_date": "2020-02",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 10.2,
+        "cross_m": 6.5,
+        "id": "ps:13291003",
+        "imagery_date": "2020-02",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 78.7,
+        "cross_m": 7.3,
+        "id": "ps:13291317",
+        "imagery_date": "2018-11",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 79.2,
+        "cross_m": 5.1,
+        "id": "ps:13291002",
+        "imagery_date": "2018-11",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 94.4,
+        "cross_m": 7.2,
+        "id": "ps:13291355",
+        "imagery_date": "2018-11",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 95.6,
+        "cross_m": 9.8,
+        "id": "ps:13292858",
+        "imagery_date": "2018-07",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "missing_curb_ramp"
+      },
+      {
+        "along_m": 97.2,
+        "cross_m": 6.3,
+        "id": "ps:13290833",
+        "imagery_date": "2018-11",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 128.2,
+        "cross_m": 8.3,
+        "id": "ps:13292086",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 130.2,
+        "cross_m": 8.6,
+        "id": "ps:13291947",
+        "imagery_date": "2019-05",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 165.1,
+        "cross_m": 5.1,
+        "id": "ps:13290834",
+        "imagery_date": "2025-09",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 166.6,
+        "cross_m": 5.9,
+        "id": "ps:13291315",
+        "imagery_date": "2021-06",
+        "n_agree": 5,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 168.8,
+        "cross_m": 7.7,
+        "id": "ps:13291354",
+        "imagery_date": "2022-07",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 172.6,
+        "cross_m": 9.9,
+        "id": "ps:13291017",
+        "imagery_date": "2025-09",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 172.6,
+        "cross_m": 10.4,
+        "id": "ps:13291142",
+        "imagery_date": "2021-03",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 177.1,
+        "cross_m": 8.9,
+        "id": "ps:13290561",
+        "imagery_date": "2025-09",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 179.4,
+        "cross_m": 7.2,
+        "id": "ps:13291044",
+        "imagery_date": "2020-09",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 187.6,
+        "cross_m": 8.9,
+        "id": "ps:13291316",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 198.6,
+        "cross_m": 4.0,
+        "id": "ps:13292087",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 1,
+        "severity": 2,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 276.5,
+        "cross_m": 9.5,
+        "id": "ps:13292088",
+        "imagery_date": "2025-09",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 301.9,
+        "cross_m": 7.3,
+        "id": "ps:13292089",
+        "imagery_date": "2025-09",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 326.9,
+        "cross_m": 6.6,
+        "id": "ps:13292090",
+        "imagery_date": "2019-05",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 327.8,
+        "cross_m": 5.9,
+        "id": "ps:13291047",
+        "imagery_date": "2019-05",
+        "n_agree": 9,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 328.3,
+        "cross_m": 10.4,
+        "id": "ps:13291949",
+        "imagery_date": "2019-05",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 328.7,
+        "cross_m": 6.9,
+        "id": "ps:13291146",
+        "imagery_date": "2019-05",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 342.9,
+        "cross_m": 8.6,
+        "id": "ps:13292524",
+        "imagery_date": "2019-05",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 3,
+        "type": "missing_curb_ramp"
+      },
+      {
+        "along_m": 344.2,
+        "cross_m": 8.6,
+        "id": "ps:13291046",
+        "imagery_date": "2019-05",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 346.4,
+        "cross_m": 6.5,
+        "id": "ps:13292665",
+        "imagery_date": "2019-05",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 3,
+        "type": "missing_curb_ramp"
+      },
+      {
+        "along_m": 462.2,
+        "cross_m": 6.0,
+        "id": "ps:13292405",
+        "imagery_date": "2021-07",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 3,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 485.7,
+        "cross_m": 4.6,
+        "id": "ps:13292404",
+        "imagery_date": "2021-08",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 487.1,
+        "cross_m": 4.2,
+        "id": "ps:13292663",
+        "imagery_date": "2021-08",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "missing_curb_ramp"
+      },
+      {
+        "along_m": 488.6,
+        "cross_m": 7.3,
+        "id": "ps:13292480",
+        "imagery_date": "2021-08",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 3,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 488.8,
+        "cross_m": 9.6,
+        "id": "ps:13291149",
+        "imagery_date": "2020-10",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 488.9,
+        "cross_m": 5.9,
+        "id": "ps:13290721",
+        "imagery_date": "2020-09",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 488.9,
+        "cross_m": 6.7,
+        "id": "ps:13292178",
+        "imagery_date": "2021-08",
+        "n_agree": 2,
+        "n_disagree": 2,
+        "severity": null,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 489.4,
+        "cross_m": 8.6,
+        "id": "ps:13291452",
+        "imagery_date": "2020-06",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 495.9,
+        "cross_m": 8.6,
+        "id": "ps:13292919",
+        "imagery_date": "2021-08",
+        "n_agree": 12,
+        "n_disagree": 0,
+        "severity": 3,
+        "type": "crosswalk"
+      },
+      {
+        "along_m": 499.2,
+        "cross_m": 9.5,
+        "id": "ps:13292960",
+        "imagery_date": "2021-08",
+        "n_agree": 16,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "crosswalk"
+      },
+      {
+        "along_m": 506.0,
+        "cross_m": 10.1,
+        "id": "ps:13291288",
+        "imagery_date": "2020-06",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 506.3,
+        "cross_m": 9.4,
+        "id": "ps:13290411",
+        "imagery_date": "2020-09",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 507.1,
+        "cross_m": 1.8,
+        "id": "ps:13292969",
+        "imagery_date": "2021-08",
+        "n_agree": 13,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "crosswalk"
+      },
+      {
+        "along_m": 507.6,
+        "cross_m": 11.6,
+        "id": "ps:13292349",
+        "imagery_date": "2021-08",
+        "n_agree": 4,
+        "n_disagree": 1,
+        "severity": 3,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 508.6,
+        "cross_m": 7.9,
+        "id": "ps:13291057",
+        "imagery_date": "2020-06",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 509.2,
+        "cross_m": 8.0,
+        "id": "ps:13291453",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 552.1,
+        "cross_m": 5.8,
+        "id": "ps:13292350",
+        "imagery_date": "2019-05",
+        "n_agree": 1,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 599.8,
+        "cross_m": 4.4,
+        "id": "ps:13292346",
+        "imagery_date": "2020-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 692.1,
+        "cross_m": 7.0,
+        "id": "ps:13290537",
+        "imagery_date": "2020-03",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 692.2,
+        "cross_m": 4.7,
+        "id": "ps:13290720",
+        "imagery_date": "2020-03",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 694.1,
+        "cross_m": 9.5,
+        "id": "ps:13290414",
+        "imagery_date": "2020-03",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 699.0,
+        "cross_m": 10.3,
+        "id": "ps:13291451",
+        "imagery_date": "2020-07",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 702.9,
+        "cross_m": 10.7,
+        "id": "ps:13291184",
+        "imagery_date": "2020-07",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 705.1,
+        "cross_m": 7.4,
+        "id": "ps:13292860",
+        "imagery_date": "2020-03",
+        "n_agree": 8,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "missing_curb_ramp"
+      },
+      {
+        "along_m": 706.0,
+        "cross_m": 5.8,
+        "id": "ps:13292669",
+        "imagery_date": "2020-03",
+        "n_agree": 7,
+        "n_disagree": 1,
+        "severity": 2,
+        "type": "missing_curb_ramp"
+      },
+      {
+        "along_m": 707.4,
+        "cross_m": 11.4,
+        "id": "ps:13292441",
+        "imagery_date": "2019-08",
+        "n_agree": 5,
+        "n_disagree": 2,
+        "severity": 2,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 709.5,
+        "cross_m": 10.3,
+        "id": "ps:13292180",
+        "imagery_date": "2019-08",
+        "n_agree": 5,
+        "n_disagree": 1,
+        "severity": 3,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 713.0,
+        "cross_m": 6.1,
+        "id": "ps:13292344",
+        "imagery_date": "2019-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 3,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 767.1,
+        "cross_m": 7.0,
+        "id": "ps:13290719",
+        "imagery_date": "2019-01",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 767.6,
+        "cross_m": 7.6,
+        "id": "ps:13291183",
+        "imagery_date": "2019-01",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 780.7,
+        "cross_m": 9.1,
+        "id": "ps:13292670",
+        "imagery_date": "2018-10",
+        "n_agree": 1,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "missing_curb_ramp"
+      },
+      {
+        "along_m": 780.8,
+        "cross_m": 8.4,
+        "id": "ps:13290529",
+        "imagery_date": "2019-01",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 781.3,
+        "cross_m": 7.6,
+        "id": "ps:13291459",
+        "imagery_date": "2019-01",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 782.5,
+        "cross_m": 6.7,
+        "id": "ps:13290416",
+        "imagery_date": "2019-01",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 783.5,
+        "cross_m": 11.2,
+        "id": "ps:13292437",
+        "imagery_date": "2018-10",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 3,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 849.9,
+        "cross_m": 6.5,
+        "id": "ps:13290417",
+        "imagery_date": "2019-03",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 850.6,
+        "cross_m": 7.0,
+        "id": "ps:13290418",
+        "imagery_date": "2018-10",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 852.8,
+        "cross_m": 9.2,
+        "id": "ps:13290531",
+        "imagery_date": "2018-10",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 861.0,
+        "cross_m": 8.1,
+        "id": "ps:13290530",
+        "imagery_date": "2019-04",
+        "n_agree": 5,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 861.0,
+        "cross_m": 10.7,
+        "id": "ps:13290726",
+        "imagery_date": "2019-01",
+        "n_agree": 3,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 869.8,
+        "cross_m": 6.0,
+        "id": "ps:13290616",
+        "imagery_date": "2019-03",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 871.8,
+        "cross_m": 7.5,
+        "id": "ps:13291460",
+        "imagery_date": "2019-03",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 877.0,
+        "cross_m": 1.7,
+        "id": "ps:13291461",
+        "imagery_date": "2019-08",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 969.1,
+        "cross_m": 7.7,
+        "id": "ps:13291464",
+        "imagery_date": "2019-08",
+        "n_agree": 1,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 971.3,
+        "cross_m": 4.3,
+        "id": "ps:13290408",
+        "imagery_date": "2019-08",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1051.0,
+        "cross_m": 8.9,
+        "id": "ps:13290938",
+        "imagery_date": "2019-05",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1053.1,
+        "cross_m": 5.0,
+        "id": "ps:13290406",
+        "imagery_date": "2019-05",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1056.0,
+        "cross_m": 6.6,
+        "id": "ps:13290939",
+        "imagery_date": "2019-08",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1060.3,
+        "cross_m": 12.5,
+        "id": "ps:13291118",
+        "imagery_date": "2019-07",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1060.3,
+        "cross_m": 12.2,
+        "id": "ps:13291441",
+        "imagery_date": "2019-06",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      }
+    ],
+    "length_m": 1060.3,
+    "name": "The Ave and NE 42nd via ps:13292089 to The Ave and NE 50th",
+    "score": 23.15,
+    "stale_candidates": [
+      "ps:13292088",
+      "ps:13292089"
+    ],
+    "to": "The Ave and NE 50th"
+  },
+  {
+    "by_type": {
+      "crosswalk": 5,
+      "curb_ramp": 55,
+      "missing_curb_ramp": 1,
+      "no_sidewalk": 15,
+      "obstacle": 2,
+      "surface_problem": 6
+    },
+    "crosswalks": 5,
+    "from": "The Ave and NE 42nd",
+    "hazard_labels": 24,
+    "hazard_types": [
+      "missing_curb_ramp",
+      "no_sidewalk",
+      "obstacle",
+      "surface_problem"
+    ],
+    "labels": [
+      {
+        "along_m": 0.0,
+        "cross_m": 10.8,
+        "id": "ps:13290839",
+        "imagery_date": "2019-06",
+        "n_agree": 11,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 12.1,
+        "id": "ps:13291003",
+        "imagery_date": "2020-02",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 12.0,
+        "id": "ps:13291344",
+        "imagery_date": "2020-03",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 11.8,
+        "id": "ps:13291345",
+        "imagery_date": "2019-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 6.3,
+        "cross_m": 7.8,
+        "id": "ps:13291502",
+        "imagery_date": "2019-08",
+        "n_agree": 8,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 6.4,
+        "cross_m": 9.7,
+        "id": "ps:13290838",
+        "imagery_date": "2020-02",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 8.5,
+        "cross_m": 5.2,
+        "id": "ps:13291004",
+        "imagery_date": "2019-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 9.1,
+        "cross_m": 6.7,
+        "id": "ps:13291318",
+        "imagery_date": "2019-08",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 88.9,
+        "cross_m": 3.7,
+        "id": "ps:13290999",
+        "imagery_date": "2018-10",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 89.8,
+        "cross_m": 4.6,
+        "id": "ps:13291507",
+        "imagery_date": "2018-10",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 153.9,
+        "cross_m": 6.7,
+        "id": "ps:13290998",
+        "imagery_date": "2018-12",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 154.3,
+        "cross_m": 6.1,
+        "id": "ps:13291506",
+        "imagery_date": "2018-12",
+        "n_agree": 9,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 157.3,
+        "cross_m": 10.6,
+        "id": "ps:13290628",
+        "imagery_date": "2019-01",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 158.1,
+        "cross_m": 9.9,
+        "id": "ps:13290845",
+        "imagery_date": "2018-12",
+        "n_agree": 8,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 169.0,
+        "cross_m": 10.2,
+        "id": "ps:13290575",
+        "imagery_date": "2019-01",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 170.2,
+        "cross_m": 9.4,
+        "id": "ps:13291346",
+        "imagery_date": "2019-02",
+        "n_agree": 8,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 171.4,
+        "cross_m": 7.9,
+        "id": "ps:13290444",
+        "imagery_date": "2019-02",
+        "n_agree": 8,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 172.8,
+        "cross_m": 5.8,
+        "id": "ps:13291305",
+        "imagery_date": "2018-10",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 223.8,
+        "cross_m": 9.4,
+        "id": "ps:13290445",
+        "imagery_date": "2020-03",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 225.2,
+        "cross_m": 9.5,
+        "id": "ps:13290849",
+        "imagery_date": "2020-03",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 225.5,
+        "cross_m": 7.2,
+        "id": "ps:13291307",
+        "imagery_date": "2020-08",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 226.1,
+        "cross_m": 10.0,
+        "id": "ps:13290992",
+        "imagery_date": "2020-11",
+        "n_agree": 9,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 239.7,
+        "cross_m": 9.0,
+        "id": "ps:13290570",
+        "imagery_date": "2019-10",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 240.2,
+        "cross_m": 9.6,
+        "id": "ps:13291351",
+        "imagery_date": "2019-09",
+        "n_agree": 11,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 243.7,
+        "cross_m": 10.5,
+        "id": "ps:13290747",
+        "imagery_date": "2019-05",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 250.5,
+        "cross_m": 8.5,
+        "id": "ps:13290746",
+        "imagery_date": "2022-03",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 251.2,
+        "cross_m": 9.7,
+        "id": "ps:13291350",
+        "imagery_date": "2022-03",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 258.5,
+        "cross_m": 9.2,
+        "id": "ps:13292954",
+        "imagery_date": "2025-09",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "crosswalk"
+      },
+      {
+        "along_m": 262.5,
+        "cross_m": 7.5,
+        "id": "ps:13290571",
+        "imagery_date": "2021-04",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 264.5,
+        "cross_m": 10.4,
+        "id": "ps:13290993",
+        "imagery_date": "2022-05",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 266.9,
+        "cross_m": 1.0,
+        "id": "ps:13292955",
+        "imagery_date": "2025-09",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "crosswalk"
+      },
+      {
+        "along_m": 267.1,
+        "cross_m": 4.8,
+        "id": "ps:13290848",
+        "imagery_date": "2022-05",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 267.9,
+        "cross_m": 7.4,
+        "id": "ps:13291306",
+        "imagery_date": "2022-05",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 318.6,
+        "cross_m": 5.2,
+        "id": "ps:13290752",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 318.6,
+        "cross_m": 7.3,
+        "id": "ps:13290753",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 319.3,
+        "cross_m": 6.7,
+        "id": "ps:13292256",
+        "imagery_date": "2025-09",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 3,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 319.3,
+        "cross_m": 0.7,
+        "id": "ps:13292956",
+        "imagery_date": "2025-09",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "crosswalk"
+      },
+      {
+        "along_m": 321.2,
+        "cross_m": 10.7,
+        "id": "ps:13290632",
+        "imagery_date": "2021-06",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 323.5,
+        "cross_m": 8.1,
+        "id": "ps:13290631",
+        "imagery_date": "2019-05",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 327.7,
+        "cross_m": 9.3,
+        "id": "ps:13292957",
+        "imagery_date": "2025-09",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "crosswalk"
+      },
+      {
+        "along_m": 333.4,
+        "cross_m": 12.1,
+        "id": "ps:13290568",
+        "imagery_date": "2021-06",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 334.1,
+        "cross_m": 6.2,
+        "id": "ps:13290989",
+        "imagery_date": "2019-05",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 336.1,
+        "cross_m": 7.0,
+        "id": "ps:13290990",
+        "imagery_date": "2019-05",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 455.7,
+        "cross_m": 8.9,
+        "id": "ps:13290764",
+        "imagery_date": "2019-05",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 456.1,
+        "cross_m": 4.8,
+        "id": "ps:13290817",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 475.1,
+        "cross_m": 4.9,
+        "id": "ps:13291880",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 476.4,
+        "cross_m": 4.2,
+        "id": "ps:13292054",
+        "imagery_date": "2019-05",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 497.4,
+        "cross_m": 5.6,
+        "id": "ps:13292053",
+        "imagery_date": "2019-05",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 499.2,
+        "cross_m": 9.9,
+        "id": "ps:13291881",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 521.5,
+        "cross_m": 5.4,
+        "id": "ps:13290769",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 524.2,
+        "cross_m": 7.4,
+        "id": "ps:13290645",
+        "imagery_date": "2019-05",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 528.8,
+        "cross_m": 9.4,
+        "id": "ps:13290982",
+        "imagery_date": "2019-05",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 540.3,
+        "cross_m": 10.2,
+        "id": "ps:13290643",
+        "imagery_date": "2018-11",
+        "n_agree": 3,
+        "n_disagree": 1,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 540.3,
+        "cross_m": 3.7,
+        "id": "ps:13290644",
+        "imagery_date": "2018-07",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 544.5,
+        "cross_m": 13.2,
+        "id": "ps:13292734",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "missing_curb_ramp"
+      },
+      {
+        "along_m": 547.5,
+        "cross_m": 10.2,
+        "id": "ps:13290818",
+        "imagery_date": "2019-05",
+        "n_agree": 5,
+        "n_disagree": 1,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 567.2,
+        "cross_m": 13.0,
+        "id": "ps:13290984",
+        "imagery_date": "2019-05",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 586.7,
+        "cross_m": 14.3,
+        "id": "ps:13292052",
+        "imagery_date": "2018-10",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 598.5,
+        "cross_m": 13.9,
+        "id": "ps:13292051",
+        "imagery_date": "2018-10",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 609.2,
+        "cross_m": 14.4,
+        "id": "ps:13290819",
+        "imagery_date": "2018-10",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 640.1,
+        "cross_m": 14.1,
+        "id": "ps:13290771",
+        "imagery_date": "2018-10",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 640.9,
+        "cross_m": 11.7,
+        "id": "ps:13290772",
+        "imagery_date": "2018-10",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 653.4,
+        "cross_m": 5.8,
+        "id": "ps:13291577",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 704.8,
+        "cross_m": 8.9,
+        "id": "ps:13291576",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 710.5,
+        "cross_m": 4.4,
+        "id": "ps:13291575",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 724.1,
+        "cross_m": 8.9,
+        "id": "ps:13291574",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 765.2,
+        "cross_m": 3.6,
+        "id": "ps:13291570",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 783.2,
+        "cross_m": 3.8,
+        "id": "ps:13291569",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 814.8,
+        "cross_m": 3.4,
+        "id": "ps:13291571",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 829.7,
+        "cross_m": 0.3,
+        "id": "ps:13291573",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 844.7,
+        "cross_m": 2.2,
+        "id": "ps:13291572",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 869.3,
+        "cross_m": 0.1,
+        "id": "ps:13291568",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 899.0,
+        "cross_m": 1.3,
+        "id": "ps:13291567",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 930.4,
+        "cross_m": 10.9,
+        "id": "ps:13291563",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 939.1,
+        "cross_m": 1.0,
+        "id": "ps:13291562",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 959.5,
+        "cross_m": 12.0,
+        "id": "ps:13291565",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 980.9,
+        "cross_m": 0.4,
+        "id": "ps:13291564",
+        "imagery_date": "2018-10",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": null,
+        "type": "no_sidewalk"
+      },
+      {
+        "along_m": 1060.7,
+        "cross_m": 7.6,
+        "id": "ps:13292385",
+        "imagery_date": "2018-10",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 1080.1,
+        "cross_m": 12.2,
+        "id": "ps:13290419",
+        "imagery_date": "2019-06",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1094.5,
+        "cross_m": 12.0,
+        "id": "ps:13291319",
+        "imagery_date": "2019-06",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 2,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1096.6,
+        "cross_m": 12.3,
+        "id": "ps:13290853",
+        "imagery_date": "2021-05",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1096.8,
+        "cross_m": 10.1,
+        "id": "ps:13291470",
+        "imagery_date": "2019-08",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1099.0,
+        "cross_m": 9.1,
+        "id": "ps:13290646",
+        "imagery_date": "2022-08",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 1099.0,
+        "cross_m": 6.4,
+        "id": "ps:13292916",
+        "imagery_date": "2025-09",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "crosswalk"
+      }
+    ],
+    "length_m": 1170.0,
+    "name": "The Ave and NE 42nd to UW Medical Center",
+    "score": 21.3,
+    "stale_candidates": [],
+    "to": "UW Medical Center"
+  },
+  {
+    "by_type": {
+      "curb_ramp": 47,
+      "obstacle": 1,
+      "surface_problem": 2
+    },
+    "crosswalks": 0,
+    "from": "The Ave and NE 42nd",
+    "hazard_labels": 3,
+    "hazard_types": [
+      "obstacle",
+      "surface_problem"
+    ],
+    "labels": [
+      {
+        "along_m": 0.0,
+        "cross_m": 11.6,
+        "id": "ps:13290838",
+        "imagery_date": "2020-02",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 10.0,
+        "id": "ps:13291004",
+        "imagery_date": "2019-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 11.4,
+        "id": "ps:13291318",
+        "imagery_date": "2019-08",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 0.0,
+        "cross_m": 10.0,
+        "id": "ps:13291502",
+        "imagery_date": "2019-08",
+        "n_agree": 8,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 6.4,
+        "cross_m": 10.2,
+        "id": "ps:13291003",
+        "imagery_date": "2020-02",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 7.3,
+        "cross_m": 9.6,
+        "id": "ps:13291344",
+        "imagery_date": "2020-03",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 8.9,
+        "cross_m": 6.1,
+        "id": "ps:13290839",
+        "imagery_date": "2019-06",
+        "n_agree": 11,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 9.6,
+        "cross_m": 6.9,
+        "id": "ps:13291345",
+        "imagery_date": "2019-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 76.9,
+        "cross_m": 3.9,
+        "id": "ps:13291343",
+        "imagery_date": "2018-10",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 77.4,
+        "cross_m": 4.8,
+        "id": "ps:13290835",
+        "imagery_date": "2018-10",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 153.3,
+        "cross_m": 7.3,
+        "id": "ps:13291174",
+        "imagery_date": "2018-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 155.3,
+        "cross_m": 3.3,
+        "id": "ps:13290836",
+        "imagery_date": "2018-08",
+        "n_agree": 9,
+        "n_disagree": 2,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 157.0,
+        "cross_m": 9.7,
+        "id": "ps:13291152",
+        "imagery_date": "2018-08",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 158.9,
+        "cross_m": 7.0,
+        "id": "ps:13291339",
+        "imagery_date": "2018-08",
+        "n_agree": 6,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 162.3,
+        "cross_m": 13.1,
+        "id": "ps:13291340",
+        "imagery_date": "2018-10",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 162.4,
+        "cross_m": 5.2,
+        "id": "ps:13291153",
+        "imagery_date": "2018-10",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 170.0,
+        "cross_m": 8.8,
+        "id": "ps:13290728",
+        "imagery_date": "2018-08",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 171.3,
+        "cross_m": 9.6,
+        "id": "ps:13291070",
+        "imagery_date": "2018-08",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 173.3,
+        "cross_m": 6.5,
+        "id": "ps:13290956",
+        "imagery_date": "2018-08",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 175.7,
+        "cross_m": 6.1,
+        "id": "ps:13291495",
+        "imagery_date": "2018-08",
+        "n_agree": 10,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 179.1,
+        "cross_m": 7.7,
+        "id": "ps:13290957",
+        "imagery_date": "2018-10",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 193.6,
+        "cross_m": 8.0,
+        "id": "ps:13291496",
+        "imagery_date": "2018-10",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 211.7,
+        "cross_m": 10.6,
+        "id": "ps:13292406",
+        "imagery_date": "2018-10",
+        "n_agree": 5,
+        "n_disagree": 5,
+        "severity": null,
+        "type": "obstacle"
+      },
+      {
+        "along_m": 237.2,
+        "cross_m": 2.6,
+        "id": "ps:13291497",
+        "imagery_date": "2018-10",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 238.3,
+        "cross_m": 4.2,
+        "id": "ps:13291072",
+        "imagery_date": "2018-10",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 317.5,
+        "cross_m": 6.4,
+        "id": "ps:13291150",
+        "imagery_date": "2019-01",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 318.3,
+        "cross_m": 4.8,
+        "id": "ps:13290730",
+        "imagery_date": "2019-01",
+        "n_agree": 9,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 318.5,
+        "cross_m": 9.5,
+        "id": "ps:13290409",
+        "imagery_date": "2019-03",
+        "n_agree": 4,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 319.6,
+        "cross_m": 6.9,
+        "id": "ps:13290410",
+        "imagery_date": "2019-04",
+        "n_agree": 10,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 334.1,
+        "cross_m": 10.1,
+        "id": "ps:13291171",
+        "imagery_date": "2019-03",
+        "n_agree": 8,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 335.2,
+        "cross_m": 8.9,
+        "id": "ps:13291490",
+        "imagery_date": "2019-04",
+        "n_agree": 8,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 336.7,
+        "cross_m": 5.8,
+        "id": "ps:13290958",
+        "imagery_date": "2019-03",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 337.0,
+        "cross_m": 7.4,
+        "id": "ps:13290534",
+        "imagery_date": "2019-03",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 467.8,
+        "cross_m": 9.0,
+        "id": "ps:13291658",
+        "imagery_date": "2018-10",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 469.0,
+        "cross_m": 10.2,
+        "id": "ps:13291995",
+        "imagery_date": "2018-10",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "surface_problem"
+      },
+      {
+        "along_m": 517.9,
+        "cross_m": 4.1,
+        "id": "ps:13290726",
+        "imagery_date": "2019-01",
+        "n_agree": 3,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 518.4,
+        "cross_m": 8.1,
+        "id": "ps:13290531",
+        "imagery_date": "2018-10",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 520.6,
+        "cross_m": 10.4,
+        "id": "ps:13290418",
+        "imagery_date": "2018-10",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 523.1,
+        "cross_m": 6.7,
+        "id": "ps:13290530",
+        "imagery_date": "2019-04",
+        "n_agree": 5,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 534.0,
+        "cross_m": 11.3,
+        "id": "ps:13290417",
+        "imagery_date": "2019-03",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 536.5,
+        "cross_m": 6.0,
+        "id": "ps:13290616",
+        "imagery_date": "2019-03",
+        "n_agree": 7,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 538.5,
+        "cross_m": 7.5,
+        "id": "ps:13291460",
+        "imagery_date": "2019-03",
+        "n_agree": 5,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 543.7,
+        "cross_m": 1.7,
+        "id": "ps:13291461",
+        "imagery_date": "2019-08",
+        "n_agree": 0,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 635.8,
+        "cross_m": 7.7,
+        "id": "ps:13291464",
+        "imagery_date": "2019-08",
+        "n_agree": 1,
+        "n_disagree": 1,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 637.9,
+        "cross_m": 4.3,
+        "id": "ps:13290408",
+        "imagery_date": "2019-08",
+        "n_agree": 1,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 717.6,
+        "cross_m": 8.9,
+        "id": "ps:13290938",
+        "imagery_date": "2019-05",
+        "n_agree": 3,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 719.8,
+        "cross_m": 5.0,
+        "id": "ps:13290406",
+        "imagery_date": "2019-05",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 722.7,
+        "cross_m": 6.6,
+        "id": "ps:13290939",
+        "imagery_date": "2019-08",
+        "n_agree": 2,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 727.0,
+        "cross_m": 12.5,
+        "id": "ps:13291118",
+        "imagery_date": "2019-07",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      },
+      {
+        "along_m": 727.0,
+        "cross_m": 12.2,
+        "id": "ps:13291441",
+        "imagery_date": "2019-06",
+        "n_agree": 6,
+        "n_disagree": 0,
+        "severity": 1,
+        "type": "curb_ramp"
+      }
+    ],
+    "length_m": 727.0,
+    "name": "The Ave and NE 42nd to The Ave and NE 50th",
+    "score": 9.0,
+    "stale_candidates": [],
+    "to": "The Ave and NE 50th"
+  },
+  {
+    "by_type": {
+      "curb_ramp": 23,
+      "surface_problem": 2
+    },
+    "crosswalks": 0,
+    "from": "The Ave and NE 50th",
+    "hazard_labels": 2,
+    "hazard_types": [
+      "surface_problem"
+    ],
+    "length_m": 456.7,
+    "name": "The Ave and NE 50th to U District station",
+    "score": 4.57,
+    "stale_candidates": [],
+    "to": "U District station"
+  },
+  {
+    "by_type": {
+      "curb_ramp": 23,
+      "surface_problem": 2
+    },
+    "crosswalks": 0,
+    "from": "The Ave and NE 45th",
+    "hazard_labels": 2,
+    "hazard_types": [
+      "surface_problem"
+    ],
+    "length_m": 400.4,
+    "name": "The Ave and NE 45th to The Ave and NE 50th",
+    "score": 4.0,
+    "stale_candidates": [],
+    "to": "The Ave and NE 50th"
+  },
+  {
+    "by_type": {
+      "curb_ramp": 32,
+      "obstacle": 1
+    },
+    "crosswalks": 0,
+    "from": "The Ave and NE 42nd",
+    "hazard_labels": 1,
+    "hazard_types": [
+      "obstacle"
+    ],
+    "length_m": 382.8,
+    "name": "The Ave and NE 42nd to U District station",
+    "score": 2.83,
+    "stale_candidates": [],
+    "to": "U District station"
+  },
+  {
+    "by_type": {
+      "curb_ramp": 32,
+      "obstacle": 1
+    },
+    "crosswalks": 0,
+    "from": "The Ave and NE 42nd",
+    "hazard_labels": 1,
+    "hazard_types": [
+      "obstacle"
+    ],
+    "length_m": 326.6,
+    "name": "The Ave and NE 42nd to The Ave and NE 45th",
+    "score": 2.27,
+    "stale_candidates": [],
+    "to": "The Ave and NE 45th"
+  }
+]

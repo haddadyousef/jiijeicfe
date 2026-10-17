@@ -11,7 +11,7 @@ from pathlib import Path
 
 from . import demo, routes
 
-# Approximate campus and U District points (lat, lng). They are snapped to the nearest street node within 120 m,
+# Approximate campus and U District points (lat, lng). They are snapped to the nearest street node within 60 m (the street data has no campus footpaths, so interior points drop out),
 # so a few tens of metres of error here does not matter. Picked by hand, not surveyed.
 LANDMARKS = {
     "Allen Center": (47.6532, -122.3057), "HUB": (47.6551, -122.3050), "Red Square": (47.6566, -122.3093),
@@ -39,7 +39,7 @@ def load_street_docs(raw_dir: Path) -> list[dict]:
 def rank(raw_dir: Path, priors_path: Path, landmarks=LANDMARKS):
     graph = routes.Graph(routes.load_streets(load_street_docs(raw_dir)))
     labels = json.loads(priors_path.read_text(encoding="utf-8"))["labels"]
-    return graph, labels, routes.rank_routes(graph, landmarks, labels)
+    return graph, labels, routes.rank_routes(graph, landmarks, labels, snap_m=60.0)
 
 
 def ranking_md(ranked: list[dict], top: int = 12) -> str:
@@ -65,7 +65,7 @@ def top_geojson(ranked: list[dict], n: int = 3) -> dict:
 
 def write_ranking(ranked: list[dict], out_dir: Path) -> list[str]:
     out_dir.mkdir(parents=True, exist_ok=True)
-    slim = [{k: v for k, v in r.items() if k != "points"} for r in ranked[:15]]
+    slim = [{k: v for k, v in r.items() if k != "points" and (k != "labels" or i < 3)} for i, r in enumerate(ranked[:15])]
     (out_dir / "route_ranking.json").write_text(json.dumps(slim, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (out_dir / "route_ranking.md").write_text(ranking_md(ranked), encoding="utf-8")
     (out_dir / "top3.geojson").write_text(json.dumps(top_geojson(ranked), indent=2, sort_keys=True) + "\n", encoding="utf-8")

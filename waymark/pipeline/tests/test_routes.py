@@ -114,7 +114,8 @@ def test_rank_routes_is_deterministic_and_orders_by_score():
     r1 = routes.rank_routes(g, landmarks, labels, min_m=100, max_m=1000)
     r2 = routes.rank_routes(g, landmarks, labels, min_m=100, max_m=1000)
     assert json.dumps(r1, sort_keys=True) == json.dumps(r2, sort_keys=True)
-    assert [r["score"] for r in r1] == sorted((r["score"] for r in r1), reverse=True) and len(r1) == 3
+    assert [r["score"] for r in r1] == sorted((r["score"] for r in r1), reverse=True) and len(r1) >= 3
+    assert {r['name'] for r in r1} >= {'A to B', 'A to C', 'B to C'}
 
 
 # ---- demo files ----
@@ -137,8 +138,8 @@ def test_route_json_matches_the_app_format():
     assert all("lng" not in w for w in r["waypoints"])
     gaps = [routes.dist_m((a["lon"], a["lat"]), (b["lon"], b["lat"])) for a, b in zip(r["waypoints"], r["waypoints"][1:])]
     assert max(gaps) <= 155
-    turn = [w for w in r["waypoints"] if w["say"] == "Turn left."]
-    assert len(turn) == 1 and turn[0]["crossing"] is True and turn[0]["radius_m"] == 12.0   # crosswalk label sits on the corner
+    turn = [w for w in r["waypoints"] if w["crossing"]]
+    assert len(turn) == 1 and turn[0]["radius_m"] == 12.0 and "listen for traffic" in turn[0]["say"]   # crosswalk sits on the corner
     assert "bearing_next_deg" not in r["waypoints"][-1]
 
 
@@ -194,3 +195,38 @@ def test_rank_and_demo_cli_from_raw_street_tiles(tmp_path):
     bad.mkdir()
     with pytest.raises(SystemExit):
         p5.load_street_docs(bad)
+
+
+def test_stale_candidate_needs_room_before_and_after():
+    r = {"id": "a", "type": "surface_problem", "n_agree": 0, "n_disagree": 0}
+    assert routes.stale_candidates([{**r, "along_m": 50}], 600) == []          # too close to the start to be spoken about
+    assert routes.stale_candidates([{**r, "along_m": 560}], 600) == []         # too close to the end
+    assert len(routes.stale_candidates([{**r, "along_m": 300}], 600)) == 1
+    assert len(routes.stale_candidates([{**r, "along_m": 5}])) == 1            # without a length the old rule applies
+
+
+def test_via_routes_put_the_candidate_in_the_middle():
+    g = graph()
+    mid = pt(2, 0)
+    labels = [lab(1, "surface_problem", mid[0], mid[1] + 4 / routes.M_PER_DEG_LAT, 0, 0)]
+    lm = {"A": (LAT0, LNG0), "B": (LAT0, LNG0 + 4 * DLNG)}
+    ranked = routes.rank_routes(g, lm, labels, min_m=100, max_m=1000)
+    assert ranked[0]["name"] == "A to B" and ranked[0]["stale_candidates"] == ["ps:1"]     # the plain route already passes it mid-way
+    off = [lab(1, "surface_problem", pt(2, 1)[0], pt(2, 1)[1] + 4 / routes.M_PER_DEG_LAT, 0, 0)]
+    snapped = {n: g.snap(lng, lat) for n, (lat, lng) in lm.items()}
+    via = routes.via_routes(g, snapped, off, 100, 1500, max_detour=2.0)
+    assert via and via[0]["stale_candidates"] == ["ps:1"] and via[0]["length_m"] == pytest.approx(600, abs=2)
+    assert routes.via_routes(g, snapped, off, 100, 1500, max_detour=1.1) == []      # too much of a detour
+
+
+def test_crosswalk_mid_block_becomes_its_own_crossing_waypoint():
+    pts = [pt(0, 0), pt(3, 0)]
+    cw = [(pt(1, 0)[0], pt(1, 0)[1] + 3 / routes.M_PER_DEG_LAT), (pt(1, 0)[0] + 5 / routes.M_PER_DEG_LNG, pt(1, 0)[1])]   # two labels, one crossing
+    r = demo.make_route_json("T", "s", pts, cw, max_gap_m=150)
+    crossings = [w for w in r["waypoints"] if w["crossing"]]
+    assert len(crossings) == 1 and crossings[0]["radius_m"] == 12.0
+    assert routes.dist_m((crossings[0]["lon"], crossings[0]["lat"]), pt(1, 0)) < 10
+    far = demo.make_route_json("T", "s", pts, [(pt(1, 3)[0], pt(1, 3)[1])], max_gap_m=150)      # 300 m off the route: ignored
+    assert not any(w["crossing"] for w in far["waypoints"])
+    ends = demo.make_route_json("T", "s", pts, [pt(0, 0)], max_gap_m=150)                        # at the very start: not a crossing waypoint
+    assert not any(w["crossing"] for w in ends["waypoints"])

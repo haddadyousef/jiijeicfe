@@ -145,10 +145,15 @@ def labels_along(pts: list[tuple[float, float]], labels: list[dict], corridor_m:
     return out
 
 
-def stale_candidates(found: list[dict]) -> list[dict]:
+STALE_MIN_ALONG_M = 100.0   # a line needs room to be spoken (trigger distance up to 35 m plus margin) before the label
+STALE_END_MARGIN_M = 60.0   # and the walker must still be walking when it is reached
+
+
+def stale_candidates(found: list[dict], length_m: float | None = None) -> list[dict]:
     """D-31: labels one spotter tap can push below tau, so a demo can show 'the memory learned'.
     tau: surface_problem 1/3, missing_curb_ramp 0.2. One 'not there' tap adds weight 2 to b.
-    Needs p after the tap < tau, with a = 1 + n_agree and b = 1 + n_disagree + 2."""
+    Needs p after the tap < tau, with a = 1 + n_agree and b = 1 + n_disagree + 2.
+    With length_m the label must also sit at least 100 m from the start and 60 m from the end of the route."""
     tau = {"surface_problem": 1 / 3, "missing_curb_ramp": 0.2}
     out = []
     for r in found:
@@ -156,7 +161,8 @@ def stale_candidates(found: list[dict]) -> list[dict]:
         if t is None:
             continue
         a, b = 1 + r["n_agree"], 1 + r["n_disagree"] + 2.0
-        if a / (a + b) < t:
+        if a / (a + b) < t and (length_m is None or r.get("along_m") is None
+                                       or STALE_MIN_ALONG_M <= r["along_m"] <= length_m - STALE_END_MARGIN_M):
             out.append(r)
     return out
 
@@ -164,24 +170,67 @@ def stale_candidates(found: list[dict]) -> list[dict]:
 def score_route(found: list[dict], length_m: float) -> dict:
     """Demo score, higher is a better demo. Explicit so it can be argued with:
     +3 per distinct hazard type present (max 12), +1 per hazard label up to 8, +4 if a D-31 candidate exists,
-    +2 per crosswalk up to 3, -(distance outside 500..1000 m)/100, -2 per hazard beyond 8 (the cap is 6 spoken)."""
+    +2 per crosswalk up to 3, -(distance outside 500..1000 m)/100, -0.25 per hazard beyond 12 (only 6 are spoken per route, extra labels add noise)."""
     hz = [r for r in found if r["type"] in HAZARD_TYPES]
     types = {r["type"] for r in hz}
     cw = sum(1 for r in found if r["type"] == "crosswalk")
-    cand = stale_candidates(found)
+    cand = stale_candidates(found, length_m)
     out_of_range = max(0.0, 500 - length_m, length_m - 1000)
     score = (3 * len(types) + min(len(hz), 8) + (4 if cand else 0) + 2 * min(cw, 3)
-             - out_of_range / 100 - 2 * max(0, len(hz) - 8))
+             - out_of_range / 100 - 0.25 * max(0, len(hz) - 12))
     return {"score": round(score, 2), "hazard_labels": len(hz), "hazard_types": sorted(types), "crosswalks": cw,
             "stale_candidates": [c["id"] for c in cand], "by_type": dict(sorted(Counter(r["type"] for r in found).items()))}
 
 
+def _sig(pts: list) -> tuple:
+    """Direction-free fingerprint of a path, so a route and its reverse count once."""
+    k = max(1, len(pts) // 8)
+    f, r = tuple(pts[::k]), tuple(pts[::-1][::k])
+    return min(f, r)
+
+
+def _entry(name: str, a: str, b: str, pts: list, labels: list[dict]) -> dict:
+    length = polyline_len(pts)
+    found = labels_along(pts, labels)
+    return {"name": name, "from": a, "to": b, "length_m": round(length, 1), **score_route(found, length),
+            "points": [(round(x, 6), round(y, 6)) for x, y in pts], "labels": found}
+
+
+def via_routes(graph: Graph, snapped: dict[str, tuple], labels: list[dict], min_m: float, max_m: float,
+               max_detour: float = 1.5, snap_m: float = 40.0) -> list[dict]:
+    """Routes a -> stale candidate -> b, so the candidate sits in the middle of the walk (D-31). Candidates are
+    labels that one spotter tap can push below tau. A route must not be more than max_detour times the direct a-b path."""
+    out, names = [], sorted(snapped)
+    for cand in stale_candidates([{**l, "along_m": 1e9} for l in labels]):
+        c = graph.snap(cand["lng"], cand["lat"], snap_m)
+        if c is None:
+            continue
+        for a in names:
+            if snapped[a] == c:
+                continue
+            leg1 = graph.shortest(snapped[a], c)
+            if not leg1:
+                continue
+            for b in names:
+                if b == a or snapped[b] in (c, snapped[a]):
+                    continue
+                leg2, direct = graph.shortest(c, snapped[b]), graph.shortest(snapped[a], snapped[b])
+                if not leg2 or not direct:
+                    continue
+                pts = leg1 + leg2[1:]
+                n = polyline_len(pts)
+                if min_m <= n <= max_m and n <= max_detour * polyline_len(direct):
+                    out.append(_entry(f"{a} via {cand['id']} to {b}", a, b, pts, labels))
+    return out
+
+
 def rank_routes(graph: Graph, landmarks: dict[str, tuple[float, float]], labels: list[dict],
-                min_m: float = 300.0, max_m: float = 1400.0) -> list[dict]:
-    """Every ordered pair of landmarks, shortest path, scored. Sorted by score then name (deterministic)."""
+                min_m: float = 300.0, max_m: float = 1400.0, snap_m: float = 120.0) -> list[dict]:
+    """Every ordered pair of landmarks (shortest path), plus routes through stale candidates, scored.
+    Sorted by score then name (deterministic). Landmarks farther than snap_m from a street node are dropped."""
     snapped = {}
     for name, (lat, lng) in sorted(landmarks.items()):
-        n = graph.snap(lng, lat, 120.0)
+        n = graph.snap(lng, lat, snap_m)
         if n is not None:
             snapped[name] = n
     names = sorted(snapped)
@@ -193,16 +242,17 @@ def rank_routes(graph: Graph, landmarks: dict[str, tuple[float, float]], labels:
             pts = graph.shortest(snapped[a], snapped[b])
             if not pts:
                 continue
-            length = polyline_len(pts)
-            if not (min_m <= length <= max_m):
+            if not (min_m <= polyline_len(pts) <= max_m):
                 continue
-            sig = tuple(pts[:: max(1, len(pts) // 8)])
+            sig = _sig(pts)
             if sig in seen:
                 continue
             seen.add(sig)
-            found = labels_along(pts, labels)
-            s = score_route(found, length)
-            out.append({"name": f"{a} to {b}", "from": a, "to": b, "length_m": round(length, 1), **s,
-                        "points": [(round(x, 6), round(y, 6)) for x, y in pts], "labels": found})
+            out.append(_entry(f"{a} to {b}", a, b, pts, labels))
+    for r in via_routes(graph, snapped, labels, min_m, max_m):
+        sig = _sig([tuple(p) for p in r["points"]])
+        if sig not in seen:
+            seen.add(sig)
+            out.append(r)
     out.sort(key=lambda r: (-r["score"], r["name"]))
     return out

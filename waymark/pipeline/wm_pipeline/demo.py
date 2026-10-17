@@ -7,7 +7,7 @@ import json
 import math
 from pathlib import Path
 
-from .routes import M_PER_DEG_LAT, M_PER_DEG_LNG, dist_m, polyline_len, xy
+from .routes import CORRIDOR_M, M_PER_DEG_LAT, M_PER_DEG_LNG, dist_m, polyline_len, project_on, xy
 
 SYNTH_BASE_ID = 9_000_001_000
 
@@ -65,9 +65,27 @@ def find_turns(pts: list[tuple[float, float]], min_turn_deg: float = 40.0, spaci
     return sorted(turns)
 
 
+def crossing_alongs(pts: list[tuple[float, float]], crosswalks: list[tuple[float, float]]) -> list[float]:
+    """Along-route distance of each crosswalk cluster (crosswalk labels within the corridor, merged when 20 m apart)."""
+    al = sorted(a for c, a in (project_on(pts, lng, lat) for lng, lat in crosswalks) if c <= CORRIDOR_M)
+    groups: list[list[float]] = []
+    for a in al:
+        if groups and a - groups[-1][-1] <= 20.0:
+            groups[-1].append(a)
+        else:
+            groups.append([a])
+    return [sum(g) / len(g) for g in groups]
+
+
+SAY = {"start": "Starting the route. Walk straight ahead.", "straight": "Keep going straight.", "left": "Turn left.",
+       "right": "Turn right.", "crossing": "Crossing ahead. Stop at the curb and listen for traffic.",
+       "end": "You have arrived."}
+
+
 def make_route_json(name: str, source: str, pts: list[tuple[float, float]], crosswalks: list[tuple[float, float]],
                     max_gap_m: float = 150.0) -> dict:
-    """Waypoints at the start, at each turn, every max_gap_m on long straights, and at the end."""
+    """Waypoints at the start, at each turn, at each crosswalk cluster (crossing = true), every max_gap_m on long
+    straights, and at the end. A crosswalk within 25 m of a turn marks that turn as the crossing instead."""
     total = polyline_len(pts)
     marks: list[tuple[float, str]] = [(0.0, "start")]
     for s, d in find_turns(pts):
@@ -75,28 +93,33 @@ def make_route_json(name: str, source: str, pts: list[tuple[float, float]], cros
             marks.append((s, "right" if d > 0 else "left"))
     marks.append((total, "end"))
     marks.sort()
-    filled: list[tuple[float, str]] = []
-    for s, kind in marks:
-        if filled and s - filled[-1][0] > max_gap_m:
-            s0, gap = filled[-1][0], s - filled[-1][0]
+    wp = [{"s": s, "kind": k, "crossing": False} for s, k in marks]
+    for c in crossing_alongs(pts, crosswalks):
+        near = [w for w in wp if w["kind"] not in ("start", "end") and abs(w["s"] - c) <= 25.0]
+        if near:
+            near[0]["crossing"] = True
+        elif 25.0 < c < total - 25.0:
+            wp.append({"s": c, "kind": "crossing", "crossing": True})
+    wp.sort(key=lambda w: w["s"])
+    filled: list[dict] = []
+    for w in wp:
+        if filled and w["s"] - filled[-1]["s"] > max_gap_m:
+            s0, gap = filled[-1]["s"], w["s"] - filled[-1]["s"]
             k = math.ceil(gap / max_gap_m)
-            filled += [(s0 + gap * j / k, "straight") for j in range(1, k)]
-        filled.append((s, kind))
+            filled += [{"s": s0 + gap * j / k, "kind": "straight", "crossing": False} for j in range(1, k)]
+        filled.append(w)
     wps = []
-    for i, (s, kind) in enumerate(filled, 1):
+    for i, w in enumerate(filled, 1):
+        s, kind = w["s"], w["kind"]
         lng, lat, brg = point_at(pts, s)
         nxt = point_at(pts, min(total, s + 25.0))
-        out_b = bearing_deg((lng, lat), (nxt[0], nxt[1])) if s < total else brg
-        say = {"start": "Starting the route. Walk straight ahead.", "straight": "Keep going straight.",
-               "left": "Turn left.", "right": "Turn right.", "end": "You have arrived."}[kind]
-        near_cw = any(dist_m((lng, lat), c) <= 12.0 for c in crosswalks)
-        wps.append({"id": i, "lat": round(lat, 6), "lon": round(lng, 6),
-                    "radius_m": 20.0 if kind == "end" else (12.0 if kind in ("left", "right") else 15.0),
-                    "say": say, "crossing": bool(near_cw and kind not in ("start", "end")),
-                    "bearing_next_deg": None if kind == "end" else round(out_b, 1), "curved": False})
-    for w in wps:
-        if w["bearing_next_deg"] is None:
-            del w["bearing_next_deg"]
+        out = {"id": i, "lat": round(lat, 6), "lon": round(lng, 6),
+               "radius_m": 20.0 if kind == "end" else (12.0 if kind in ("left", "right", "crossing") else 15.0),
+               "say": SAY["crossing"] if w["crossing"] and kind != "end" else SAY[kind], "crossing": w["crossing"],
+               "curved": False}
+        if kind != "end":
+            out["bearing_next_deg"] = round(bearing_deg((lng, lat), (nxt[0], nxt[1])), 1)
+        wps.append(out)
     return {"name": name, "source": source, "waypoints": wps}
 
 
