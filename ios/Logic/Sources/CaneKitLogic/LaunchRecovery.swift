@@ -110,6 +110,9 @@ public enum LaunchRecovery {
         // Cane-fall detection: an always-on CoreMotion stream with thresholds that have never been
         // measured against a real cane. Exactly the kind of thing a crash loop should clear.
         "fallDetectionEnabled",
+        // waymark: sidewalk memory (Project Sidewalk labels spoken ahead). Untuned, off by
+        // default (plan v1.1 rule: new features ship off); a crash loop clears it too.
+        "waymarkEnabled",
         // Deliberately absent: `NaturalVoiceLatch.settingsKey` ("naturalVoiceUnavailable").
         // A refused ElevenLabs key is not a crash-causing feature; clearing it would restore
         // two-voice mixing after quota death (`recoveryNeverClearsTheRefusedVoiceLatch`).

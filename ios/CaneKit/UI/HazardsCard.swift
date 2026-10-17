@@ -36,7 +36,7 @@
 //  `selfTests` below.
 //
 //  Implements docs/design.md (cards, pills, toggles, big buttons). Accessibility: every toggle is
-//  a labelled switch ("Detect drop-offs", "Read signs", "Hazard watch", "Name people ahead",
+//  a labelled switch ("Detect drop-offs", "Read signs", "Hazard watch", "Name people ahead", "Sidewalk memory" (waymark:),
 //  "Listen for sirens and horns", "Nod to talk", "Head tracking without AirPods", "Live camera
 //  view", "Both cameras (pauses obstacle detection)", "Flashlight"); the live view and the two-camera picture are hidden from
 //  VoiceOver (they carry nothing a blind user needs) but the front-camera readout is not — it is
@@ -100,6 +100,11 @@ struct HazardsCard: View {
                         isOn: $model.namePeopleEnabled,
                         hint: "Experimental and not yet tested on the cane. When you ask where am I, says how many people are ahead, which way and how far")
             liveCaption(PeopleDetection.state(enabled: model.namePeopleEnabled).userFacingDescription)
+            // waymark: sidewalk memory (A1). Label "Sidewalk memory" is new; no existing label renamed.
+            CKToggleRow(title: "Sidewalk memory", subtitle: "Says reported obstacles and missing curb ramps ahead, from Project Sidewalk",  // waymark:
+                        isOn: $model.waymarkEnabled,  // waymark:
+                        hint: "Experimental. Speaks problems other people reported on the sidewalk ahead, such as obstacles or missing curb ramps. Never talks over obstacle warnings.")  // waymark:
+            liveCaption(waymarkStatus)  // waymark:
 
             CKRowDivider()
             HStack(spacing: CKSpacing.sm) {
@@ -135,6 +140,19 @@ struct HazardsCard: View {
                 liveCaption("Siren and horn alerts aren't available on this phone.")
             }
             soundStatus
+        }
+    }
+
+    /// waymark: one line under the "Sidewalk memory" switch: off / loading / how many labels /
+    /// the last line spoken / why the file did not load.
+    private var waymarkStatus: String {
+        guard model.waymarkEnabled else { return "Off." }
+        switch model.waymark.state {
+        case .idle, .loading: return "Loading sidewalk reports…"
+        case .failed: return "Sidewalk reports could not be loaded. Waymark stays quiet."
+        case .loaded(let n):
+            if let line = model.waymark.lastLine { return "\(n) reports loaded. Last said: \(line)" }
+            return "\(n) sidewalk reports loaded."
         }
     }
 
