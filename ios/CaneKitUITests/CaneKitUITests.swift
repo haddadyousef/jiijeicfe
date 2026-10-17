@@ -30,6 +30,25 @@
 
 import XCTest
 
+extension XCTestCase {
+    /// Waymark G0 (15:35): answers the system location prompt with "Allow While Using App" if it
+    /// appears. `make sim-grant` pre-grants location, but on a brand-new simulator the grant ran
+    /// before the app was installed and did not stick: the first route start raised the prompt,
+    /// XCTest's default handler tapped "Don't Allow", and every later route test failed with
+    /// "Location is off" (log `g0-uitest-uiuc.log`, 4 failures, all "Stop route" never appearing).
+    /// A test-case monitor runs before the default handler. Returns false (lets the default
+    /// handler act) for any other alert.
+    func allowLocationPrompts() {
+        addUIInterruptionMonitor(withDescription: "Location permission") { alert in
+            for title in ["Allow While Using App", "Allow Once", "Allow"] where alert.buttons[title].exists {
+                alert.buttons[title].tap()
+                return true
+            }
+            return false
+        }
+    }
+}
+
 /// Functional XCUITests for the phone app (iPhone 17 Pro Max / iOS 27 simulator).
 final class CaneKitUITests: XCTestCase {
 
@@ -43,6 +62,7 @@ final class CaneKitUITests: XCTestCase {
     /// which the tests never set). Stops at the first failure.
     override func setUp() {
         continueAfterFailure = false
+        allowLocationPrompts()
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
         app.launch()

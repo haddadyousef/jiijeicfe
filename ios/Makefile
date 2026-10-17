@@ -120,10 +120,13 @@ SIM ?= iPhone 17 Pro Max
 SIM_LAT ?= 47.6540
 SIM_LON ?= -122.3050
 # Pre-answer the permission prompts so no system alert races the first tap (fresh simulator / CI).
+# ⚠ On a simulator that has never had the app installed the grant may not stick (G0, 15:30); the
+# UI tests also answer the prompt themselves (`allowLocationPrompts()` in CaneKitUITests.swift).
 sim-grant:
 	@xcrun simctl boot "$(SIM)" 2>/dev/null || true
 	@xcrun simctl bootstatus "$(SIM)" -b
 	@xcrun simctl privacy "$(SIM)" grant location $(BUNDLE)
+	@xcrun simctl privacy "$(SIM)" grant location-always $(BUNDLE) 2>/dev/null || true
 	@xcrun simctl privacy "$(SIM)" grant motion $(BUNDLE)
 	@xcrun simctl location "$(SIM)" set $(SIM_LAT),$(SIM_LON)
 
