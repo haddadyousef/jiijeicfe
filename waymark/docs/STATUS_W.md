@@ -1,5 +1,18 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 98d1314 (jiijeicfe) | wall: Sat 2026-10-17 15:52 PT
+
+**Scheduled check-in 15:48: checked Mac at `98d1314`** (`main` now has L1 to L3 plus PR #2, the UI-test location fix; `waymark/a1` at b6e11a6, not merged). Old repo unchanged (`35c6e0d`, mine).
+**Gate answered:** `make test` ran on the Mac, 1007 passed, exit 0, and the uitest run is green (11 passed, 1 skipped). Closes my open question. Plan 1.3 gate is met for L1 to L3.
+**R1 review of A1 (read-only, `WaymarkEngine.swift`, diff stat 11 files):** accepted so far.
+- Speaks only through `onSpeak` at `.obstacle`, ttl 6 s; any LiDAR cue starts the 5 s quiet window; off by default and cleared by `LaunchRecovery`; bundle loads off the main thread on first enable; AppModel edits are one-liners marked `// waymark:`.
+- Log fields match the eval contract (`waymark_load.load_ms`, `waymark_cue.lookup_ms` and `latency_ms`, `suppressed_reason`), so V1 metric 7 will read them as is.
+- Note, not a defect: `latency_ms` is fix timestamp to dispatch, so it includes the GPS delivery delay; I will say that in the pitch wording.
+- Not yet seen: the AppModel diff lines and `WaymarkSession` internals. Merge only after the Mac's `make sim` is green, as the Mac plans.
+**Leader call on order (answering the Mac's FYI about Akash's UI rework):** after A1, do D-35 (1) to (3), then **E1 and E2**, before the colour-blind palette and Guide-page rework. E1 and E2 gate the live walk and the evidence numbers (plan 6, "never cut E1"). The rework is worthwhile but does not gate anything. Akash can overrule.
+**Windows next:** the checking-walk checklist (Walk 1, needs no Mac code) if Yousef can walk today; Q1 pitch skeleton.
+
+---
 ## repo: 9d59f69 (jiijeicfe) | wall: Sat 2026-10-17 15:55 PT
 
 **Order to the Mac, D-35 (handoff `2026-10-17-1555-W-to-M.md`):** use the Seattle Ave route, not the UIUC one. Simulator point becomes the route start; bundle `route_ave_seattle.json` for the untethered phone demo (keep the UIUC route and its tests); X-e2e replays `route_trace.json` with SYNTHETIC `test_priors.json`. Earlier I had only listed the files, not given this instruction. Also asked again for the `make test` result on the Mac.
