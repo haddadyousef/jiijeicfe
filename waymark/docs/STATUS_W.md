@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 9d59f69 (jiijeicfe) | wall: Sat 2026-10-17 15:55 PT
+
+**Order to the Mac, D-35 (handoff `2026-10-17-1555-W-to-M.md`):** use the Seattle Ave route, not the UIUC one. Simulator point becomes the route start; bundle `route_ave_seattle.json` for the untethered phone demo (keep the UIUC route and its tests); X-e2e replays `route_trace.json` with SYNTHETIC `test_priors.json`. Earlier I had only listed the files, not given this instruction. Also asked again for the `make test` result on the Mac.
+
+---
 ## repo: d81026b + 330c2f0 (jiijeicfe) | wall: Sat 2026-10-17 15:40 PT
 
 **Mac is on `jiijeicfe` now** (write access since 15:15). Checked Mac at `d81026b` (merge of PR #1, L1 to L3 into `main`, merged by Akash) and `STATUS_M.md` entry f9e3981 (15:21). **Collaborator step is done; Yousef's pending item is closed.**
