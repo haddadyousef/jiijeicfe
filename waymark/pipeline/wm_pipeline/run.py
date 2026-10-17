@@ -40,13 +40,16 @@ def load_raw(raw_dir: Path) -> tuple[list[dict], list[dict], str | None, list[fl
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="wm_pipeline.run")
-    ap.add_argument("step", choices=["fetch", "streets", "build", "all"])
+    ap.add_argument("step", choices=["fetch", "streets", "build", "all", "rank", "demo"])
     ap.add_argument("--bbox", nargs=4, type=float, metavar=("MINLNG", "MINLAT", "MAXLNG", "MAXLAT"), default=None)
     ap.add_argument("--raw", type=Path, default=HERE / "data" / "raw")
     ap.add_argument("--out", type=Path, default=HERE / "out")
     ap.add_argument("--step-deg", type=float, default=0.01)
     ap.add_argument("--sleep", type=float, default=1.0)
     ap.add_argument("--generated-at", default=None, help="override the bundle timestamp (default: latest fetch time)")
+    ap.add_argument("--priors", type=Path, default=HERE.parents[1] / "ios" / "CaneKit" / "Resources" / "waymark_priors.json")
+    ap.add_argument("--demo-out", type=Path, default=HERE.parent / "demo")
+    ap.add_argument("--pick", type=int, default=1, help="rank to write demo files for (demo step)")
     ap.add_argument("--ios-copy", type=Path, default=None, help="also write the bundle to this path")
     ap.add_argument("--keep-majority-disagree", action="store_true")
     ap.add_argument("--min-cluster-size", type=int, default=1)
@@ -57,6 +60,16 @@ def main(argv: list[str] | None = None) -> int:
         F.fetch_all(bbox, a.raw, a.step_deg, a.sleep)
     if a.step == "streets":  # street-edge geometry for route ranking (P5); never read by `build`
         F.fetch_all(bbox, a.raw, a.step_deg, a.sleep, kind="streets")
+    if a.step in ("rank", "demo"):
+        from . import p5
+        graph, labels, ranked = p5.rank(a.raw, a.priors)
+        if not ranked:
+            raise SystemExit("no candidate routes found")
+        files = p5.write_ranking(ranked, a.demo_out)
+        if a.step == "demo":
+            gen = json.loads(a.priors.read_text(encoding="utf-8"))["generated_at"]
+            files += p5.write_pick(ranked, a.pick, labels, a.demo_out, gen)
+        print(f"wrote {', '.join(files)} to {a.demo_out}")
     if a.step in ("build", "all"):
         from . import bundle as B
         docs, files, latest, fm_bbox = load_raw(a.raw)
