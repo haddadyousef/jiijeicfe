@@ -1,0 +1,166 @@
+<title>Ave Checking Walk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column of stops in walking order, big three-way answer buttons, sticky progress bar. */
+:root{
+  --bg:#f2f5f3; --surface:#ffffff; --fg:#13201b; --muted:#4e5f58; --line:#cdd8d2;
+  --accent:#1f5fbf; --accent-fg:#ffffff;
+  --yes:#176b41; --yes-bg:#d9f0e3; --no:#a8261d; --no-bg:#f8dcd8; --unsure:#5a4a12; --unsure-bg:#f1e8c2;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1714; --surface:#18221e; --fg:#e8f0ec; --muted:#9db0a7; --line:#2d3d36;
+  --accent:#6ea2f5; --accent-fg:#0b1a33;
+  --yes:#6fd19b; --yes-bg:#173a29; --no:#ff9a90; --no-bg:#4a1c18; --unsure:#e8d27a; --unsure-bg:#3f3714; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1714; --surface:#18221e; --fg:#e8f0ec; --muted:#9db0a7; --line:#2d3d36;
+  --accent:#6ea2f5; --accent-fg:#0b1a33;
+  --yes:#6fd19b; --yes-bg:#173a29; --no:#ff9a90; --no-bg:#4a1c18; --unsure:#e8d27a; --unsure-bg:#3f3714; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:17px/1.45 var(--font);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.wrap{max-width:560px;margin:0 auto}
+h1{font-size:1.7rem;line-height:1.15;margin:20px 0 6px;text-wrap:balance}
+h2{font-size:1.05rem;margin:0}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.rules{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:16px 0}
+.rules ul{margin:6px 0 0;padding-left:20px}
+.rules li{margin:4px 0}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.track{flex:1;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.fill{height:100%;width:0;background:var(--accent);transition:width .2s}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+.stop{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:14px 0}
+.stop[data-a="confirmed"]{border-color:var(--yes)}
+.stop[data-a="contradicted"]{border-color:var(--no)}
+.stop[data-a="unverifiable"]{border-color:var(--unsure)}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dist{font-family:var(--mono);font-size:.95rem;color:var(--muted)}
+.q{margin:8px 0 4px;font-weight:700}
+.meta{font-size:.9rem;color:var(--muted);margin-bottom:10px}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{font:inherit;font-weight:700;min-height:56px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--fg);padding:6px 8px;cursor:pointer;line-height:1.2}
+button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"].y{background:var(--yes-bg);border-color:var(--yes);color:var(--yes)}
+button[aria-pressed="true"].n{background:var(--no-bg);border-color:var(--no);color:var(--no)}
+button[aria-pressed="true"].u{background:var(--unsure-bg);border-color:var(--unsure);color:var(--unsure)}
+.mark{display:inline-block;width:1.1em;text-align:center}
+input[type=text]{font:inherit;width:100%;min-height:44px;margin-top:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:6px 10px}
+a{color:var(--accent)}
+.out{margin:22px 0}
+.primary{width:100%;background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+textarea{width:100%;height:150px;margin-top:12px;font:13px/1.4 var(--mono);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px}
+.hint{font-size:.9rem;color:var(--muted);margin-top:8px}
+</style>
+<div class="wrap">
+<h1>Ave checking walk</h1>
+<p class="muted">The Ave from NE 42nd St to NE 50th St, 727 m, about 12 minutes. Street View was last taken here in 2018 and 2019. You are checking what is on the sidewalk today against what the map says.</p>
+<div class="rules">
+<h2>Before you start</h2>
+<ul>
+<li>Start at the Ave and NE 42nd St, then walk north. Daylight only.</li>
+<li>Cross only on the walk signal. Look up and around at every crossing. Answer after you have crossed, not while crossing.</li>
+<li>Answer from what you see at the corner or spot. If you cannot tell, tap Can't tell. That is a useful answer.</li>
+<li>Do not walk with your eyes on the screen. Stop at the stop, look, then tap.</li>
+</ul>
+</div>
+<div class="bar"><div class="track"><div class="fill" id="fill"></div></div><div class="mono" id="count">0 / 0</div></div>
+<div id="stops"></div>
+<div class="out">
+<h2>When you reach the end</h2>
+<p class="muted">Tap Copy results and paste them into the chat with Claude. The results hold stop numbers and your answers only, no location.</p>
+<input type="text" id="who" placeholder="Your first name or initials" autocomplete="off">
+<input type="text" id="wx" placeholder="Weather and light (dry, overcast, dusk...)" autocomplete="off">
+<div style="height:12px"></div>
+<button class="primary" id="copy">Copy results</button>
+<div class="hint" id="copyMsg" role="status"></div>
+<textarea id="ta" readonly aria-label="Results" hidden></textarea>
+</div>
+</div>
+<script>
+var STOPS=[{"id":"S01","type":"curb_ramp","along":0,"n":8,"ids":["ps:13290838","ps:13291004","ps:13291318","ps:13291502","ps:13291003","ps:13291344","ps:13290839","ps:13291345"],"lat":47.658327,"lng":-122.313227,"img":"2019-06","sev":1},{"id":"S02","type":"curb_ramp","along":77,"n":2,"ids":["ps:13291343","ps:13290835"],"lat":47.659022,"lng":-122.313206,"img":"2018-10","sev":1},{"id":"S03","type":"curb_ramp","along":158,"n":6,"ids":["ps:13291174","ps:13290836","ps:13291152","ps:13291339","ps:13291340","ps:13291153"],"lat":47.659755,"lng":-122.313177,"img":"2018-08","sev":1},{"id":"S04","type":"curb_ramp","along":175,"n":5,"ids":["ps:13290728","ps:13291070","ps:13290956","ps:13291495","ps:13290957"],"lat":47.659896,"lng":-122.313156,"img":"2018-08","sev":1},{"id":"S05","type":"curb_ramp","along":194,"n":1,"ids":["ps:13291496"],"lat":47.660076,"lng":-122.313278,"img":"2018-10","sev":1},{"id":"S06","type":"obstacle","along":212,"n":1,"ids":["ps:13292406"],"lat":47.66024,"lng":-122.313309,"img":"2018-10","sev":null},{"id":"S07","type":"curb_ramp","along":238,"n":2,"ids":["ps:13291497","ps:13291072"],"lat":47.660474,"lng":-122.313171,"img":"2018-10","sev":1},{"id":"S08","type":"curb_ramp","along":319,"n":4,"ids":["ps:13291150","ps:13290730","ps:13290409","ps:13290410"],"lat":47.661204,"lng":-122.313155,"img":"2019-01","sev":1},{"id":"S09","type":"curb_ramp","along":336,"n":4,"ids":["ps:13291171","ps:13291490","ps:13290958","ps:13290534"],"lat":47.661361,"lng":-122.313146,"img":"2019-03","sev":1},{"id":"S10","type":"surface_problem","along":468,"n":2,"ids":["ps:13291658","ps:13291995"],"lat":47.662562,"lng":-122.31324,"img":"2018-10","sev":1},{"id":"S11","type":"curb_ramp","along":521,"n":4,"ids":["ps:13290726","ps:13290531","ps:13290418","ps:13290530"],"lat":47.663027,"lng":-122.313127,"img":"2018-10","sev":1},{"id":"S12","type":"curb_ramp","along":539,"n":4,"ids":["ps:13290417","ps:13290616","ps:13291460","ps:13291461"],"lat":47.663192,"lng":-122.313147,"img":"2019-03","sev":1},{"id":"S13","type":"curb_ramp","along":637,"n":2,"ids":["ps:13291464","ps:13290408"],"lat":47.664084,"lng":-122.313103,"img":"2019-08","sev":1},{"id":"S14","type":"curb_ramp","along":722,"n":5,"ids":["ps:13290938","ps:13290406","ps:13290939","ps:13291118","ps:13291441"],"lat":47.664895,"lng":-122.313015,"img":"2019-05","sev":1}];
+var KEY="waymark.walk1.v1";
+var state={a:{},note:{},who:"",wx:""};
+try{var s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+var TYPE={
+ curb_ramp:{name:"Curb ramp",q:"Is there a curb ramp at this corner?",y:"Ramp there",n:"No ramp",ex:"Where the sidewalk meets the street, a sloped cut instead of a step."},
+ obstacle:{name:"Obstacle",q:"Is something blocking the sidewalk here (pole, sign, box, bike rack, parked car)?",y:"Yes, blocked",n:"Clear",ex:"Anything a cane could hit, narrowing the walkway."},
+ surface_problem:{name:"Rough surface",q:"Is the sidewalk cracked, broken, uneven or lifted here?",y:"Yes, rough",n:"Smooth",ex:"A crack, a lifted slab or a patch you would feel through a cane."}
+};
+function outcome(t,btn){ // y: the map was right (confirmed); n: the map was wrong (contradicted)
+ return btn==="y"?"confirmed":btn==="n"?"contradicted":"unverifiable";
+}
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+var root=document.getElementById("stops");
+STOPS.forEach(function(s,i){
+ var T=TYPE[s.type];
+ var d=el("section","stop");d.id=s.id;
+ var h=el("div","head");
+ var t=el("h2",null,s.id+" · "+T.name+(s.n>1?" ("+s.n+" marks)":""));
+ h.appendChild(t);h.appendChild(el("div","dist",s.along+" m from start"));
+ d.appendChild(h);
+ d.appendChild(el("p","q",T.q));
+ d.appendChild(el("p","meta",T.ex+" Marked from "+s.img.slice(0,4)+" imagery."));
+ var b=el("div","btns");
+ [["y",T.y,"✓"],["n",T.n,"✗"],["u","Can't tell","?"]].forEach(function(o){
+  var x=el("button",o[0]);x.type="button";x.setAttribute("aria-pressed","false");
+  var m=el("span","mark",o[2]);m.setAttribute("aria-hidden","true");x.appendChild(m);x.appendChild(document.createTextNode(" "+o[1]));
+  x.addEventListener("click",function(){
+   var cur=state.a[s.id];
+   state.a[s.id]=(cur===o[0])?undefined:o[0]; save(); render();
+  });
+  b.appendChild(x);
+ });
+ d.appendChild(b);
+ var link=el("p","hint");
+ var a=document.createElement("a");a.href="https://www.google.com/maps/search/?api=1&query="+s.lat+","+s.lng;a.textContent="Show this spot on a map";a.target="_blank";a.rel="noopener";
+ link.appendChild(a);d.appendChild(link);
+ if(s.type!=="curb_ramp"){
+  var n=document.createElement("input");n.type="text";n.id="note-"+s.id;n.placeholder="What is it? (optional)";n.autocomplete="off";
+  n.value=state.note[s.id]||"";n.addEventListener("input",function(){state.note[s.id]=n.value;save()});
+  d.appendChild(n);
+ }
+ root.appendChild(d);
+});
+function render(){
+ var done=0;
+ STOPS.forEach(function(s){
+  var d=document.getElementById(s.id),v=state.a[s.id];
+  if(v)done++;
+  d.setAttribute("data-a",v?outcome(s.type,v):"");
+  d.querySelectorAll("button").forEach(function(b){b.setAttribute("aria-pressed",b.className===v?"true":"false")});
+ });
+ document.getElementById("count").textContent=done+" / "+STOPS.length;
+ document.getElementById("fill").style.width=(100*done/STOPS.length)+"%";
+}
+var who=document.getElementById("who"),wx=document.getElementById("wx");
+who.value=state.who||"";wx.value=state.wx||"";
+who.addEventListener("input",function(){state.who=who.value;save()});
+wx.addEventListener("input",function(){state.wx=wx.value;save()});
+function results(){
+ var lines=[JSON.stringify({kind:"walk1_meta",route:"ave-42nd-50th",walker:state.who||"",conditions:state.wx||"",stops_total:STOPS.length})];
+ STOPS.forEach(function(s){
+  var v=state.a[s.id];
+  var o={kind:"walk1_stop",stop:s.id,type:s.type,along_m:s.along,label_ids:s.ids,answer:v?outcome(s.type,v):"skipped"};
+  if(state.note[s.id])o.note=state.note[s.id];
+  lines.push(JSON.stringify(o));
+ });
+ return lines.join("\n");
+}
+document.getElementById("copy").addEventListener("click",function(){
+ var text=results(),ta=document.getElementById("ta"),msg=document.getElementById("copyMsg");
+ ta.value=text;
+ function fallback(){ta.hidden=false;ta.focus();ta.select();msg.textContent="Select all and copy the text below, then paste it into the chat."}
+ try{
+  navigator.clipboard.writeText(text).then(function(){msg.textContent="Copied. Paste it into the chat."},fallback);
+ }catch(e){fallback()}
+});
+render();
+</script>
