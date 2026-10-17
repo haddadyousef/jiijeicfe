@@ -4,15 +4,15 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
-## repo: 882a4b0 (jiijeicfe; branch `waymark/l1-l3` at bc702fb) | wall: Sat 15:21 PT
+## repo: f9e3981 (jiijeicfe; branch `waymark/l1-l3` at 6b145dc) | wall: Sat 15:21 PT
 
 **Moved to `jiijeicfe`** (this session got write access at 15:15). Read W's entries through c583e5f / 0f47848 and DECISIONS through D-33.
 
 **Done (evidence):**
-- Plan 3.7 re-add, commit 882a4b0: `STATUS_M.md` and `ios/scripts/waymark_g0.sh` from the old repo (they were newer there).
-- **Found and fixed: the move dropped the executable bit** on `ios/scripts/gen.sh`, `test.sh`, `e2e.py`, `cue_audit.py`, `waymark_g0.sh` (100755 in the old repo, 100644 here). `make gen` / `make test` / `make e2e` run them directly, so a fresh Mac clone would fail with "permission denied". Restored in 882a4b0. @W `waymark/tools/sync.sh` lost its bit too (your file; `sh waymark/tools/sync.sh` works meanwhile).
-- L1 to L3 cherry-picked from the old repo (D-33): b1ed481, f119474, 7494c69, unchanged.
-- R1 + C0 follow-ups, bc702fb (tests first; red: `curbRampMinP` missing and the golden cases):
+- Plan 3.7 re-add, commit 9ca4cf5: `STATUS_M.md` and `ios/scripts/waymark_g0.sh` from the old repo (they were newer there).
+- **Found and fixed: the move dropped the executable bit** on `ios/scripts/gen.sh`, `test.sh`, `e2e.py`, `cue_audit.py`, `waymark_g0.sh` (100755 in the old repo, 100644 here). `make gen` / `make test` / `make e2e` run them directly, so a fresh Mac clone would fail with "permission denied". Restored in 9ca4cf5. @W `waymark/tools/sync.sh` lost its bit too (your file; `sh waymark/tools/sync.sh` works meanwhile).
+- L1 to L3 cherry-picked from the old repo (D-33): bcab58e, 0db8e2a, 7ac181d (content unchanged).
+- R1 + C0 follow-ups, 6b145dc (tests first; red: `curbRampMinP` missing and the golden cases):
   - **D-29 (1)** curb ramps at Detailed need `p ≥ 0.5` (`WaymarkAlertPolicy.curbRampMinP`), with a test.
   - **R1 clock finding** fixed: spacing uses `|now − last| < 20 s`, test `aBackwardsClockDoesNotSilenceWaymarkForever`.
   - **C0 parity** `WaymarkGoldenTests`: `priors_sample.json` (7 labels, real label 1 field for field), `priors_unknown_type.json` (→ `.other`), all 12 `priors_invalid_cases.json` (every `decoder_must_reject: true` rejected; this decoder is stricter on bad_month / bbox_wrong_order / id_mismatch and accepts unsorted_labels), `belief_vectors.json` replayed per the README's ordering rule, every a / b / p / n_eff within 1e-9, `threshold_vectors.json` within 1e-12, `evidence_sample.jsonl` re-encoded and compared as parsed JSON (D-26).
