@@ -73,7 +73,13 @@ One real tagged feature (CC0; `users` and `label_ids` removed):
 
 No limits are documented. We made 9 requests in about 30 seconds with a 1 s gap and saw no errors. Keep it sequential, keep the 1 s gap, and cache; do not refetch for demos (the app ships the bundle). A tile of 0.01° × 0.01° is 7 to 430 KB, so larger boxes are fine on size; we did not test a very large single box.
 
+## Streets endpoint, 2026-10-17 (P0 complete)
+
+`GET /v3/api/streets?bbox=minLng,minLat,maxLng,maxLat&inline=true`, same 9 tiles and etiquette as labelClusters. All 9 answered HTTP 200 with a GeoJSON `FeatureCollection` of `LineString` street edges (coordinates `[lng, lat]`). Properties: `street_edge_id, osm_way_id, region_id, region_name, way_type, max_speed, status, label_count, audit_count, outdated, user_ids, user_count, first_label_date, last_label_date`. **`user_ids` are labeler ids: never read, never stored in any derived file.** `street_edge_id` matches the `street_edge_id` on label clusters.
+
+In the bbox: 904 distinct walkable edges (residential 361, secondary 271, tertiary 185, primary 87). **There are no footpaths or campus paths**, only roads, so routes can only follow street sidewalks (campus interior landmarks do not snap). Raw files hash: see `pipeline/data/raw/fetch_manifest_streets.json` (local, git-ignored; sha256 per file, 9 files).
+
 ## Still to verify
 
-- `streets` and `regions` on the Seattle server (needed for P5 route ranking). The shells cannot reach the host; Yousef can run a native fetch like the one above.
+- `regions` endpoint (not needed: `region_name` is on every label and street).
 - Data licence text: Project Sidewalk data is CC0; street geometry is OpenStreetMap, ODbL.

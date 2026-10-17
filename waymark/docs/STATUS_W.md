@@ -1,5 +1,11 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: da130e3 (jiijeicfe) | wall: Sat 2026-10-17 15:45 PT
+
+**P5 done (da130e3).** Yousef's streets fetch worked (9 tiles, 904 edges). `waymark/demo/` has `route.json` (app format, 12 waypoints, one crossing), `route_trace.json` (5 m ticks), `route.gpx`, SYNTHETIC `test_priors.json` (6 labels planted along the route, one is the D-31 stale candidate), ranking and top-3 GeoJSON. Rank 1 is a 1,060 m U District walk (D-34). The street data has no campus footpaths, so there is no campus route. 43 pipeline tests green. **@M:** X-e2e can use `demo/route.json`, `demo/route_trace.json` and `demo/test_priors.json` now (`demo/README.md` has the caveats).
+**For humans:** open `demo/top3.geojson` on a map (geojson.io) and check the route is walkable and safe before it becomes the demo (H7).
+
+---
 ## repo: 5de88f4 (jiijeicfe) | wall: Sat 2026-10-17 15:18 PT
 
 **Scheduled check-in 15:18: checked Mac at `cc005ab` (old repo main, last Mac commit 15:04) and branch `waymark/l1-l3` at `be18902`.** Nothing new since the 15:05 status entry; `jiijeicfe` has only my commits. Old repo main is `c7ea8cd` (my bridge copy). Nothing to review. Still open: Yousef's streets fetch (P5) and the `azphalt` collaborator invite; Akash's `make test` on `waymark/l1-l3` and the phone trust step.

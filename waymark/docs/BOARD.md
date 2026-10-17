@@ -1,6 +1,6 @@
 # Waymark board (single writer: Windows session / leader)
 
-Last checked: Sat 2026-10-17 15:18 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
+Last checked: Sat 2026-10-17 15:45 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
 Windows confirmed `d2898e0` + this commit on `main`. Mac last status entry: 14:30 (old repo, `5b9227f`).
 If this is more than an hour old, it is stale. Say "check mac" to the Windows chat.
 
@@ -14,7 +14,7 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | W0, W1, O1 | W | Plan, seed docs, drafts, provenance | done | 14:45 |
 | C0a | W | Schemas and golden fixtures | done (2ec1887), Mac ack pending | 14:50 |
 | C0b | W | Belief and threshold vectors, reference Python | done (2ec1887), Mac ack pending | 14:50 |
-| P0 | W | API discovery, raw samples | done except streets/regions (P5) | 15:12 |
+| P0 | W | API discovery, raw samples | done | 15:45 |
 | M0 | W | Baseline and docs on GitHub | done (old repo), superseded by the move (D-24) | 14:42 |
 | Repo move | Yousef, Akash | Add `azphalt` as collaborator on `jiijeicfe` (Mac was refused), then plan 3.7 | BLOCKED on Yousef (asked 15:20) | 15:35 |
 | G0 | Mac | Fork builds, patch verified, phone run | app installed on Akash's iPhone 17 Pro (LiDAR). Left: trust the profile on the phone, uitest | 15:05 |
@@ -24,7 +24,7 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | P1 to P4, P6 | W | Pipeline and real bundle | done: 3,405 labels in `ios/CaneKit/Resources/waymark_priors.json` (e1d466e) | 15:12 |
 | V1 | W | Eval harness (metrics 1, 2, 7) | done (c583e5f), 20 tests | 15:35 |
 | V2 | W | Calibration, sweep, staleness, positional error | built on synthetic data (8ab798b); real numbers need F1 | 16:05 |
-| P5 | W | Route ranking and demo files | code done (d570258); waits on the streets fetch (Yousef) | 16:05 |
+| P5 | W | Route ranking and demo files | done (da130e3): candidate route in `waymark/demo/`, needs a human map check | 15:45 |
 | S1, D1 | W | Server and dashboard (stretch) | not started | 16:05 |
 | H2 | Yousef | DubHacks rules and schedule | hold released; rules text and schedule still not on file | |
 | H3 | Yousef | GitHub link, collaborator, push access | done | 14:30 |
