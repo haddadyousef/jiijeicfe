@@ -112,13 +112,13 @@ sim:
 # The demo phone is an iPhone 17 Pro Max on iOS 27; Xcode 27 does not create that device by
 # default — `make sim17` creates it once.
 SIM ?= iPhone 17 Pro Max
-# Waymark (plan D-07): where the simulator's GPS is parked for sim-grant / uitest / tour / island.
-# Default = the centre of the verified Project Sidewalk sample box in the University District,
-# Seattle, until P5 picks the demo route. `make uitest SIM_LAT=40.1140 SIM_LON=-88.2249` reproduces
-# the original UIUC location (Townsend Hall) for a like-for-like baseline. e2e.py parks the GPS
-# itself at the start of the route it replays.
-SIM_LAT ?= 47.6540
-SIM_LON ?= -122.3050
+# Waymark (D-35, supersedes D-07): where the simulator's GPS is parked for sim-grant / uitest / tour /
+# island. Default = the start of the Seattle demo route (The Ave and NE 42nd, waypoint 1 of
+# Resources/route_ave_seattle.json, pinned by WaymarkRouteTests). `make uitest SIM_LAT=40.1140
+# SIM_LON=-88.2249` reproduces the original UIUC location (Townsend Hall) for a like-for-like
+# baseline. e2e.py parks the GPS itself at the start of the route it replays.
+SIM_LAT ?= 47.658324
+SIM_LON ?= -122.313219
 # Pre-answer the permission prompts so no system alert races the first tap (fresh simulator / CI).
 # ⚠ On a simulator that has never had the app installed the grant may not stick (G0, 15:30); the
 # UI tests also answer the prompt themselves (`allowLocationPrompts()` in CaneKitUITests.swift).
