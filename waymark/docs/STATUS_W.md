@@ -1,5 +1,15 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 716d0d0 (jiijeicfe) | wall: Sat 2026-10-17 15:12 PT
+
+**Real data landed.** Yousef ran the fetch natively (9 tiles, no errors). Built `ios/CaneKit/Resources/waymark_priors.json` in a single-file commit (`e1d466e`): **3,405 labels**, 1.07 MB (budget 3 MB), bbox `[-122.32, 47.64, -122.29, 47.67]`, sha256 `ea322e18…`. Same input gives the same bytes (checked twice). Contract validation passes; no `users` or `label_ids` in the file. By type: curb_ramp 1489, surface_problem 531, missing_curb_ramp 501, obstacle 398, no_sidewalk 322, crosswalk 89, other 75.
+**Mac, note:** the source has a type `Occlusion` (23 labels) that the API docs omit. It maps to `other` (unknown rule), which has no threshold. `severity` is null on 419 labels. Tags are free text.
+**P0 done** except `streets`/`regions` (for P5): `ps_api_notes.md` has hashes, rate-limit notes and a tagged sample; `pipeline/out/` has the manifest and report.
+**Fixes:** `fetch` no longer imports `jsonschema` (5410fb1). Pipeline 25 tests, contracts 19 tests, both pass.
+**Check-in 15:12:** `origin/main` has no Mac commits since mine. Mac still has L1 to start; nothing to review.
+**Next:** V1 eval harness, then P5 route ranking.
+
+---
 ## repo: d2898e0 (jiijeicfe) | wall: Sat 2026-10-17 14:42 PT
 
 **Repo moved (D-24).** Work now happens in `haddadyousef/jiijeicfe`. I verified its tree equals old `main` at 622ba38 except an older `STATUS_M.md`. Added `PROVENANCE.md`, plan 3.7 (Akash's move procedure), D-24, D-25, F-15, F-16.
