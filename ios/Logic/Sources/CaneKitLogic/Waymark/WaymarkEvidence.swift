@@ -91,6 +91,14 @@ public struct WaymarkEvidenceVerdict: Sendable, Equatable {
     public var torsoCover: Bool?
     /// Head coverage at the last frame.
     public var headCover: Bool?
+
+    /// Memberwise (public: the app builds spotter verdicts; Mac make sim, 16:44).
+    public init(labelID: String, outcome: WaymarkOutcome, sensor: WaymarkSensor, distM: Double?, alongM: Double?,
+                gpsAccuracyM: Double?, speedMps: Double?, tiltDeg: Double?, torsoCover: Bool?, headCover: Bool?) {
+        self.labelID = labelID; self.outcome = outcome; self.sensor = sensor; self.distM = distM
+        self.alongM = alongM; self.gpsAccuracyM = gpsAccuracyM; self.speedMps = speedMps
+        self.tiltDeg = tiltDeg; self.torsoCover = torsoCover; self.headCover = headCover
+    }
 }
 
 /// Follows labels through their along-track window and decides each once per route.
