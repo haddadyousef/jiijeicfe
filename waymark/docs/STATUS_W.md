@@ -1,5 +1,25 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: c583e5f (jiijeicfe) | wall: Sat 2026-10-17 15:35 PT
+
+**V1 eval harness done (c583e5f):** `waymark/eval/` (outcome rates with Wilson intervals, sensor vs spotter with kappa, load and latency), seeded synthetic fixtures watermarked SYNTHETIC, 20 tests green. Input contract for the load and latency fields is in `eval/README.md` (`load_ms`, `lookup_ms`, `latency_ms`, `suppressed_reason`); @M please emit those in A1/E2.
+
+**Check-in 15:25: Mac is at `cc005ab` and branch `waymark/l1-l3` at `be18902` in the OLD repo** (it cannot reach `jiijeicfe`: `add_repo` refused). Asked Yousef (15:20) to add `azphalt` as a collaborator. Until then D-33 applies and I copy contracts, the real bundle and these docs to the old repo as a bridge.
+
+**R1 review of L1 to L3 (read-only, I cannot run Swift here):**
+- `WaymarkBelief` matches `contracts/ref/belief.py`: same decay (`0.5^(dt/H)`, half-lives 60/120/365), same weights, same `a`, `b`, `p`, `n_eff`, unverifiable is a full no-op (clock too). Same tau formula and the same four costs.
+- `WaymarkPriorSet.decode` is at least as strict as the schema and I checked every rule against the real 3,405-label bundle by hand: nothing in it trips a rule (severity in [1, 3] or null, ids match `ps:` + cluster id, dates `YYYY-MM`, no duplicates).
+- `WaymarkAlertPolicy`: rule order is sensible and fails quiet on unknown levels. **Finding (low):** the spacing check `nowUTC - last < 20` stays silent forever if the wall clock moves backwards; use `abs` or reset on a negative delta, with a test. **Finding (medium, needs test):** D-29(1), curb ramp requires `p >= 0.5`.
+- `make test` on the Mac is still the gate before merge to `main`; the Linux run (989 passed) is not enough.
+- Not yet checked: `WaymarkAhead`, `WaymarkIndex`, `WaymarkRecord` internals. Next review pass.
+
+**Rulings (D-29):** curb ramp p gate 0.5; any LiDAR cue silences for 5 s (accepted); trigger distance margin added, not subtracted (v1.0 text was wrong); Standard per plan 5.2. D-30 records the hold release as D-28.
+
+**Real-data findings the whole team should know (D-31, D-32):** (1) With the real bundle no speakable label has `p < tau` from priors alone, so thresholds only matter after field evidence. A stale demo label must be a `surface_problem` or `missing_curb_ramp` with `n_agree` 0. (2) 88% of speakable labels have imagery from 2019 or earlier.
+
+**Next:** P5 (rank routes, pick a demo label per D-31), then V2 scaffolding.
+
+---
 ## repo: 716d0d0 (jiijeicfe) | wall: Sat 2026-10-17 15:12 PT
 
 **Real data landed.** Yousef ran the fetch natively (9 tiles, no errors). Built `ios/CaneKit/Resources/waymark_priors.json` in a single-file commit (`e1d466e`): **3,405 labels**, 1.07 MB (budget 3 MB), bbox `[-122.32, 47.64, -122.29, 47.67]`, sha256 `ea322e18…`. Same input gives the same bytes (checked twice). Contract validation passes; no `users` or `label_ids` in the file. By type: curb_ramp 1489, surface_problem 531, missing_curb_ramp 501, obstacle 398, no_sidewalk 322, crosswalk 89, other 75.

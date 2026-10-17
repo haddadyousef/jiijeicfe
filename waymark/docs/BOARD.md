@@ -1,6 +1,6 @@
 # Waymark board (single writer: Windows session / leader)
 
-Last checked: Sat 2026-10-17 15:12 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
+Last checked: Sat 2026-10-17 15:35 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
 Windows confirmed `d2898e0` + this commit on `main`. Mac last status entry: 14:30 (old repo, `5b9227f`).
 If this is more than an hour old, it is stale. Say "check mac" to the Windows chat.
 
@@ -16,12 +16,14 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | C0b | W | Belief and threshold vectors, reference Python | done (2ec1887), Mac ack pending | 14:50 |
 | P0 | W | API discovery, raw samples | done except streets/regions (P5) | 15:12 |
 | M0 | W | Baseline and docs on GitHub | done (old repo), superseded by the move (D-24) | 14:42 |
-| Repo move | Mac/Akash | Re-point clone to `jiijeicfe` (plan 3.7), re-add newer Mac files | todo | |
-| G0 | Mac | Fork builds, patch verified, phone run | simulator half green: `make test` 919/919, `make sim` exit 0. Left: uitest at 2 locations, device run | 14:30 |
+| Repo move | Yousef, Akash | Add `azphalt` as collaborator on `jiijeicfe` (Mac was refused), then plan 3.7 | BLOCKED on Yousef (asked 15:20) | 15:35 |
+| G0 | Mac | Fork builds, patch verified, phone run | app installed on Akash's iPhone 17 Pro (LiDAR). Left: trust the profile on the phone, uitest | 15:05 |
 | M1 | Mac | Seattle simulator location, sim17 runtime | in the repo (merged in PR #1), uitest pending | 14:30 |
-| L1 to L3, A1 to A3, E1, E2, F1, T1 | Mac | Waymark Swift code | OPEN, start L1 (contracts landed) | 14:53 |
+| L1 to L3 | Mac | Logic layer | written test-first, 77 new tests, branch `waymark/l1-l3` (old repo); `make test` on the Mac pending; W review R1 partly done | 15:35 |
+| A1 to A3, E1, E2, F1, T1 | Mac | App layer, evidence, export, field walk | next, after L1 to L3 merges | 15:35 |
 | P1 to P4, P6 | W | Pipeline and real bundle | done: 3,405 labels in `ios/CaneKit/Resources/waymark_priors.json` (e1d466e) | 15:12 |
-| V1, V2, S1, D1, P5 | W | Eval, server, dashboard, route ranking | V1 doing; P5 next | 15:12 |
+| V1 | W | Eval harness (metrics 1, 2, 7) | done (c583e5f), 20 tests | 15:35 |
+| V2, S1, D1, P5 | W | Calibration and sweep, server, dashboard, route ranking | P5 next | 15:35 |
 | H2 | Yousef | DubHacks rules and schedule | hold released; rules text and schedule still not on file | |
 | H3 | Yousef | GitHub link, collaborator, push access | done | 14:30 |
 | H4 | Yousef | Windows `Waymark` folder | done (C:\Users\youse\Waymark), fetch run | 15:06 |
@@ -30,6 +32,8 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 
 ## Blockers
 
+- Mac cannot reach `jiijeicfe` until Yousef adds `azphalt` as a collaborator. Bridge copies go to the old repo meanwhile (D-33).
+- Akash: trust the developer profile on the phone (Settings, General, VPN and Device Management).
 - Device run: needs `ios/local.mk` (TEAM, DEVICE, BUNDLE_PREFIX) and the phone facts (H5).
 - Mac disk: 11 GiB free. Free space or `make clean` if builds fail.
 
