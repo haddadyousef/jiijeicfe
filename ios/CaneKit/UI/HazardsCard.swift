@@ -36,7 +36,7 @@
 //  `selfTests` below.
 //
 //  Implements docs/design.md (cards, pills, toggles, big buttons). Accessibility: every toggle is
-//  a labelled switch ("Detect drop-offs", "Read signs", "Hazard watch", "Name people ahead", "Sidewalk memory" (waymark),
+//  a labelled switch ("Detect drop-offs", "Read signs", "Hazard watch", "Name people ahead", "Sidewalk memory" (waymark:),
 //  "Listen for sirens and horns", "Nod to talk", "Head tracking without AirPods", "Live camera
 //  view", "Both cameras (pauses obstacle detection)", "Flashlight"); the live view and the two-camera picture are hidden from
 //  VoiceOver (they carry nothing a blind user needs) but the front-camera readout is not — it is
@@ -101,10 +101,10 @@ struct HazardsCard: View {
                         hint: "Experimental and not yet tested on the cane. When you ask where am I, says how many people are ahead, which way and how far")
             liveCaption(PeopleDetection.state(enabled: model.namePeopleEnabled).userFacingDescription)
             // waymark: sidewalk memory (A1). Label "Sidewalk memory" is new; no existing label renamed.
-            CKToggleRow(title: "Sidewalk memory", subtitle: "Says reported obstacles and missing curb ramps ahead, from Project Sidewalk",
-                        isOn: $model.waymarkEnabled,
-                        hint: "Experimental. Speaks problems other people reported on the sidewalk ahead, such as obstacles or missing curb ramps. Never talks over obstacle warnings.")
-            liveCaption(waymarkStatus)
+            CKToggleRow(title: "Sidewalk memory", subtitle: "Says reported obstacles and missing curb ramps ahead, from Project Sidewalk",  // waymark:
+                        isOn: $model.waymarkEnabled,  // waymark:
+                        hint: "Experimental. Speaks problems other people reported on the sidewalk ahead, such as obstacles or missing curb ramps. Never talks over obstacle warnings.")  // waymark:
+            liveCaption(waymarkStatus)  // waymark:
 
             CKRowDivider()
             HStack(spacing: CKSpacing.sm) {

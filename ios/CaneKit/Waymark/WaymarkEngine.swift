@@ -5,9 +5,10 @@
 //  Waymark A1 (plan v1.1 §6, M_NOTES §8.1): "sidewalk memory" in the app. Loads the Project
 //  Sidewalk priors bundle off the main thread, keeps one `WaymarkSession` (the pure core in
 //  CaneKitLogic), feeds it every GPS fix, and hands at most one line per fix to the speech queue
-//  at `.obstacle` priority. ⚠ Waymark never speaks at `.safety` or `.nav` and never delays a
-//  base-app safety cue: the caller's `onSpeak` uses `.obstacle`, and any LiDAR cue silences
-//  Waymark for `WaymarkAlertPolicy.lidarQuietS` (5 s) via `lidarCue(active:)`.
+//  at `.scene` priority. ⚠ Waymark never speaks at `.safety` or `.nav` and never delays a base-app
+//  cue: it speaks only into an idle queue, at the lowest band, never resumed after a cut, and any
+//  LiDAR cue or one-shot LiDAR line silences it for `WaymarkAlertPolicy.lidarQuietS` (5 s) via
+//  `lidarCue(active:)` / `lidarPulse()`.
 //
 //  Off by default (`AppModel.waymarkEnabled`, cleared after a crash loop by LaunchRecovery). The
 //  bundle loads on first enable, never at launch while off.
@@ -19,7 +20,8 @@
 //  Trip log (eval/README.md input contract):
 //    · `waymark_load {labels, load_ms, source}` or `{error, load_ms}`;
 //    · `waymark_cue` = `WaymarkRecord.cue` fields + `lookup_ms` (candidate lookup and decision for
-//      that fix) and, on a spoken line, `latency_ms` (GPS fix timestamp → speech dispatch).
+//      that fix) and, on a spoken line, `latency_ms` (GPS fix timestamp → the `say` call; the queue
+//      is idle by rule, so dispatch follows at once — `speech_dispatch` has the exact moment).
 //
 //  Inputs: `WAYMARK_PRIORS_FILE` (absolute path, simulator / e2e only) else the bundled
 //  `waymark_priors.json`. Owner: `AppModel` (`waymark`, wired in `AppModel+Waymark.swift`).
@@ -59,8 +61,11 @@ final class WaymarkEngine {
         didSet { if enabled { load() } }
     }
 
-    /// Speaks a line. AppModel wires it to `speech.say(line, .obstacle, ttl: 6)`.
-    @ObservationIgnored var onSpeak: ((String) -> Void)?
+    /// Speaks a line; returns whether the queue took it. AppModel wires it to
+    /// `speech.say(line, .scene, ttl: 6)` (lowest band; spoken only into silence).
+    @ObservationIgnored var onSpeak: ((String) -> Bool)?
+    /// Called once after a successful load (AppModel prefetches the lines for the natural voice).
+    @ObservationIgnored var onLoaded: (() -> Void)?
     /// Writes a trip-log record. AppModel wires it to `logger.event`.
     @ObservationIgnored var onLog: ((String, [String: Any]) -> Void)?
 
@@ -103,6 +108,7 @@ final class WaymarkEngine {
                 state = .loaded(labels: made.labelCount)
                 onLog?("waymark_load", ["labels": made.labelCount, "load_ms": Self.round1(loadMs),
                                         "source": decoded?.sourceName ?? ""])
+                onLoaded?()
             } else {
                 state = .failed(error ?? "unknown")
                 onLog?("waymark_load", ["error": error ?? "unknown", "load_ms": Self.round1(loadMs)])
@@ -117,7 +123,7 @@ final class WaymarkEngine {
     ///   - crossingSettle, voiceHeld, gpsWeak: base-app state (see `WaymarkSession.Context`).
     ///   - cueLevel, cuePlace: `rawValue`s of the walker's settings.
     func ingest(fix: GeoFix, route: Route?, waypointIndex: Int, crossingSettle: Bool, voiceHeld: Bool,
-                gpsWeak: Bool, cueLevel: String, cuePlace: String) {
+                speechIdle: Bool, gpsWeak: Bool, cueLevel: String, cuePlace: String) {
         let heading = course.update(fix)
         guard enabled, session != nil else { return }
         let t0 = ProcessInfo.processInfo.systemUptime
@@ -131,13 +137,13 @@ final class WaymarkEngine {
             cueLevel: cueLevel, cuePlace: cuePlace, crossingSettle: crossingSettle, voiceHeld: voiceHeld,
             gpsWeak: gpsWeak,
             fixFresh: NavigationHealth.isFresh(timestamp: fix.timestamp, now: now.timeIntervalSinceReferenceDate),
-            secondsSinceLidarCue: sinceLidar, nowUTC: now.timeIntervalSince1970, headingDeg: heading, legs: legs)
+            secondsSinceLidarCue: sinceLidar, nowUTC: now.timeIntervalSince1970, headingDeg: heading, legs: legs,
+            speechIdle: speechIdle)
         let step = session!.step(fix: fix, context: context)
         let lookupMs = Self.round1((ProcessInfo.processInfo.systemUptime - t0) * 1000)
-        if let line = step.spoken {
+        if let line = step.spoken, onSpeak?(line.text) == true {
             lastLine = line.text
             spokenCount += 1
-            onSpeak?(line.text)
         }
         let latencyMs = Self.round1((Date().timeIntervalSinceReferenceDate - fix.timestamp) * 1000)
         for record in step.records {
@@ -146,6 +152,12 @@ final class WaymarkEngine {
             if record["line"] != nil { fields["latency_ms"] = latencyMs }
             onLog?("waymark_cue", fields)
         }
+    }
+
+    /// A one-shot LiDAR line (a ground hazard, "Close.") was spoken: restart the 5 s quiet window
+    /// (A1 review H2 — those lines do not move `activeCue`).
+    func lidarPulse() {
+        lidarChangedAt = ProcessInfo.processInfo.systemUptime
     }
 
     /// The base app's rendered LiDAR cue changed. Any cue (on, or just ended) restarts the 5 s

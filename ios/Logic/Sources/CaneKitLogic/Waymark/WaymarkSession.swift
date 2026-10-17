@@ -12,9 +12,12 @@
 //  belief p and `WaymarkAlertPolicy.decide`; the first `.speak` ends the fix. So two labels never
 //  speak in one fix, and the 20 s spacing holds the second one afterwards.
 //
+//  Speaks only into silence (`Context.speechIdle`, A1 review): while the base app speaks or has
+//  anything queued, nothing is decided and the label stays unannounced (`speech_busy`).
+//
 //  Logging rule (keeps a 1 Hz trip log readable): a spoken line is always logged; a silence is
-//  logged once per (label, reason) per route; `not_yet` (the label is ahead but not close enough,
-//  true on almost every fix) is never logged. `routeStarted()` / `routeEnded()` reset the policy's
+//  logged once per (label, reason) per route and only inside the trigger distance; `not_yet` (the
+//  label is ahead but not close enough, true on almost every fix) is never logged. `routeStarted()` / `routeEnded()` reset the policy's
 //  announcements and this dedupe set together; beliefs survive (they are evidence, not state).
 //
 //  This file has no clock, no I/O and no platform types: the engine passes `nowUTC`, the heading
@@ -53,15 +56,19 @@ public struct WaymarkSession: Sendable {
         public var headingDeg: Double?
         /// The remaining route waypoints, nearest first; nil off-route. Wins over `headingDeg`.
         public var legs: [Coordinate]?
+        /// Nothing is speaking, queued, paused between bands or held (`SpeechQueue.isIdle`). Waymark
+        /// speaks only into silence, so it can never queue in front of, or be resumed after, a
+        /// base-app line (A1 review H1 / H3).
+        public var speechIdle: Bool
 
         /// Memberwise.
         public init(cueLevel: String, cuePlace: String, crossingSettle: Bool, voiceHeld: Bool, gpsWeak: Bool,
                     fixFresh: Bool, secondsSinceLidarCue: Double?, nowUTC: Double, headingDeg: Double?,
-                    legs: [Coordinate]?) {
+                    legs: [Coordinate]?, speechIdle: Bool) {
             self.cueLevel = cueLevel; self.cuePlace = cuePlace; self.crossingSettle = crossingSettle
             self.voiceHeld = voiceHeld; self.gpsWeak = gpsWeak; self.fixFresh = fixFresh
             self.secondsSinceLidarCue = secondsSinceLidarCue; self.nowUTC = nowUTC
-            self.headingDeg = headingDeg; self.legs = legs
+            self.headingDeg = headingDeg; self.legs = legs; self.speechIdle = speechIdle
         }
     }
 
@@ -115,6 +122,20 @@ public struct WaymarkSession: Sendable {
             .sorted { ($0.alongM, $0.prior.id) < ($1.alongM, $1.prior.id) }
         out.candidates = hits.count
         guard !hits.isEmpty else { return out }
+        // Silences are logged only inside the trigger distance (A1 review M5): a gate that holds a
+        // label 30 m out is not the decision the eval needs; the one at speaking distance is.
+        let trigger = WaymarkAlertPolicy.triggerDistanceM(speedMps: fix.speed, gpsAccuracyM: fix.accuracy)
+        guard context.speechIdle else {
+            for hit in hits where hit.alongM <= trigger {
+                let id = hit.prior.id
+                guard logged.insert("\(id)|speech_busy").inserted else { continue }
+                let p = (beliefs[id] ?? WaymarkBelief()).read(prior: hit.prior, now: context.nowUTC).p
+                out.records.append(WaymarkRecord.cue(labelID: id, type: hit.prior.type, p: p,
+                                                     tau: WaymarkThreshold.tau(for: hit.prior.type),
+                                                     alongM: hit.alongM, decision: .silent(reason: "speech_busy")))
+            }
+            return out
+        }
         let inputs = WaymarkAlertInputs(cueLevel: context.cueLevel, cuePlace: context.cuePlace,
                                         crossingSettle: context.crossingSettle, voiceHeld: context.voiceHeld,
                                         gpsWeak: context.gpsWeak, fixFresh: context.fixFresh,
@@ -134,7 +155,7 @@ public struct WaymarkSession: Sendable {
                 out.spokenLabelID = id
                 return out
             case .silent(let reason):
-                guard reason != "not_yet" else { continue }
+                guard reason != "not_yet", hit.alongM <= trigger else { continue }
                 if logged.insert("\(id)|\(reason)").inserted { out.records.append(record) }
             }
         }

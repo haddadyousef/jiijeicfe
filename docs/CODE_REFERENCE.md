@@ -3444,7 +3444,8 @@ CI does not run `make uitest` / `make tour` / `make e2e` (no simulator test step
 ## Module: waymark — sidewalk memory (`Waymark/` in Logic and app)
 
 Waymark fork feature (plans in `waymark/docs/`). Project Sidewalk labels ahead of the walker are
-spoken at `.obstacle` priority, never `.safety` / `.nav`, and never within 5 s of a LiDAR cue.
+spoken at `.scene` priority (the lowest band, never `.safety` / `.nav`), only when the speech queue
+is idle, never resumed after a cut, and never within 5 s of a LiDAR cue or one-shot LiDAR line.
 Off by default (`AppModel.waymarkEnabled`, cleared by `LaunchRecovery`). Every base-file edit is
 marked `// waymark:`.
 
@@ -3462,7 +3463,8 @@ marked `// waymark:`.
 - `WaymarkRecord.swift` — `cue(...)` (the `waymark_cue` fields) and `evidence(...)` (one
   `waymark.evidence.v1` JSON line).
 - `WaymarkSession.swift` (A1) — `step(fix:context:)`: closest hit first, at most one line per fix,
-  silences logged once per (label, reason) per route, `not_yet` never logged; `record(...)` adds
+  nothing decided unless `speechIdle` (`speech_busy`), silences logged once per (label, reason) per
+  route and only inside the trigger distance, `not_yet` never logged; `record(...)` adds
   field evidence; `routeStarted()` / `routeEnded()`.
 - Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
 
@@ -3470,10 +3472,15 @@ marked `// waymark:`.
 - `WaymarkEngine.swift` — `@MainActor @Observable`. `load()` (off-main decode of
   `WAYMARK_PRIORS_FILE` or the bundled `waymark_priors.json`, logs `waymark_load {labels, load_ms}`),
   `ingest(fix:route:waypointIndex:crossingSettle:voiceHeld:gpsWeak:cueLevel:cuePlace:)` (logs
-  `waymark_cue` + `lookup_ms`, + `latency_ms` when spoken), `lidarCue(active:)`, `routeStarted()`,
-  `routeEnded()`; `state`, `lastLine`, `spokenCount` for the UI; outputs `onSpeak`, `onLog`.
-- `AppModel+Waymark.swift` — `wireWaymark()` (init: `onSpeak` → `speech.say(line, .obstacle,
-  ttl: 6)`, `onLog` → `logger.event`) and `ingestWaymark(_:)` (every `location.onFix`).
-- Base edits: `AppModel` (`waymark`, `waymarkEnabled`, `activeCue.didSet`, route start / stop /
-  arrival / quiet end), `SpeechQueue.isVoiceHeld`, `HazardsCard` "Sidewalk memory" switch + status
-  caption, `LaunchRecovery.optionalFeatureKeys`.
+  `waymark_cue` + `lookup_ms`, + `latency_ms` when spoken), `lidarCue(active:)`, `lidarPulse()`,
+  `routeStarted()`, `routeEnded()`; `state`, `lastLine`, `spokenCount` for the UI; outputs
+  `onSpeak` (returns whether the queue took the line), `onLog`, `onLoaded`.
+- `AppModel+Waymark.swift` — `wireWaymark()` (init: `speech.nonResumable`, `onSpeak` →
+  `speech.say(line, .scene, ttl: 6)`, `onLog` → `logger.event`, `onLoaded` → prefetch the lines),
+  `applyWaymarkSwitch()` (`start()`), `ingestWaymark(_:)` (every `location.onFix`; GPS-weak only
+  while navigating; an indoor script counts as indoors).
+- Base edits: `AppModel` (`waymark`, `waymarkEnabled`, `activeCue.didSet`, `lidarPulse()` after a
+  ground-hazard line and "Close.", route start / stop / arrival / quiet end, `applyWaymarkSwitch()`
+  in `start()`), `SpeechQueue` (`isVoiceHeld`, `isIdle`, `nonResumable` + one guard in
+  `requeueCurrent`), `HazardsCard` "Sidewalk memory" switch + status caption,
+  `LaunchRecovery.optionalFeatureKeys`.

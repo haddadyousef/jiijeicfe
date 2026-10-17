@@ -14,6 +14,18 @@ Build log for the hackathon. One entry per step; each ends with what to test on 
   simulator the `sim-grant` grant did not stick and XCTest tapped "Don't Allow" (G0 uitest, 4
   failures, not caused by the rename).
 
+- Review fixes (adversarial review of the first A1 diff, each verified in the code): Waymark spoke at
+  `.obstacle`, the same band as fallback cue words and names, so it could delay them (H3), and a line
+  cut by "Head height." was resumed inside the 5 s quiet window (H1, `requeueCurrent`). Now: `.scene`
+  priority, spoken only when `SpeechQueue.isIdle`, never resumed (`nonResumable`). Ground-hazard
+  lines and "Close." restart the quiet window (`lidarPulse`, H2). Stale `nav.gpsWeak` after a route
+  no longer mutes Waymark off-route (M1); an indoor script counts as indoors (M2); lines are
+  prefetched for the natural voice after load (M3); a line the queue refused is not counted or
+  logged as spoken (M4); silences are logged only inside the trigger distance (M5); the switch is
+  applied in `start()`, not `init` (L2). Rejected: rewriting `#expect(s.step(...)…)` calls (L-test):
+  they compile and pass on the Mac (`make test` 1018 passed). Deferred to X-e2e: e2e's `speech`
+  stress checks will need Waymark lines exempted (L1).
+
 Test on the phone: Sense → turn on Sidewalk memory → the caption shows "3405 sidewalk reports
 loaded." Walk toward a known label on The Ave; one line, at most every 20 s, never over a LiDAR cue.
 

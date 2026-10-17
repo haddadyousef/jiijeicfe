@@ -482,9 +482,9 @@ final class AppModel {
     }
     /// waymark: "Sidewalk memory" (Sense → Hazards). Default OFF until tuned on a walk; cleared
     /// after a crash loop (`LaunchRecovery.optionalFeatureKeys`).
-    var waymarkEnabled: Bool = Settings.bool("waymarkEnabled", default: false) {
+    var waymarkEnabled: Bool = Settings.bool("waymarkEnabled", default: false) {  // waymark:
         didSet { Settings.set(waymarkEnabled, "waymarkEnabled"); waymark.enabled = waymarkEnabled }  // waymark:
-    }
+    }  // waymark:
     /// "Flashlight on in the dark (routes)" (Settings → Mount card, Step 49).
     ///
     /// Default **ON** — a deliberate exception to "new and untuned ships off by default" (AGENTS.md →
@@ -1042,7 +1042,7 @@ final class AppModel {
         sounds = SoundWatcher(speech: speech)
         hazards.signsEnabled = signsEnabled
         hazards.watchEnabled = hazardWatchEnabled
-        wireWaymark()                                 // waymark: outputs + stored switch
+        wireWaymark()                                 // waymark: outputs only; switch applied in start()
         applyCueRules()                               // the stored level / place into the engines
         context.setPeopleEnabled(namePeopleEnabled)
         pushDepthSettings()
@@ -1282,6 +1282,7 @@ final class AppModel {
         // has to recover from. `Settings.launchMode` has already read (and cleared) the previous
         // launch's marker at the first settings read in `init`.
         Settings.armLaunchMarker()
+        applyWaymarkSwitch()                 // waymark: loads the bundle only when the switch is on
         observeThermalAndBattery()
         observeLaunchHealth()
         observeVoiceForIsland()
@@ -2132,6 +2133,7 @@ final class AppModel {
             let priority: SpeechPriority = CueSpeechPolicy.closeTier == .safety ? .safety : .obstacle
             if speech.say(close, priority, ttl: 3) {
                 logger.event("speech", ["text": close, "priority": "\(priority)"])
+                waymark.lidarPulse()         // waymark: 5 s quiet after "Close."
             }
         }
         let rules = cueRules
@@ -2680,6 +2682,7 @@ final class AppModel {
             watch.send(obstacle: .center, now: now)
         }
         speech.say(g.spokenLine, .safety, ttl: 3)
+        waymark.lidarPulse()                 // waymark: 5 s quiet after a ground-hazard line
         let processor = depth.processor
         let dist = Double(g.distance)
         let delta = Double(g.delta)

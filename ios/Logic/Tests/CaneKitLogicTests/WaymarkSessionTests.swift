@@ -34,10 +34,11 @@ private func session(_ labels: [WaymarkPrior]) -> WaymarkSession {
                                            bboxLngLat: [-123, 47, -122, 48], labels: labels))
 }
 
-private func context(now: Double, level: String = "detailed", crossing: Bool = false) -> WaymarkSession.Context {
+private func context(now: Double, level: String = "detailed", crossing: Bool = false,
+                     speechIdle: Bool = true) -> WaymarkSession.Context {
     WaymarkSession.Context(cueLevel: level, cuePlace: "outdoors", crossingSettle: crossing, voiceHeld: false,
                            gpsWeak: false, fixFresh: true, secondsSinceLidarCue: nil, nowUTC: now,
-                           headingDeg: 0, legs: nil)
+                           headingDeg: 0, legs: nil, speechIdle: speechIdle)
 }
 
 private func fix(north: Double, speed: Double = 1.3, accuracy: Double = 5) -> GeoFix {
@@ -136,6 +137,28 @@ private func fix(north: Double, speed: Double = 1.3, accuracy: Double = 5) -> Ge
     var ctx = context(now: t0)
     ctx.legs = [at(north: 0, east: 60)]
     #expect(s.step(fix: fix(north: 0), context: ctx).spokenLabelID == "ps:2")
+}
+
+@Test func speaksOnlyIntoSilence() {
+    // Review H1/H3: a line that would queue behind, or be cut by, base-app speech must not be
+    // started at all. While anything is speaking or queued the label waits, unannounced.
+    var s = session([prior(1, .obstacle, at(north: 10))])
+    let busy = s.step(fix: fix(north: 0), context: context(now: t0, speechIdle: false))
+    #expect(busy.spoken == nil)
+    #expect(busy.records.first?["suppressed_reason"] == "speech_busy")
+    let idle = s.step(fix: fix(north: 0.5), context: context(now: t0 + 1))
+    #expect(idle.spoken == .obstacle)
+}
+
+@Test func farSilencesAreNotLogged() {
+    // Review M5: a gate (here the crossing settle) that holds a label 30 m out is not the decision
+    // that matters; only silences inside the trigger distance are logged, so the record that
+    // reaches the eval is the one at the moment the line would have been spoken.
+    var s = session([prior(1, .obstacle, at(north: 30))])
+    let far = s.step(fix: fix(north: 0), context: context(now: t0, crossing: true))
+    #expect(far.records.isEmpty)
+    let near = s.step(fix: fix(north: 15), context: context(now: t0 + 12, crossing: true))
+    #expect(near.records.first?["suppressed_reason"] == "crossing")
 }
 
 @Test func waymarkSettingIsClearedAfterACrashLoop() {

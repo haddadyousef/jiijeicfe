@@ -372,7 +372,14 @@ final class SpeechQueue {
     /// `isListening` flips and cleared in `cleanupAudioPipeline` (every exit path).
     @ObservationIgnored private var voiceHeld = false
     /// waymark: read-only view of `voiceHeld` for `WaymarkEngine` (it must not talk over dictation).
-    var isVoiceHeld: Bool { voiceHeld }
+    var isVoiceHeld: Bool { voiceHeld }  // waymark:
+    /// waymark: nothing playing, queued, paused between bands, interrupted or held. Waymark speaks
+    /// only then, so it never queues ahead of or delays a base-app line (A1 review H1 / H3).
+    var isIdle: Bool { !isSpeaking && queue.isEmpty && !inGap && !interrupted && !voiceHeld }  // waymark:
+    /// waymark: lines that are dropped, never resumed, when something cuts them (`requeueCurrent`).
+    /// Set to `WaymarkLines.all`: a sidewalk report replayed after "Head height." would land inside
+    /// the 5 s quiet window that follows every LiDAR cue.
+    @ObservationIgnored var nonResumable: Set<String> = []  // waymark:
     /// 15 s timer armed on `.began` that drains the queue if `.ended` never arrives (the
     /// interrupting app is not obliged to deactivate its session). Cancelled on `.ended`.
     @ObservationIgnored private var interruptionFallback: Task<Void, Never>?
@@ -1215,6 +1222,7 @@ final class SpeechQueue {
     /// `stopCurrent` (which drops the player the progress is read from). Callers: `say`
     /// (pre-emption), `interruption(.began)` and `setVoiceHold(true)`.
     private func requeueCurrent(fromClause: Bool = true) {
+        guard !nonResumable.contains(currentText) else { return }  // waymark: a cut Waymark line is dropped
         let now = Date().timeIntervalSinceReferenceDate
         guard let cp = currentPriority, !currentText.isEmpty, currentExpires > now,
               !queue.contains(where: { $0.text == currentText }) else { return }
