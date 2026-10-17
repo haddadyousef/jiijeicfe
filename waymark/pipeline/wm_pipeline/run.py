@@ -13,8 +13,7 @@ import json
 import sys
 from pathlib import Path
 
-from . import bundle as B
-from . import fetch as F
+from . import fetch as F  # stdlib only; bundle (needs jsonschema) is imported lazily in build
 
 HERE = Path(__file__).resolve().parents[1]
 DEFAULT_BBOX = [-122.32, 47.64, -122.29, 47.67]
@@ -22,6 +21,7 @@ DEFAULT_BBOX = [-122.32, 47.64, -122.29, 47.67]
 
 def load_raw(raw_dir: Path) -> tuple[list[dict], list[dict], str | None, list[float] | None]:
     """Return (docs, raw_file_entries, latest fetch time, bbox from fetch manifest)."""
+    from . import bundle as B
     fm_path = raw_dir / "fetch_manifest.json"
     if not fm_path.exists():
         raise SystemExit(f"no fetch_manifest.json in {raw_dir}; run the fetch step first")
@@ -56,6 +56,7 @@ def main(argv: list[str] | None = None) -> int:
     if a.step in ("fetch", "all"):
         F.fetch_all(bbox, a.raw, a.step_deg, a.sleep)
     if a.step in ("build", "all"):
+        from . import bundle as B
         docs, files, latest, fm_bbox = load_raw(a.raw)
         generated_at = a.generated_at or latest
         if not generated_at:
