@@ -150,13 +150,19 @@ private struct SensePage: View {
     /// Read for `lidarSupported` and `status` (the depth engine's status sentence).
     @Environment(AppModel.self) private var model
 
-    /// Status card, Scene engine card (Step 47), obstacle grid, Hazards card, top to bottom.
+    /// Status card, obstacle grid, Hazards card, then the "Diagnostics" section holding the Scene
+    /// engine card (Step 47). UI rework 2026-10-17: what a walk needs first; the engine read-out is
+    /// for the team and sits one tap away. ⚠ The "Head row" (test contract) stays outside it.
     var body: some View {
         pageScroll {
             statusCard
-            SceneEngineCard()
             ObstaclesCard()
             HazardsCard()
+            CKMoreSection(title: "Diagnostics",
+                          caption: "What answered your last question, the light and the voice.",
+                          systemImage: "sparkles", storageKey: "details.diagnostics") {
+                SceneEngineCard()
+            }
         }
     }
 
@@ -273,7 +279,7 @@ private struct FamilyContactsEditor: View {
             } label: {
                 Image(systemName: "trash")
                     .font(CKFont.secondary)
-                    .foregroundStyle(CKColor.laneUrgent)
+                    .foregroundStyle(CKColor.textPrimary)   // UI rework: a rose glyph was 2.4:1 on white
                     .frame(width: 44, height: 44)       // full hit target, small glyph
             }
             .buttonStyle(.plain)
@@ -319,9 +325,7 @@ private struct FamilyContactsEditor: View {
     /// Why the last Add was refused. Words, never a red border alone (design.md §7).
     @ViewBuilder private var errorLine: some View {
         if let error {
-            Text(error)
-                .font(CKFont.secondary)
-                .foregroundStyle(CKColor.laneUrgent)
+            CKErrorText(text: error)
         }
     }
 
@@ -459,6 +463,11 @@ private struct SettingsPage: View {
     /// team's check buttons (Vibration, Watch, Record an indoor route, This phone). The
     /// XCUITest labels are unchanged; `testHapticTestButtonsAndSilenceToggle` taps elements (which
     /// scroll themselves into view), so moving Vibration down the page does not affect it.
+    ///
+    /// UI rework 2026-10-17: "Everyday" (Alerts, Voice, Phone on cane, Vibration) stays open; the rest
+    /// sits in two remembered `CKMoreSection`s — "Family alerts" and "Testing tools" (Watch, Record an
+    /// indoor route, This phone). ⚠ Every test-contract control (Cues segments, "Mirror left / right",
+    /// "Write trip log", "Silence haptics", the four haptic test buttons) stays outside the sections.
     var body: some View {
         @Bindable var model = model
         pageScroll {
@@ -466,12 +475,19 @@ private struct SettingsPage: View {
             cueSettings($model)
             voiceSettings($model)
             mountSettings($model)
-            familyAlertsCard($model)
-            CKSectionHeader(title: "Testing tools")
             HapticsCard()
-            WatchCard()
-            IndoorRecordCard()
-            capabilityCard
+            CKMoreSection(title: "Family alerts",
+                          caption: "Let family know if something goes wrong on a walk.",
+                          systemImage: "person.2.fill", storageKey: "settings.family") {
+                familyAlertsCard($model)
+            }
+            CKMoreSection(title: "Testing tools",
+                          caption: "Watch, recording an indoor route, and what this phone supports.",
+                          systemImage: "wrench.and.screwdriver", storageKey: "settings.testing") {
+                WatchCard()
+                IndoorRecordCard()
+                capabilityCard
+            }
         }
     }
 

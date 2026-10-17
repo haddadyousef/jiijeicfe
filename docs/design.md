@@ -104,7 +104,7 @@ Rules:
 Neutrals are tinted warm (toward the ivory of a cane), never pure grey. Values are sRGB hex. Four
 variants per token: light, dark, and increased-contrast light / dark (`Settings → Accessibility →
 Increase Contrast`), resolved by UIKit trait collections in `CKColor.dynamic` (phone only; the watch
-and the widget use fixed colours, §6.6 / §6.7). Contrast ratios are WCAG 2.x, recomputed 2026-09-11.
+and the widget use fixed colours, §6.6 / §6.7). Contrast ratios are WCAG 2.x, recomputed 2026-09-11 (lane ladder and status: 2026-10-17).
 
 ### Surfaces and text
 
@@ -126,23 +126,32 @@ Thresholds are `CaneKitLogic.TileLevel`, not the view.
 
 | Token | Distance | Normal | HC | Level word on the tile | `ink` contrast (normal vs `#17140F` / HC vs `#000000`) |
 |---|---|---|---|---|---|
-| `laneClear` | ≥ 2.0 m, or no return | `#4ADE80` | `#22D36B` | CLEAR | 10.5:1 / 10.6:1 |
-| `laneFar` | 1.2 – 2.0 m | `#FDE047` | `#FFD500` | FAR | 13.9:1 / 14.8:1 |
-| `laneNear` | 0.7 – 1.2 m | `#FB923C` | `#FF7A00` | NEAR | 8.1:1 / 8.0:1 |
-| `laneUrgent` | < 0.7 m | `#F87171` | `#FF6B6B` | STOP | 6.6:1 / 7.6:1 |
+| `laneClear` | ≥ 2.0 m, or no return | `#84ADF8` sky blue | same | CLEAR | 8.1:1 / 9.3:1 |
+| `laneFar` | 1.2 – 2.0 m | `#FCF855` lemon | same | FAR | 16.4:1 / 18.7:1 |
+| `laneNear` | 0.7 – 1.2 m | `#F8BA48` amber | same | NEAR + ⚠ triangle glyph | 10.6:1 / 12.1:1 |
+| `laneUrgent` | < 0.7 m | `#FD748F` rose | same | STOP + octagon glyph + 3 pt ink border | 7.1:1 / 8.1:1 |
 | `laneNoData` | no depth yet, or the band is not visible (Step 51) | = `surfaceRaised` | — | NO DATA / NO COVER ("—" instead of metres) | text in `textSecondary` |
 
-Deuteranopia check: far and near are close in hue, which is why the level word and the number are
-mandatory on every tile. OKLab lightness is far (0.91) > clear (0.80) > near (0.76) > urgent (0.71), so
-the two dangerous states are also the two darkest fills.
+**Colour-blind check (UI rework 2026-10-17, owner request "colour friendly").** The ladder was
+green / yellow / orange / red; simulated with Machado et al. 2009 (severity 1.0), its closest pair in
+OKLab was CLEAR/NEAR at 0.071 for deuteranopes and NEAR/STOP at 0.058 for tritanopes, i.e. two states
+that read as the same colour. The new blue / lemon / amber / rose set was chosen by a search over
+hue / saturation / value for the largest worst-case pair distance under normal, protan, deutan and
+tritan vision with every fill ≥ 7:1 against `ink`: the worst pair is now 0.128 (far/near, deutan).
+The script is in the Mac session's notes (STATUS_M 2026-10-17). HC variants are the same hex: every
+fill already exceeds 8:1 against HC's pure-black ink, and HC adds the thicker borders. Words, numbers
+and (since 2026-10-17) the NEAR / STOP glyphs and the STOP border mean no state depends on colour.
+OKLab lightness: far (0.95) > near (0.83) > clear (0.75) > urgent (0.73).
+**Never use a lane colour as text colour:** on a white card they are 1.1–2.6:1. Errors use
+`CKErrorText` (glyph in `danger`, words in `textPrimary`).
 
 ### Status
 
 | Token | Normal | HC | Where it appears in the code |
 |---|---|---|---|
 | `trusted` | = `laneClear` | = HC clear | TRUSTED, ON COURSE, GPS ±N M (≤ 15 m), ENGINE OK, REACHABLE, BEACON N% (running), ElevenLabs voice pill; watch phone-link glyph |
-| `warning` | `#FBBF24` | `#FFB000` | SWEEPING, VEER LEFT / RIGHT N°, GPS ±N M (> 15 m), GPS WEAK, the active cue (CENTER / LEFT / RIGHT / HEAD), SPEAKING, NO AIRPODS, BEACON PAUSED |
-| `danger` | = `laneUrgent` | = HC urgent | Stop route fill, ENGINE DOWN pill, error lines (as text colour) |
+| `warning` | = `laneNear` (`#F8BA48`) | = | SWEEPING, VEER LEFT / RIGHT N°, GPS ±N M (> 15 m), GPS WEAK, the active cue (CENTER / LEFT / RIGHT / HEAD), SPEAKING, NO AIRPODS, BEACON PAUSED |
+| `danger` | = `laneUrgent` | = HC urgent | Stop route fill, ENGINE DOWN pill, the glyph of `CKErrorText` (never text colour) |
 | `neutral` | = `surfaceRaised` | — | GPS SEARCHING / OFF / DENIED, cue CLEAR, QUIET, SYSTEM voice, watch ASLEEP / NOT PAIRED, BEACON OFF / IDLE, HEAD TRACKED / COMPASS ONLY, last watch command. Text in `textPrimary` (the only non-ink pill) |
 | `accent` (pill tone) | = `accent` | — | The **CAMPUS** badge on a destination suggestion (§6.3). Not a state: it marks a hand-verified gazetteer entrance. Text in `onAccent`; accent never carries hazard meaning |
 
@@ -457,6 +466,20 @@ Step 44). The navigation title is **inline and centred, one per tab** (Steps 41�
 VoiceOver because the bar already reads it): Guide = "OpenCane", Sense = **"Details"**, Settings =
 "Settings", Profile = "Profile". Card order *inside the selected page* is the VoiceOver order; the
 tab bar is last on every page.
+
+**Progressive disclosure (UI rework 2026-10-17, owner: "simpler, don't lose any functionality").**
+Each page shows what a walk needs; everything else sits in a `CKMoreSection` — a ≥ 60 pt header
+("<title>, collapsed / expanded" to VoiceOver) whose open state is remembered per section. No
+control was removed or renamed, and **no ⚠ test-contract control is inside a section** (the
+XCUITests never open one).
+
+| Page | Always shown | In a section (closed by default) |
+|---|---|---|
+| Guide, idle | Guide card, microphone, Where am I / Start route, Where to (destination, Navigate to CIF) | **Demo**: Simulate walk |
+| Guide, walking | Guide card, microphone, Repeat / Next / Stop route, Recenter, error line | **More route tools**: beacon and headphone pills, Simulate walk |
+| Details | status, Obstacles grid, Hazards card (incl. Sidewalk memory) | **Hands-free and camera**; **Diagnostics** (Recent activity / Scene engine) |
+| Settings | Alerts, Voice, Phone on cane, Vibration | **Family alerts**; **Testing tools** (Watch, Record an indoor route, This phone) |
+| Profile | unchanged | — |
 
 ```
 OpenCane · Details · Settings · Profile                                       ← inline, centred navigation title, one per tab
@@ -845,6 +868,13 @@ Redesigned twice from automated pictures of the island (`make island` → `NN-is
 sensing fact after the owner said "the island looks kind of bad… just a location icon thing" and the
 audit found a safety bug — a green "Path clear" on the lock screen while depth was paused.
 
+**Colours (UI rework 2026-10-17, `IslandPalette`).** Same colour-blind-safe set as the phone
+ladder: clear `#84ADF8` blue, torso warning `#F8BA48` amber, head / stop `#FD748F` rose, drop-off
+`#5FE0C8` teal (was lavender, which merged with the new blue), sensing paused `#FCF855` lemon (kept
+apart from the torso amber), voice ivory with its waveform / ellipsis glyph (the old blue merged with
+clear). Worst pair under deutan simulation 0.100 (was 0.020: drop-off vs voice). Every state also has
+its own glyph and word, so none depends on colour.
+
 **States (Step 64).** One activity per walk, from the warm-up to a closing card. `IslandPhasePolicy`
 (CaneKitLogic) decides the phase with the priority listening > thinking > warming > indoor > walking;
 arrived / stopped are set by `LiveActivityController.end`. Obstacle alerts are not a phase: they ride
@@ -853,14 +883,14 @@ on top as `alertLevel` and win the keyline tint and the relevance score.
 ```
                 compact leading          compact trailing       minimal        expanded bottom
 WARMING         ◎ ⏳ 0:04                ◔ (ring)               ◎ ivory        "Obstacle detection warming up"
-WALKING live    ◎ ↱ 42 m                 ◕ ✓ (green only live)  ◎ ivory        instruction ≤ 3 lines
+WALKING live    ◎ ↱ 42 m                 ◕ ✓ (blue only live)   ◎ ivory        instruction ≤ 3 lines
                                                                                [● Path clear] ▬▬○── 3 of 6
-WALKING locked  ◎ ↑ 120 m                ◕ ⏸ (amber)            ◎ amber        [⏸ Obstacles paused — unlock]
-ALERT stop/head ◎ ↑ 42 m                 ⚠ HEAD / ✋ STOP (red)   ◎ red          [⚠ Head height 0.8 m] (red keyline)
+WALKING locked  ◎ ↑ 120 m                ◕ ⏸ (lemon)            ◎ lemon        [⏸ Obstacles paused — unlock]
+ALERT stop/head ◎ ↑ 42 m                 ⚠ HEAD / ✋ STOP (rose)  ◎ rose         [⚠ Head height 0.8 m] (rose keyline)
 INDOOR          ◎ ↰ 3/5                  ◔ (ring)               ◎ ivory        "Step 3 of 5" + the step's line
-LISTENING       ◎ ≋                      Listening (blue)       ◎ blue
-THINKING        ◎ …                      Thinking (blue)        ◎ blue
-ARRIVED         ◎ ⚑                      Arrived (green)        ◎ green        60 s on the lock screen
+LISTENING       ◎ ≋                      Listening (ivory)      ◎ ivory
+THINKING        ◎ …                      Thinking (ivory)       ◎ ivory
+ARRIVED         ◎ ⚑                      Arrived (blue)         ◎ blue         60 s on the lock screen
 STOPPED         ◎ ⏹                      Stopped                ◎ ivory        "Route stopped", 10 s
 
 Expanded

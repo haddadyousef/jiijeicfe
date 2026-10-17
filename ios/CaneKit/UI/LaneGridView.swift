@@ -106,8 +106,9 @@ struct LaneGridView: View {
 /// One cell: metres (or "clear"), a level word, lane-ladder fill. Hidden from VoiceOver —
 /// the row exposes the combined value.
 ///
-/// Three-way redundancy (design.md §0 rule 2): fill colour + level word (STOP / NEAR / FAR /
-/// CLEAR / NO DATA / NO COVER) + a number, so no state depends on colour alone. Text on a lane fill is
+/// Redundancy (design.md §0 rule 2): fill colour + level word (STOP / NEAR / FAR / CLEAR / NO DATA /
+/// NOT SEEN) + a number, plus a glyph on NEAR / STOP and a border on STOP (UI rework 2026-10-17),
+/// so no state depends on colour alone. Text on a lane fill is
 /// `ink`; on the no-data / no-cover fill it is `textSecondary`.
 struct LaneTile: View {
     /// Column caption: "Left", "Center" or "Right".
@@ -133,14 +134,36 @@ struct LaneTile: View {
                 .font(CKFont.tile)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-            Text(levelWord)
-                .font(.caption2.weight(.bold))
+            // UI rework 2026-10-17: NEAR and STOP add a glyph, STOP a thick ink border, so the two
+            // dangerous levels read by shape too (colour-blind and greyscale screens).
+            HStack(spacing: 2) {
+                if let glyph = levelGlyph {
+                    Image(systemName: glyph).font(.caption2.weight(.bold))
+                }
+                Text(levelWord)
+                    .font(.caption2.weight(.bold))
+            }
         }
         .foregroundStyle((level == .noData || level == .noCover) ? CKColor.textSecondary : CKColor.ink)
         .frame(maxWidth: .infinity)
         .padding(.vertical, CKSpacing.md)
         .background(fill, in: RoundedRectangle(cornerRadius: CKRadius.tile, style: .continuous))
+        .overlay {
+            if level == .urgent {
+                RoundedRectangle(cornerRadius: CKRadius.tile, style: .continuous)
+                    .strokeBorder(CKColor.ink, lineWidth: 3)
+            }
+        }
         .accessibilityHidden(true)
+    }
+
+    /// Shape cue beside the level word: an octagon for STOP, a triangle for NEAR, none otherwise.
+    private var levelGlyph: String? {
+        switch level {
+        case .urgent: "exclamationmark.octagon.fill"
+        case .near: "exclamationmark.triangle.fill"
+        case .far, .clear, .noData, .noCover: nil
+        }
     }
 
     /// Visible metres: "—" without data or coverage, "clear" at ≥ 4.5 m or non-finite, else "%.1f m".

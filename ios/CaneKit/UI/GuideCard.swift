@@ -17,6 +17,10 @@
 //  ≥ 60 % of the page height) → the compact row (idle: Where am I | Start route to CIF; navigating:
 //  Repeat | Next | Stop route) → describer text → everything else below the fold, labels unchanged.
 //
+//  UI rework 2026-10-17 (owner: simpler, nothing lost): walking shows Recenter directly and puts the
+//  beacon / headphone pills and Simulate walk in a "More route tools" `CKMoreSection`; idle puts
+//  Simulate walk in a "Demo" section under "Where to". Every label and action is unchanged.
+//
 //  Step 62 indoor state (`model.indoor.isActive`): the instruction shows the indoor step's line, a
 //  status line "Indoors · step 3 of 5" follows it, the compact row is the navigating one (Repeat |
 //  Next | Stop route — same labels, hard rule 9, routed to the indoor step by AppModel+Indoor's
@@ -78,12 +82,36 @@ struct GuideCard: View {
         VStack(alignment: .leading, spacing: CKSpacing.lg) {
             statusCard
             voiceAndActions
-            if model.nav.isNavigating || model.indoor.isActive {
+            if model.nav.isNavigating {
+                // UI rework 2026-10-17: only Recenter stays out (⚠ test contract, the tests
+                // `scrollTo` it); the beacon / headphone pills and Simulate walk are one tap away.
+                CKBigButton(title: "Recenter", systemImage: "location.north.line", role: .secondary,
+                            hint: "Sets straight ahead as the beacon's forward direction") { model.recenter() }
+                errorLine
+                CKMoreSection(title: "More route tools",
+                              caption: "Direction sound, headphones and the walk simulation.",
+                              systemImage: "slider.horizontal.3", storageKey: "guide.route") {
+                    routeToolsCard
+                }
+            } else if model.indoor.isActive {
                 routeToolsCard
                 errorLine
             } else {
                 // Idle: the error line sits inside "Where to", right under the field that caused it.
                 whereToCard
+                CKMoreSection(title: "Demo", caption: "Play the route without moving.",
+                              systemImage: "play.circle", storageKey: "guide.demo") {
+                    CKCard {
+                        CKBigButton(title: "Simulate walk",
+                                    subtitle: "Demo: plays the route without moving",
+                                    systemImage: "play.circle.fill",
+                                    role: .secondary,
+                                    hint: "Simulates walking the demo route indoors step by step without moving") {
+                            model.startSimulatedWalk()
+                        }
+                        .disabled(model.routeStartWaiting || model.isBuildingRoute)
+                    }
+                }
             }
         }
         .onChange(of: model.nav.isNavigating) { _, navigating in
@@ -207,20 +235,18 @@ struct GuideCard: View {
             }
             // Describer error, e.g. "No camera frame" (the no-key UI test accepts "camera" or "Scene:").
             if let err = model.describer.lastError {
-                Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+                CKErrorText(text: err)
             }
         }
     }
 
-    /// "Route tools" card while a route (or the indoor leg) runs: Recenter, the beacon / headphone
-    /// pills and Simulate walk; indoors only the step simulation.
+    /// "Route tools" card: while a route runs (inside "More route tools"), the beacon / headphone
+    /// pills and Simulate walk — Recenter sits above the section since the UI rework; indoors, only
+    /// the step simulation, shown directly.
     private var routeToolsCard: some View {
         CKCard(title: "Route tools", systemImage: "slider.horizontal.3") {
             if model.nav.isNavigating {
                 // Repeat / Next / Stop route live in the compact row under the microphone (Step 58).
-                // ⚠ test contract: "Recenter" (below the fold now: the tests `scrollTo` it).
-                CKBigButton(title: "Recenter", systemImage: "location.north.line", role: .secondary,
-                            hint: "Sets straight ahead as the beacon's forward direction") { model.recenter() }
                 // Beacon pill: warning without headphones (the beacon cannot play), trusted while it
                 // plays, neutral when off or idle. Head pill: warning without headphones.
                 HStack(spacing: CKSpacing.sm) {
@@ -254,7 +280,7 @@ struct GuideCard: View {
     }
 
     /// "Where to" card on the idle Guide. Order (owner request 2026-09-13): the destination field
-    /// first, then Navigate to CIF from here, then Simulate walk.
+    /// first, then Navigate to CIF from here (Simulate walk moved to the "Demo" section, 2026-10-17).
     private var whereToCard: some View {
         CKCard(title: "Where to", systemImage: "mappin.and.ellipse") {
                 if model.nav.arrived {
@@ -286,15 +312,7 @@ struct GuideCard: View {
                             hint: "Builds a walking route with Apple Maps from where you are to the CIF east entrance",
                             value: model.isBuildingRoute ? "finding a route" : nil) { model.navigateToCIFFromHere() }
                     .disabled(model.isBuildingRoute || model.routeStartWaiting)
-
-                CKBigButton(title: "Simulate walk",
-                            subtitle: "Demo: plays the route without moving",
-                            systemImage: "play.circle.fill",
-                            role: .secondary,
-                            hint: "Simulates walking the demo route indoors step by step without moving") {
-                    model.startSimulatedWalk()
-                }
-                .disabled(model.routeStartWaiting || model.isBuildingRoute)
+                // UI rework 2026-10-17: idle "Simulate walk" moved to the "Demo" section below this card.
                 // Why a route has not started yet (waiting for depth, or timed out); not an error,
                 // so primary text, spoken as written.
                 if let status = model.routeStartStatus {

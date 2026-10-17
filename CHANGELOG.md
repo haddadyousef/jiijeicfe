@@ -2,6 +2,26 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark UI rework — colour-blind-safe and simpler (Sat Oct 17)
+
+Owner request: "more colour friendly, simpler to use, don't lose any functionality".
+- **Palette.** Lane ladder green / yellow / orange / red → sky blue / lemon / amber / rose, chosen by a
+  colour-vision-deficiency simulation (Machado 2009) for the largest worst-case pair distance with
+  every fill ≥ 7:1 against ink. The worst pair was 0.071 (deutan) / 0.058 (tritan); now 0.128.
+  `warning` = the NEAR amber (one caution colour). Watch and Live Activity follow the same set; the
+  island's drop-off became teal and voice ivory (the old ones merged with the new blue).
+- **Shape cues.** NEAR tiles show a triangle glyph, STOP tiles an octagon and a 3 pt ink border.
+- **Error text.** Red / rose text (2.4–2.8:1 on white) → `CKErrorText`: glyph in danger colour,
+  words in primary text colour. Nine call sites.
+- **Simpler pages.** New `CKMoreSection` (remembered per section): Guide "Demo" / "More route tools",
+  Details "Hands-free and camera" / "Diagnostics", Settings "Family alerts" / "Testing tools". No
+  control removed or renamed; no test-contract control inside a section. Details now shows the
+  Obstacles grid before the engine read-out.
+- Docs: design.md §2 tables and the colour-blind check, §6 disclosure table, §6.7 island colours.
+
+Test on the phone: Settings → Accessibility → Display & Text Size → Color Filters → Red/Green and
+Green/Red: CLEAR, FAR, NEAR and STOP tiles stay four different colours; open and close each section.
+
 ## Waymark A1 — sidewalk memory wired into the app (Sat Oct 17)
 
 - `WaymarkSession` (Logic, 11 tests): one fix in, at most one line out; per-route log dedupe.

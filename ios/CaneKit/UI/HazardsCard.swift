@@ -76,8 +76,14 @@ struct HazardsCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: CKSpacing.xl) {
             hazardsCard
-            handsFreeCard
-            cameraCard
+            // UI rework 2026-10-17: the helper / power-user switches sit one tap away. No test queries
+            // them; every label, binding and refusal caption inside is unchanged.
+            CKMoreSection(title: "Hands-free and camera",
+                          caption: "Nod to talk, head tracking, live camera view and the flashlight.",
+                          systemImage: "hand.raised", storageKey: "details.handsfree") {
+                handsFreeCard
+                cameraCard
+            }
         }
     }
 
@@ -119,7 +125,7 @@ struct HazardsCard: View {
             if let s = model.hazards.lastSign { detection("Sign", s) }
             if let c = model.hazards.lastCaution { detection("Watch", c) }
             if let err = model.hazards.lastError ?? model.hazardLog.lastError {
-                Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+                CKErrorText(text: err)
             }
             if model.hazardLog.fileWritten {
                 ShareLink(item: model.hazardLog.fileURL) {
@@ -271,12 +277,11 @@ struct HazardsCard: View {
                     .frame(maxWidth: .infinity)
                     .clipShape(RoundedRectangle(cornerRadius: CKRadius.button, style: .continuous))
                     .accessibilityHidden(true)                     // a picture, for a sighted helper
-                Text(model.bothCameras.frontConnected
+                CKErrorText(text: model.bothCameras.frontConnected
                      ? "Back camera with the front camera inset. Obstacle detection is paused."
                      : "Back camera only — the front camera could not be opened. Obstacle detection is paused.")
-                    .font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
                 if let err = model.bothCameras.lastError {
-                    Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+                    CKErrorText(text: err)
                 }
             }
             .accessibilityElement(children: .combine)
@@ -289,7 +294,7 @@ struct HazardsCard: View {
     @ViewBuilder private var soundStatus: some View {
         if let alert = model.sounds.lastAlert { detection("Sound", alert) }
         if let err = model.sounds.lastError {
-            Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+            CKErrorText(text: err)
                 .accessibilityLabel(err)
         }
         if model.sounds.isRunning, !model.sounds.labelReport.isEmpty {

@@ -46,7 +46,7 @@ struct ArrivalCardView: View {
                 .font(CKFont.secondary)
                 .foregroundStyle(CKColor.textSecondary)
             if let err = trip.lastError {
-                Text(err).font(CKFont.secondary).foregroundStyle(CKColor.laneUrgent)
+                CKErrorText(text: err)
             }
         }
         // One VoiceOver sentence for the whole card (spoken summary from TripTracker).
