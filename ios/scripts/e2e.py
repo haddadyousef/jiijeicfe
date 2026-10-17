@@ -55,6 +55,8 @@ on the same device starves the app and the assertions then describe a walk that 
 # warnings land in build/e2e/report.json.
 # App contracts it depends on (renaming any of these breaks it, usually as a false FAIL):
 #   env hooks  CANEKIT_DEMO_ROUTE (AppModel.start → startDemoRoute), CANEKIT_MUTE (SpeechQueue.muted),
+#              WAYMARK_DEMO_ROUTE=isr_cif (waymark: the demo route defaults to the Seattle Ave walk;
+#              every scenario here replays the UIUC route, so it is pinned on every launch),
 #              CANEKIT_FRAME_DIR (FrameReplay), CANEKIT_DESCRIBE_EVERY_WAYPOINT
 #              (AppModel.describeEveryWaypoint), CANEKIT_HAZARD_WATCH (AppModel.wireHazards),
 #              CANEKIT_ROUTE_FILE (RouteSource.bundled, Step 66), CANEKIT_INDOOR_ROUTE +
@@ -305,6 +307,7 @@ def launch_and_wait_for_route(udid: str, attempts: int = 3, extra_env: dict[str,
         started = time.time()
         subprocess.run(["xcrun", "simctl", "launch", "--terminate-running-process", udid, BUNDLE],
                        env={**os.environ, "SIMCTL_CHILD_CANEKIT_DEMO_ROUTE": "1", "SIMCTL_CHILD_CANEKIT_MUTE": "1",
+                       "SIMCTL_CHILD_WAYMARK_DEMO_ROUTE": "isr_cif",
                             **(extra_env or {})},
                        capture_output=True, text=True, check=True)
         deadline = time.time() + 20
@@ -385,7 +388,8 @@ def run_indoor(udid: str, log_name: str = "indoor_isr") -> dict:
     sh("xcrun", "simctl", "install", udid, str(APP))
     sh("xcrun", "simctl", "location", udid, "set", f"{ex['lat']},{ex['lon']}")
     env = {**os.environ, "SIMCTL_CHILD_CANEKIT_INDOOR_ROUTE": "1", "SIMCTL_CHILD_CANEKIT_INDOOR_SIM_STEPS_PER_S": "3",
-           "SIMCTL_CHILD_CANEKIT_MUTE": "1"}
+           "SIMCTL_CHILD_CANEKIT_MUTE": "1",
+                       "SIMCTL_CHILD_WAYMARK_DEMO_ROUTE": "isr_cif"}
     events: list[dict] = []
     log: Path | None = None
     started = time.time()

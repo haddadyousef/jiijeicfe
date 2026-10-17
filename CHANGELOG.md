@@ -2,6 +2,25 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark UI v2 + Seattle default route (Sat Oct 17)
+
+Owner (Akash, 16:10): "not just the colours — button format and the whole app format simpler and
+better overall", and the demo route default from UIUC to The Ave (W's D-35).
+- **One button format:** round symbol badge, bold title, one-line subtitle, chevron on rows; tiles
+  with the badge top-left. Blue brand accent (`#1E40AF` / `#84ADF8`), rounder cards with bold titles
+  and tinted badges, section headers as real headings, a bigger tab bar.
+- **Guide:** status card with a big symbol and "Ready" / "Next step" / "Arrived"; walking is a 2 × 2
+  grid (Repeat | Next / Recenter | Stop route); subtitles on every main button.
+- **Details:** "What's ahead" with "Head height" / "Body height" and a colour key.
+- **Default route = The Ave** (`RouteSource.bundled()` → `route_ave_seattle.json`;
+  `WAYMARK_DEMO_ROUTE=isr_cif` for the UIUC route). XCUITests and e2e.py pin UIUC; the indoor ISR
+  handover uses `RouteSource.isrCif`. Labels "Start route to CIF" → **"Start route"**, "Navigate to
+  CIF from here" → **"Directions from here"** (tests updated in the same commit). Siri phrases follow.
+  Makefile parks the simulator at the route start; `WaymarkRouteTests` pins the bundled copy to
+  `waymark/demo/route.json`.
+
+Test on the phone: Start route walks The Ave; every button shows a badge, title and subtitle.
+
 ## Waymark UI rework — colour-blind-safe and simpler (Sat Oct 17)
 
 Owner request: "more colour friendly, simpler to use, don't lose any functionality".

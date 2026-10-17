@@ -62,11 +62,13 @@ enum CKColor {
     /// Hints, card titles, secondary rows (≥ 6.5:1). Never used for text a hazard depends on.
     static let textSecondary = dynamic(0x5C574D, 0xB5AFA3, hcLight: 0x3A362F, hcDark: 0xD9D4C9)
 
-    /// The brand accent is "cane white on ink": ink in light mode, ivory in dark mode.
-    /// It never carries hazard meaning; hazard is only ever the lane ladder below.
-    static let accent   = dynamic(0x17140F, 0xF4F1EA, hcLight: 0x000000, hcDark: 0xFFFFFF)
-    /// Text / symbols on an `accent` fill (primary `CKBigButton`).
-    static let onAccent = dynamic(0xF4F1EA, 0x0E0D0B, hcLight: 0xFFFFFF, hcDark: 0x000000)
+    /// The brand accent (UI v2, 2026-10-17; was "cane white on ink"): deep blue `#1E40AF` in light
+    /// mode (white text 8.7:1, AAA), sky blue `#84ADF8` in dark mode (dark text 8.6:1). Blue is the
+    /// one hue every colour-vision type sees as itself. Primary buttons, the selected tab, the voice
+    /// disc and the button badges. It never carries hazard meaning; hazard is only the lane ladder.
+    static let accent   = dynamic(0x1E40AF, 0x84ADF8, hcLight: 0x1E3A8A, hcDark: 0xA8C5FF)
+    /// Text / symbols on an `accent` fill (primary `CKBigButton`, selected tab).
+    static let onAccent = dynamic(0xFFFFFF, 0x0E0D0B, hcLight: 0xFFFFFF, hcDark: 0x000000)
     /// Text on every coloured fill (lane tiles, pills, banners). One rule, no exceptions.
     static let ink      = dynamic(0x17140F, 0x17140F, hcLight: 0x000000, hcDark: 0x000000)
 
@@ -141,10 +143,12 @@ enum CKFont {
     /// call sites (`lineLimit(nil)` + vertical `fixedSize`): the text wraps and is never truncated
     /// or shrunk — the spotter reads it over the walker's shoulder.
     static let instruction = Font.system(.title2, design: .default).weight(.semibold)
-    /// Big button labels.
-    static let button      = Font.system(.title3, design: .rounded).weight(.semibold)
-    /// Card titles and settings rows.
+    /// Big button labels (UI v2: bold).
+    static let button      = Font.system(.title3, design: .rounded).weight(.bold)
+    /// Settings rows and section headers' titles.
     static let label       = Font.headline
+    /// Card titles (UI v2: one size up from `label`, rounded, so each card reads as a heading).
+    static let cardTitle   = Font.system(.title3, design: .rounded).weight(.bold)
     /// Toggle labels, scene description text, route names.
     static let body        = Font.body
     /// Status pills: uppercase, 1–2 words, tracking added in the view.
@@ -182,10 +186,10 @@ enum CKSpacing {
 enum CKRadius {
     /// Depth tiles.
     static let tile: CGFloat = 14
-    /// Big buttons: ¼ of the 72 pt height so they read as slabs, not pills.
-    static let button: CGFloat = 18 // ¼ of the 72 pt height: a slab, not a pill
-    /// Cards.
-    static let card: CGFloat = 20
+    /// Big buttons (UI v2: 22, softer; still a slab, not a pill).
+    static let button: CGFloat = 22
+    /// Cards (UI v2: 26).
+    static let card: CGFloat = 26
     /// Status pills (effectively a capsule). Not referenced: `CKStatusPill` draws a `Capsule()`.
     static let pill: CGFloat = 999
 }
@@ -196,11 +200,11 @@ enum CKMetrics {
     /// destination field, its clear button and suggestion rows, the haptic / wrist test buttons,
     /// the share button, each tab). Big buttons use `bigButton`.
     static let touchTarget: CGFloat = 60
-    /// `CKBigButton` minimum height (design.md §3: 72 pt, full or half width).
-    static let bigButton: CGFloat = 72
-    /// Minimum height of a `CKBigButton` in `tile` layout (icon over word over caption); the
-    /// pair's `HStack` stretches both tiles to the taller one. Step 47.
-    static let tile: CGFloat = 108
+    /// `CKBigButton` minimum height (UI v2: 76 pt, full or half width).
+    static let bigButton: CGFloat = 76
+    /// Minimum height of a `CKBigButton` in `tile` layout (badge over word over subtitle); the
+    /// pair's `HStack` stretches both tiles to the taller one. Step 47; UI v2 124 pt.
+    static let tile: CGFloat = 124
     /// Hairline normally; a real border under Increase Contrast.
     static func border(for contrast: ColorSchemeContrast) -> CGFloat {
         contrast == .increased ? 3 : 1
@@ -210,32 +214,34 @@ enum CKMetrics {
 // MARK: - CKBigButton
 
 /// The action button of the app: every Guide button except Go and the destination field's own
-/// controls, plus "Speech test" and the self-test buttons. ≥ 72 pt tall, full width by default, a
-/// word plus an SF Symbol, and a VoiceOver hint that says what happens (docs/design.md §6 has the
-/// copy).
+/// controls, plus "Speech test" and the self-test buttons. Full width by default, a word plus an SF
+/// Symbol, and a VoiceOver hint that says what happens (docs/design.md §6 has the copy).
+///
+/// UI v2 (2026-10-17, owner: "change the button format, simpler and better overall"): one format
+/// everywhere — the symbol sits in a round badge, the title is bold, an optional one-line subtitle
+/// says what the button does, and every row ends in a chevron so it reads as tappable. Tiles (two
+/// across) put the badge top-left and the words under it, left-aligned, like a Shortcuts tile.
+/// Fills: primary = `accent` (deep blue / sky blue), secondary = `surface` card with a border,
+/// destructive = `danger` (rose) with `ink` text.
 ///
 /// Accessibility: label = `title` (⚠ test contract: XCUITests find it as `app.buttons[title]`),
-/// hint = `hint`, value = `value`; the SF Symbol is hidden so VoiceOver reads the word once.
+/// hint = `hint`, value = `value`; the SF Symbol and the subtitle are not part of the label.
 /// The visible text never truncates: it wraps, and at accessibility sizes the row restacks.
 struct CKBigButton: View {
-    /// Fill / foreground pairing: `primary` = accent (ink / ivory), `secondary` = raised surface
-    /// with a border, `destructive` = `danger` fill with ink text (Stop route).
+    /// Fill / foreground pairing: `primary` = accent, `secondary` = surface with a border,
+    /// `destructive` = `danger` fill with ink text (Stop route).
     enum Role { case primary, secondary, destructive }
 
-    /// How the label is arranged. `row` = icon, word (+ subtitle) and chevron across the button,
-    /// restacking only at accessibility text sizes; `tile` = icon over a centred word (+ subtitle),
-    /// for a pair placed side by side. Step 47: the Guide's two-up "Where am I" / "Talk to
-    /// Waymark" pair used `row`, and `ViewThatFits` kept the short title in a row while it
-    /// stacked the long one — two shapes in one pair, which the owner read as broken. A pair is
-    /// always `tile`, and the pair's `HStack` gets `.fixedSize(horizontal: false, vertical: true)`
-    /// so both tiles take the taller one's height.
+    /// `row` = badge, words and chevron across the button; `tile` = badge over the words, for a
+    /// pair (or a 2 × 2 grid) placed side by side. A pair is always `tile`, and the pair's `HStack`
+    /// gets `.fixedSize(horizontal: false, vertical: true)` so both tiles take the taller height.
     enum Layout { case row, tile }
 
     /// Visible word and VoiceOver label. ⚠ test contract for every title used by the XCUITests.
     let title: String
-    /// Optional subtitle rendered below the title for additional context.
+    /// Optional one-line subtitle under the title: what the button does or where it goes.
     var subtitle: String? = nil
-    /// SF Symbol shown beside the word; hidden from VoiceOver (a companion, never the only cue).
+    /// SF Symbol in the badge; hidden from VoiceOver (a companion, never the only cue).
     let systemImage: String
     /// Visual role; see `Role`.
     var role: Role = .primary
@@ -248,8 +254,7 @@ struct CKBigButton: View {
     /// Tap handler. Runs on the main actor.
     let action: () -> Void
 
-    /// A `Button` whose label restacks icon-over-text when a row will not fit, framed to the
-    /// full width and `bigButton` height, styled by `CKBigButtonStyle`.
+    /// A `Button` with the row or tile label, styled by `CKBigButtonStyle`.
     var body: some View {
         Button(action: action) {
             if layout == .tile { tileLabel } else { rowLabel }
@@ -261,86 +266,80 @@ struct CKBigButton: View {
         .accessibilityValue(value ?? "")
     }
 
-    /// `tile`: icon over the word over the subtitle, all centred, filling the width and any
-    /// height the pair's `HStack` gives it (≥ `CKMetrics.tile`). The word may wrap to two lines
-    /// ("Talk to Waymark" at 17 Pro Max width) and shrinks to 90 % before it hyphenates.
+    /// Words colour of the subtitle per role (slightly quieter than the title).
+    private var subtitleStyle: Color {
+        switch role {
+        case .primary: CKColor.onAccent.opacity(0.85)
+        case .secondary: CKColor.textSecondary
+        case .destructive: CKColor.ink.opacity(0.8)
+        }
+    }
+
+    /// `tile`: badge top-left, then the title and subtitle, left-aligned, filling the width and any
+    /// height the pair's `HStack` gives it (≥ `CKMetrics.tile`).
     private var tileLabel: some View {
-        VStack(spacing: CKSpacing.xs) {
-            Image(systemName: systemImage)
-                .font(.title.weight(.bold))
-                .frame(height: 32)
-                .accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: CKSpacing.sm) {
+            CKButtonBadge(systemImage: systemImage, role: role, size: 46)
+            Spacer(minLength: 0)
             Text(title)
                 .font(CKFont.button)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
                 .lineLimit(2)
-                .minimumScaleFactor(0.9)
+                .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
             if let subtitle {
                 Text(subtitle)
                     .font(CKFont.secondary)
-                    .foregroundStyle(role == .primary ? CKColor.onAccent.opacity(0.75) : CKColor.textSecondary)
-                    .multilineTextAlignment(.center)
+                    .foregroundStyle(subtitleStyle)
+                    .multilineTextAlignment(.leading)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(.horizontal, CKSpacing.md)
-        .padding(.vertical, CKSpacing.md)
-        .frame(maxWidth: .infinity, minHeight: CKMetrics.tile, maxHeight: .infinity)
-        .contentShape(RoundedRectangle(cornerRadius: CKRadius.button))
+        .padding(CKSpacing.lg)
+        .frame(maxWidth: .infinity, minHeight: CKMetrics.tile, maxHeight: .infinity, alignment: .topLeading)
+        .contentShape(RoundedRectangle(cornerRadius: CKRadius.button, style: .continuous))
     }
 
-    /// `row`: the full-width arrangement. At accessibility text sizes the row won't fit, so the
-    /// label stacks under the icon.
+    /// `row`: badge, words, chevron. At accessibility text sizes the row won't fit, so the words
+    /// stack under the badge.
     private var rowLabel: some View {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: CKSpacing.md) {
-                    icon
-                    // Flexible width (`maxWidth: .infinity`) so a long subtitle never makes
-                    // `ViewThatFits` reject the row and stack this one button while its
-                    // neighbours stay rows (Step 47: "Simulate walk" did exactly that). The
-                    // subtitle wraps to a second line instead of forcing the stacked shape.
-                    VStack(alignment: .leading, spacing: 2) {
-                        text
-                        if let subtitle {
-                            Text(subtitle)
-                                .font(CKFont.secondary)
-                                .foregroundStyle(role == .primary ? CKColor.onAccent.opacity(0.75) : CKColor.textSecondary)
-                                .lineLimit(2)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    Spacer(minLength: 0)
-                    if role == .primary {
-                        Image(systemName: "chevron.right")
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(CKColor.onAccent.opacity(0.6))
-                    }
-                }
-                VStack(spacing: CKSpacing.xs) {
-                    icon
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: CKSpacing.md) {
+                CKButtonBadge(systemImage: systemImage, role: role, size: 40)
+                // Flexible width so a long subtitle wraps instead of making `ViewThatFits`
+                // reject the row (Step 47: "Simulate walk" stacked alone).
+                VStack(alignment: .leading, spacing: 2) {
                     text
                     if let subtitle {
                         Text(subtitle)
                             .font(CKFont.secondary)
-                            .foregroundStyle(role == .primary ? CKColor.onAccent.opacity(0.75) : CKColor.textSecondary)
-                            .lineLimit(1)
+                            .foregroundStyle(subtitleStyle)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .font(.subheadline.weight(.bold))
+                    .opacity(0.55)
+                    .accessibilityHidden(true)
             }
-            .padding(.horizontal, CKSpacing.lg)
-            .padding(.vertical, subtitle != nil ? CKSpacing.sm : CKSpacing.md)
-            .frame(maxWidth: .infinity, minHeight: CKMetrics.bigButton)
-            .contentShape(RoundedRectangle(cornerRadius: CKRadius.button))
-    }
-
-    /// The companion SF Symbol, hidden from VoiceOver so the label is read once.
-    private var icon: some View {
-        Image(systemName: systemImage)
-            .font(.title2.weight(.bold))
-            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: CKSpacing.xs) {
+                CKButtonBadge(systemImage: systemImage, role: role, size: 40)
+                text
+                if let subtitle {
+                    Text(subtitle)
+                        .font(CKFont.secondary)
+                        .foregroundStyle(subtitleStyle)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .padding(.horizontal, CKSpacing.lg)
+        .padding(.vertical, CKSpacing.md)
+        .frame(maxWidth: .infinity, minHeight: CKMetrics.bigButton, alignment: .leading)
+        .contentShape(RoundedRectangle(cornerRadius: CKRadius.button, style: .continuous))
     }
 
     /// The visible word; wraps vertically instead of truncating (design.md §1, §7).
@@ -352,15 +351,40 @@ struct CKBigButton: View {
     }
 }
 
-/// Fill + border per role and press feedback that respects Reduce Motion. (There is no custom
-/// focus ring; an older comment here promised one.)
+/// The round symbol badge inside a `CKBigButton`: a translucent disc of the foreground colour
+/// behind the symbol, so the symbol reads as an icon on every fill. Hidden from VoiceOver.
+struct CKButtonBadge: View {
+    /// SF Symbol.
+    let systemImage: String
+    /// The button's role (picks the disc tint).
+    let role: CKBigButton.Role
+    /// Disc diameter in points.
+    var size: CGFloat = 40
+
+    /// Disc + symbol; the symbol inherits the button's foreground colour.
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(.system(size: size * 0.45, weight: .bold))
+            .frame(width: size, height: size)
+            .background(Circle().fill(disc))
+            .accessibilityHidden(true)
+    }
+
+    /// Disc fill: a soft wash of the foreground on primary / destructive, an accent wash on secondary.
+    private var disc: Color {
+        switch role {
+        case .primary: CKColor.onAccent.opacity(0.18)
+        case .secondary: CKColor.accent.opacity(0.12)
+        case .destructive: CKColor.ink.opacity(0.12)
+        }
+    }
+}
+
+/// Fill + border per role and press feedback that respects Reduce Motion.
 ///
 /// Implements docs/design.md §4 "Big button press": scale 0.97 on a 120 ms spring, or opacity
-/// 0.85 only under Reduce Motion; the light impact haptic is kept either way. ⚠ It fires on the
-/// **press-down** edge, not on release: `sensoryFeedback(_:trigger:condition:)` passes
-/// `(oldValue, newValue)`, so `$0 == false && $1` is "was not pressed, now is". design.md §4 and
-/// CODE_REFERENCE say "on release"; the code is the truth until someone decides otherwise.
-/// Tab-switch motion and its selection haptic live on `CKTabBar` (§4, §7).
+/// 0.85 only under Reduce Motion; the light impact haptic fires on the press-down edge either way
+/// (`sensoryFeedback(_:trigger:condition:)` passes `(oldValue, newValue)`: `$0 == false && $1`).
 /// Disabled buttons drop to 40 % opacity; VoiceOver announces "dimmed" from `.disabled`.
 /// Also applied directly to plain `Button`s / `ShareLink`: Go, the haptic and wrist test buttons,
 /// "Share hazard map".
@@ -374,14 +398,14 @@ struct CKBigButtonStyle: ButtonStyle {
     /// Drives the 40 % disabled opacity.
     @Environment(\.isEnabled) private var isEnabled
 
-    /// Applies fill, border, disabled / pressed feedback and the release haptic to the label.
+    /// Applies fill, border, disabled / pressed feedback and the press haptic to the label.
     func makeBody(configuration: Configuration) -> some View {
         let shape = RoundedRectangle(cornerRadius: CKRadius.button, style: .continuous)
         configuration.label
             .foregroundStyle(foreground)
             .background(fill, in: shape)
             .overlay(shape.strokeBorder(CKColor.border, lineWidth: role == .secondary
-                                        ? CKMetrics.border(for: contrast) + 1 : 0))
+                                        ? CKMetrics.border(for: contrast) + 0.5 : 0))
             .opacity(isEnabled ? 1 : 0.4)
             .opacity(configuration.isPressed && reduceMotion ? 0.85 : 1)
             .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
@@ -393,7 +417,7 @@ struct CKBigButtonStyle: ButtonStyle {
     private var fill: Color {
         switch role {
         case .primary: CKColor.accent
-        case .secondary: CKColor.surfaceRaised
+        case .secondary: CKColor.surface
         case .destructive: CKColor.danger
         }
     }
@@ -511,10 +535,10 @@ struct CKCard<Content: View>: View {
         VStack(alignment: .leading, spacing: CKSpacing.md) {
             if let title {
                 VStack(alignment: .leading, spacing: CKSpacing.xs) {
-                    HStack(spacing: CKSpacing.sm) {
-                        if let systemImage { CKIconBadge(systemImage: systemImage) }
+                    HStack(spacing: CKSpacing.md) {
+                        if let systemImage { CKIconBadge(systemImage: systemImage, tinted: true) }
                         Text(title)
-                            .font(CKFont.label)
+                            .font(CKFont.cardTitle)
                             .foregroundStyle(CKColor.textPrimary)
                             .accessibilityAddTraits(.isHeader)
                     }
@@ -529,10 +553,11 @@ struct CKCard<Content: View>: View {
             }
             content()
         }
-        .padding(CKSpacing.lg)
+        .padding(CKSpacing.lg + 2)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(CKColor.surface, in: shape)
-        .overlay(shape.strokeBorder(CKColor.border, lineWidth: CKMetrics.border(for: contrast)))
+        .overlay(shape.strokeBorder(CKColor.border.opacity(contrast == .increased ? 1 : 0.7),
+                                    lineWidth: CKMetrics.border(for: contrast)))
         .accessibilityElement(children: .contain)
         // An empty label would override the children for VoiceOver; only label titled cards.
         .accessibilityLabel(title.map { Text($0) } ?? Text(""))
@@ -546,14 +571,18 @@ struct CKCard<Content: View>: View {
 struct CKIconBadge: View {
     /// SF Symbol drawn in the badge.
     let systemImage: String
+    /// UI v2: card titles use an accent-tinted badge (accent symbol on a soft accent wash) so each
+    /// card is easy to find by its symbol; settings rows keep the neutral one.
+    var tinted: Bool = false
 
-    /// 30 pt raised square with a semibold symbol in `textPrimary`.
+    /// 32 pt rounded square with a semibold symbol.
     var body: some View {
         Image(systemName: systemImage)
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(CKColor.textPrimary)
-            .frame(width: 30, height: 30)
-            .background(CKColor.surfaceRaised, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .font(.subheadline.weight(.bold))
+            .foregroundStyle(tinted ? CKColor.accent : CKColor.textPrimary)
+            .frame(width: 32, height: 32)
+            .background(tinted ? CKColor.accent.opacity(0.12) : CKColor.surfaceRaised,
+                        in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             .accessibilityHidden(true)
     }
 }
@@ -613,15 +642,14 @@ struct CKRowDivider: View {
 /// A small uppercase group label above a run of cards on a page ("EVERYDAY", "TESTING TOOLS").
 /// A VoiceOver heading, so the rotor can jump between groups.
 struct CKSectionHeader: View {
-    /// The group's name; drawn uppercased.
+    /// The group's name; drawn as written (UI v2; it was uppercased).
     let title: String
 
-    /// `CKFont.pill` in `textSecondary`, tracked, with a little top air.
+    /// UI v2: a real heading — `CKFont.cardTitle` size in `textPrimary`, not small caps.
     var body: some View {
-        Text(title.uppercased())
-            .font(CKFont.pill)
-            .kerning(0.9)
-            .foregroundStyle(CKColor.textSecondary)
+        Text(title)
+            .font(.system(.title2, design: .rounded).weight(.bold))
+            .foregroundStyle(CKColor.textPrimary)
             .padding(.horizontal, CKSpacing.xs)
             .padding(.top, CKSpacing.sm)
             .padding(.bottom, -CKSpacing.sm)
@@ -687,10 +715,10 @@ struct CKMoreSection<Content: View>: View {
                 }
             } label: {
                 HStack(spacing: CKSpacing.md) {
-                    CKIconBadge(systemImage: systemImage)
+                    CKIconBadge(systemImage: systemImage, tinted: true)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
-                            .font(CKFont.label)
+                            .font(CKFont.cardTitle)
                             .foregroundStyle(CKColor.textPrimary)
                         if let caption {
                             Text(caption)
@@ -712,7 +740,7 @@ struct CKMoreSection<Content: View>: View {
                 .contentShape(shape)
             }
             .buttonStyle(.plain)
-            .background(CKColor.surfaceRaised, in: shape)
+            .background(CKColor.surface, in: shape)
             .overlay(shape.strokeBorder(CKColor.border, lineWidth: CKMetrics.border(for: contrast)))
             .accessibilityLabel(title)
             .accessibilityValue(expanded ? "expanded" : "collapsed")

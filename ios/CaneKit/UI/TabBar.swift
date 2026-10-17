@@ -79,10 +79,10 @@ struct CKTabBar: View {
         .spring(duration: 0.16, bounce: 0.08)
     }
     /// Width of the selected capsule (chrome only; the 60 pt hit area is wider).
-    private static let pillWidth: CGFloat = 56
+    private static let pillWidth: CGFloat = 64   // UI v2: was 56
     /// Height of the selected capsule. Deliberately under `CKMetrics.touchTarget`: this is the
     /// drawn pill, not the tappable area, so the bar (pill + caption) stays a standard height.
-    private static let pillHeight: CGFloat = 32
+    private static let pillHeight: CGFloat = 36   // UI v2: was 32
 
     /// The currently visible page; written on tap.
     @Binding var selection: RootTab
@@ -144,7 +144,7 @@ struct CKTabBar: View {
             // string VoiceOver reads, so what is seen and what is heard never differ.
             VStack(spacing: 2) {
                 Image(systemName: tab.systemImage)
-                    .font(.system(size: 19, weight: .semibold))
+                    .font(.system(size: 21, weight: .semibold))
                     .foregroundStyle(selected ? CKColor.onAccent : CKColor.textSecondary)
                     .scaleEffect(selected && !reduceMotion ? 1.06 : 1)
                     .frame(width: Self.pillWidth, height: Self.pillHeight)
@@ -156,8 +156,8 @@ struct CKTabBar: View {
                         }
                     }
                 Text(tab.title)
-                    .font(.caption.weight(selected ? .bold : .semibold))
-                    .foregroundStyle(selected ? CKColor.textPrimary : CKColor.textSecondary)
+                    .font(.footnote.weight(selected ? .bold : .semibold))
+                    .foregroundStyle(selected ? CKColor.accent : CKColor.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     .accessibilityHidden(true)

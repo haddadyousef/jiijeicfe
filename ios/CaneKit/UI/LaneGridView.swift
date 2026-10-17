@@ -43,8 +43,9 @@ struct LaneGridView: View {
     var body: some View {
         // UI audit 2026-09-13: pill beside the title's caption instead of alone on its own row;
         // "Trusted" / "Sweeping" → "Steady" / "Swinging" (what the cane is doing, in plain words).
-        CKCard(title: "Obstacles", systemImage: "square.grid.3x2",
-               caption: "Nearest thing in each direction, at head and body height.") {
+        // UI v2 (2026-10-17): "Obstacles" → "What's ahead", plus a colour key under the rows.
+        CKCard(title: "What's ahead", systemImage: "square.grid.3x2",
+               caption: "Nearest thing to your left, ahead and right, at head and body height.") {
             HStack {
                 CKStatusPill(text: report.isTrusted ? "Steady" : "Swinging",
                              tone: report.isTrusted ? .trusted : .warning,
@@ -55,6 +56,32 @@ struct LaneGridView: View {
             }
             row(title: "Head", values: report.head, coverage: report.grid.headCoverage)
             row(title: "Torso", values: report.torso, coverage: report.grid.torsoCoverage)
+            legend
+        }
+    }
+
+    /// Colour key for a sighted helper: four swatches with their words. Hidden from VoiceOver (each
+    /// row already speaks its distances in words).
+    private var legend: some View {
+        HStack(spacing: CKSpacing.md) {
+            legendItem(CKColor.laneClear, "Clear")
+            legendItem(CKColor.laneFar, "Far")
+            legendItem(CKColor.laneNear, "Near")
+            legendItem(CKColor.laneUrgent, "Stop")
+            Spacer(minLength: 0)
+        }
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(CKColor.textSecondary)
+        .accessibilityHidden(true)
+    }
+
+    /// One swatch + word of the colour key.
+    private func legendItem(_ color: Color, _ word: String) -> some View {
+        HStack(spacing: 4) {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(color)
+                .frame(width: 14, height: 14)
+            Text(word).lineLimit(1)
         }
     }
 
@@ -69,7 +96,7 @@ struct LaneGridView: View {
     ///     (`LaneGrid.headCoverage` / `torsoCoverage`, Step 51); false → the NO COVER tile.
     private func row(title: String, values: [Float], coverage: [Bool]) -> some View {
         VStack(alignment: .leading, spacing: CKSpacing.xs) {
-            Text(title)
+            Text(title == "Torso" ? "Body height" : "Head height")   // UI v2: everyday words on screen
                 .font(CKFont.secondary.weight(.semibold))
                 .foregroundStyle(CKColor.textSecondary)
             HStack(spacing: CKSpacing.sm) {

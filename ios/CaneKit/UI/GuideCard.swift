@@ -7,14 +7,14 @@
 //  the recorded demo route or a typed MapKit destination.
 //
 //  Implements docs/design.md §6.1 (Guide: instruction, hero distance, bearing word, big
-//  buttons), §6.3 (route picker, reduced to "Start route to CIF", "Navigate to CIF from here" and
+//  buttons), §6.3 (route picker, reduced to "Start route", "Directions from here" and
 //  a destination field — the field, its live suggestion list and "Go" live in
 //  `DestinationField.swift`) and the
 //  "Off-bearing > 25°" row of §5. Button titles differ from the §6.1 VoiceOver table on purpose
 //  (short words that fit two-up on a 17 Pro Max); the XCUITests pin the shipped words.
 //
 //  Step 58 layout (voice shell): instruction → distance → pills → `VoiceTile` (the giant microphone,
-//  ≥ 60 % of the page height) → the compact row (idle: Where am I | Start route to CIF; navigating:
+//  ≥ 60 % of the page height) → the compact row (idle: Where am I | Start route; navigating:
 //  Repeat | Next | Stop route) → describer text → everything else below the fold, labels unchanged.
 //
 //  UI rework 2026-10-17 (owner: simpler, nothing lost): idle puts Simulate walk in a "Demo"
@@ -27,7 +27,7 @@
 //  hooks), and below the fold only Simulate walk / Stop simulation.
 //
 //  Accessibility contract — everything the XCUITests drive lives here (AGENTS.md rule 9):
-//    ⚠ test contract buttons: "Start route to CIF", "Navigate to CIF from here", "Stop route",
+//    ⚠ test contract buttons: "Start route", "Directions from here", "Stop route",
 //      "Repeat", "Next", "Recenter", "Where am I" (queried as `app.buttons[label]`); "Go" is in
 //      `DestinationField`.
 //    ⚠ test contract texts: the instruction `Text` must stay a plain static text whose label is
@@ -67,15 +67,15 @@ struct GuideCard: View {
 
     /// One `CKCard("Guide")`: instruction; distance + bearing (navigating or arrived, with a fix);
     /// GPS pills; the `VoiceTile` microphone with the assistant's last answer; the compact row
-    /// (navigating: Repeat / Next / Stop route; idle: Where am I / Start route to CIF); the
+    /// (navigating: Repeat / Next / Stop route; idle: Where am I / Start route); the
     /// describer's result / error; then either the rest of the route controls (Recenter, beacon +
     /// head pills, Simulate walk) and the error line, or the idle "Where to" card (Repeat after
-    /// arrival, Cancel route start, `DestinationField`, the error line, Navigate to CIF from here,
+    /// arrival, Cancel route start, `DestinationField`, the error line, Directions from here,
     /// the route-start status) followed by the "Demo" section (Simulate walk, UI rework 2026-10-17).
     ///
     /// UI audit 2026-09-13: one tall card became a stack of focused pieces — a status card
     /// (instruction, distance, pills), the microphone and the compact row on the page ground, then
-    /// a "Where to" card (idle: destination field first, then Navigate to CIF from here and
+    /// a "Where to" card (idle: destination field first, then Directions from here and
     /// Simulate walk) or a "Route tools" card (navigating / indoors). Labels, actions and the focus
     /// order are unchanged; only grouping and the order inside the idle picker moved.
     var body: some View {
@@ -115,9 +115,25 @@ struct GuideCard: View {
         }
     }
 
-    /// "Guide" card: the instruction, the indoor step line, the distance row and the status pills.
+    /// The status card: a big round symbol with "Ready" / "Next step" / "Arrived" (a VoiceOver
+    /// heading), the instruction, the indoor step line, the distance row and the status pills.
+    /// UI v2 (2026-10-17): replaces the small "Guide" title, so the one thing on top says what the
+    /// app is doing now; the symbol turns with the bearing while walking.
     private var statusCard: some View {
-        CKCard(title: "Guide", systemImage: "figure.walk") {
+        CKCard {
+            HStack(spacing: CKSpacing.md) {
+                Image(systemName: headerSymbol)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(CKColor.onAccent)
+                    .frame(width: 52, height: 52)
+                    .background(Circle().fill(CKColor.accent))
+                    .accessibilityHidden(true)
+                Text(headerWord)
+                    .font(CKFont.cardTitle)
+                    .foregroundStyle(CKColor.textSecondary)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 0)
+            }
             // ⚠ test contract: plain Text whose accessibility label is the instruction itself.
             Text(model.indoor.isActive ? model.indoor.currentSay : model.nav.instruction)
                 .font(CKFont.instruction)
@@ -184,21 +200,35 @@ struct GuideCard: View {
             // The compact row directly under the microphone — the only place the Guide puts three
             // buttons in a row (design.md §6.1 exception): tiles, so "Stop route" wraps instead of
             // hyphenating. ⚠ test contract: "Repeat", "Next", "Stop route" while navigating;
-            // "Where am I" and "Start route to CIF" while idle. While describing, "Where am I"
+            // "Where am I" and "Start route" while idle. While describing, "Where am I"
             // becomes "Describing…" and is disabled; testWhereAmIWithoutKeyReportsGracefully relies
             // on it returning to "Where am I" and on the "camera" / "Scene:" static text below.
             // Step 62: the indoor leg uses the same row; next / repeat / stop reach the indoor step.
-            if model.nav.isNavigating || model.indoor.isActive {
-                HStack(alignment: .top, spacing: CKSpacing.sm) {
-                    CKBigButton(title: "Repeat", systemImage: "arrow.counterclockwise", layout: .tile,
-                                hint: "Says the current instruction again") { model.repeatInstruction() }
-                    // `nextWaypoint()`, not `nav.next()`: one code path with the watch Next, the
-                    // crown and Siri "Next waypoint in Waymark".
-                    CKBigButton(title: "Next", systemImage: "forward.fill", role: .secondary, layout: .tile,
-                                hint: "Skips to the next instruction") { model.nextWaypoint() }
-                    stopRouteButton
+            if walking {
+                // UI v2 (2026-10-17): a 2 × 2 grid instead of three in a row plus Recenter below the
+                // fold — Repeat | Next on top, Recenter | Stop route under it (indoors, where there is
+                // no Recenter, Stop route takes the whole second row). Every label and action is
+                // unchanged (⚠ test contract: "Repeat", "Next", "Recenter", "Stop route").
+                VStack(spacing: CKSpacing.sm) {
+                    HStack(alignment: .top, spacing: CKSpacing.sm) {
+                        CKBigButton(title: "Repeat", subtitle: "Say it again", systemImage: "arrow.counterclockwise",
+                                    layout: .tile, hint: "Says the current instruction again") { model.repeatInstruction() }
+                        // `nextWaypoint()`, not `nav.next()`: one code path with the watch Next, the
+                        // crown and Siri "Next waypoint in Waymark".
+                        CKBigButton(title: "Next", subtitle: "Skip ahead", systemImage: "forward.fill", role: .secondary,
+                                    layout: .tile, hint: "Skips to the next instruction") { model.nextWaypoint() }
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    HStack(alignment: .top, spacing: CKSpacing.sm) {
+                        if model.nav.isNavigating {
+                            CKBigButton(title: "Recenter", subtitle: "Ahead is forward", systemImage: "location.north.line",
+                                        role: .secondary, layout: .tile,
+                                        hint: "Sets straight ahead as the beacon's forward direction") { model.recenter() }
+                        }
+                        stopRouteButton
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
                 }
-                .fixedSize(horizontal: false, vertical: true)
                 if stopConfirmation.isArmed {
                     Text("Tap Stop route again within 3 seconds to end guidance.")
                         .font(CKFont.secondary)
@@ -207,15 +237,17 @@ struct GuideCard: View {
                         .accessibilityLabel("Stop route is armed. Tap Stop route again within 3 seconds to end guidance.")
                 }
             } else {
-                HStack(alignment: .top, spacing: CKSpacing.md) {
+                HStack(alignment: .top, spacing: CKSpacing.sm) {
                     CKBigButton(title: model.describer.isDescribing ? "Describing…" : "Where am I",
+                                subtitle: "Describe what's ahead",
                                 systemImage: "eye", role: .secondary, layout: .tile,
                                 hint: "Takes a photo and reads out hazards and landmarks ahead",
                                 value: model.describer.isDescribing ? "in progress" : nil) { model.describeScene() }
                         .disabled(model.describer.isDescribing)
-                    // ⚠ test contract: "Start route to CIF" is the first thing every UI test waits for.
-                    CKBigButton(title: "Start route to CIF", systemImage: "figure.walk", layout: .tile,
-                                hint: "Starts the recorded ISR Townsend Hall to CIF route") { model.startDemoRoute() }
+                    // ⚠ test contract: "Start route" is the first thing every UI test waits for (was "Start
+                    // route to CIF" until the demo route became the Seattle Ave walk, 2026-10-17).
+                    CKBigButton(title: "Start route", subtitle: routeSubtitle, systemImage: "figure.walk", layout: .tile,
+                                hint: "Starts the demo route to \(AppModel.demoRouteDestination)") { model.startDemoRoute() }
                         .disabled(model.routeStartWaiting)
                 }
                 .fixedSize(horizontal: false, vertical: true)
@@ -233,16 +265,13 @@ struct GuideCard: View {
         }
     }
 
-    /// "Route tools" card while a route (or the indoor leg) runs: Recenter, the beacon / headphone
-    /// pills and Simulate walk; indoors only the step simulation.
+    /// "Route tools" card while a route (or the indoor leg) runs: the beacon / headphone pills and
+    /// Simulate walk (Recenter moved into the 2 × 2 grid, UI v2); indoors only the step simulation.
     private var routeToolsCard: some View {
         CKCard(title: "Route tools", systemImage: "slider.horizontal.3") {
             if model.nav.isNavigating {
-                // Repeat / Next / Stop route live in the compact row under the microphone (Step 58).
-                // ⚠ test contract: "Recenter" (below the fold now: the tests `scrollTo` it).
-                CKBigButton(title: "Recenter", systemImage: "location.north.line", role: .secondary,
-                            hint: "Sets straight ahead as the beacon's forward direction") { model.recenter() }
-                // Beacon pill: warning without headphones (the beacon cannot play), trusted while it
+                // Repeat / Next / Recenter / Stop route live in the 2 × 2 grid under the microphone
+                // (UI v2). Beacon pill: warning without headphones (the beacon cannot play), trusted while it
                 // plays, neutral when off or idle. Head pill: warning without headphones.
                 HStack(spacing: CKSpacing.sm) {
                     CKStatusPill(text: beaconWord, tone: !model.audioRoute.headphonesConnected ? .warning
@@ -275,7 +304,7 @@ struct GuideCard: View {
     }
 
     /// "Where to" card on the idle Guide. Order (owner request 2026-09-13): the destination field
-    /// first, then Navigate to CIF from here (Simulate walk moved to the "Demo" section, 2026-10-17).
+    /// first, then Directions from here (Simulate walk moved to the "Demo" section, 2026-10-17).
     private var whereToCard: some View {
         CKCard(title: "Where to", systemImage: "mappin.and.ellipse") {
                 if model.nav.arrived {
@@ -287,7 +316,7 @@ struct GuideCard: View {
                 }
                 // While a route request waits for depth evidence after a camera transition
                 // (`DepthReadiness` interlock): cancel it without the "Route stopped." of Stop.
-                // Start route to CIF and Navigate to CIF are disabled meanwhile.
+                // Start route and Directions from here are disabled meanwhile.
                 if model.routeStartWaiting {
                     CKBigButton(title: "Cancel route start", systemImage: "xmark.circle",
                                 role: .destructive,
@@ -299,12 +328,13 @@ struct GuideCard: View {
                 // "Destination" field live in DestinationField). First in the card (owner request).
                 DestinationField(scroller: scroller)
                 errorLine
-                // ⚠ test contract: "Navigate to CIF from here" (its label is its text).
-                CKBigButton(title: "Navigate to CIF from here",
-                            subtitle: "Walking directions from where you are",
+                // ⚠ test contract: "Directions from here" (its label is its text; was "Navigate to CIF
+                // from here" until the demo route moved to Seattle, 2026-10-17).
+                CKBigButton(title: "Directions from here",
+                            subtitle: "Walk to \(AppModel.demoRouteDestination) with Apple Maps",
                             systemImage: "location.north.circle.fill",
                             role: .secondary,
-                            hint: "Builds a walking route with Apple Maps from where you are to the CIF east entrance",
+                            hint: "Builds a walking route with Apple Maps from where you are to \(AppModel.demoRouteDestination)",
                             value: model.isBuildingRoute ? "finding a route" : nil) { model.navigateToCIFFromHere() }
                     .disabled(model.isBuildingRoute || model.routeStartWaiting)
                 // UI rework 2026-10-17: idle "Simulate walk" moved to the "Demo" section below this card.
@@ -348,7 +378,8 @@ struct GuideCard: View {
     /// `StopRouteConfirmation.window` ends guidance. A tile, because it sits in the compact row (Step 58).
     /// The button's VoiceOver label remains exactly "Stop route" (the XCUITest contract).
     private var stopRouteButton: some View {
-        CKBigButton(title: "Stop route", systemImage: "stop.fill", role: .destructive, layout: .tile,
+        CKBigButton(title: "Stop route", subtitle: stopConfirmation.isArmed ? "Tap again to stop" : "Tap twice to end",
+                    systemImage: "stop.fill", role: .destructive, layout: .tile,
                     hint: stopConfirmation.isArmed
                         ? "Confirms ending guidance when tapped again within 3 seconds"
                         : "Arms route stop; tap again within 3 seconds to end guidance",
@@ -373,6 +404,32 @@ struct GuideCard: View {
             stopConfirmation.reset()
             model.stopRoute()
         }
+    }
+
+    /// "To The Ave and NE 50th" under Start route (the demo route's destination).
+    private var routeSubtitle: String {
+        AppModel.demoRouteDestination.isEmpty ? "Demo route" : "To \(AppModel.demoRouteDestination)"
+    }
+
+    /// True while a route or the indoor leg guides.
+    private var walking: Bool { model.nav.isNavigating || model.indoor.isActive }
+
+    /// The status card's heading word.
+    private var headerWord: String {
+        if model.indoor.isActive { return "Indoors" }
+        if model.nav.isNavigating { return "Next step" }
+        return model.nav.arrived ? "Arrived" : "Ready"
+    }
+
+    /// The status card's symbol: the turn to make while walking (from the bearing error), a flag
+    /// after arrival, a walker when idle.
+    private var headerSymbol: String {
+        if model.indoor.isActive { return "door.left.hand.open" }
+        if model.nav.isNavigating {
+            guard let err = model.nav.bearingError, abs(err) > 25 else { return "arrow.up" }
+            return err > 0 ? "arrow.turn.up.right" : "arrow.turn.up.left"
+        }
+        return model.nav.arrived ? "flag.checkered" : "figure.walk"
     }
 
     /// Beacon pill word. First match wins: "Beacon off" (disabled in Mount) → "Beacon paused"

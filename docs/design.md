@@ -117,8 +117,8 @@ and the widget use fixed colours, §6.6 / §6.7). Contrast ratios are WCAG 2.x, 
 | `border` | `#C9C3B6` | `#3A362F` | `#000000` | `#FFFFFF` | Card hairline 1 pt (3 pt in HC); secondary-button border 2 pt (4 pt in HC) |
 | `textPrimary` | `#17140F` | `#F4F1EA` | `#000000` | `#FFFFFF` | 16.3:1 / 17.2:1 on background |
 | `textSecondary` | `#5C574D` | `#B5AFA3` | `#3A362F` | `#D9D4C9` | Hints, card titles, the Hazards card's source words. 6.4:1 on light background, 7.2:1 on a light card, 8.1:1 on a dark card |
-| `accent` | `#17140F` | `#F4F1EA` | `#000000` | `#FFFFFF` | Primary button fill. **Ink in light, ivory in dark.** |
-| `onAccent` | `#F4F1EA` | `#0E0D0B` | `#FFFFFF` | `#000000` | Text on `accent` |
+| `accent` | `#1E40AF` | `#84ADF8` | `#1E3A8A` | `#A8C5FF` | Primary button fill, selected tab, voice disc, card-title badges. **UI v2 (2026-10-17): deep blue / sky blue** (was ink / ivory); white text 8.7:1, dark text 8.6:1. Blue is seen as itself by every colour-vision type. |
+| `onAccent` | `#FFFFFF` | `#0E0D0B` | `#FFFFFF` | `#000000` | Text on `accent` |
 | `ink` | `#17140F` | `#17140F` | `#000000` | `#000000` | Text on every coloured fill (tiles, trusted / warning / danger pills, Stop button). One rule, no exceptions. |
 
 ### Lane ladder (same in light and dark; the fill is the signal, so it does not flip)
@@ -469,6 +469,19 @@ Step 44). The navigation title is **inline and centred, one per tab** (Steps 41�
 VoiceOver because the bar already reads it): Guide = "OpenCane", Sense = **"Details"**, Settings =
 "Settings", Profile = "Profile". Card order *inside the selected page* is the VoiceOver order; the
 tab bar is last on every page.
+
+**UI v2 (2026-10-17, owner: "not just colours — the button format and the whole app simpler and
+better").** One button format everywhere (`CKBigButton`): the symbol in a round badge, a bold title,
+a one-line subtitle saying what it does, a chevron on rows; tiles put the badge top-left with the
+words under it. Cards are rounder (26 pt) with a bold rounded title beside a blue-tinted badge;
+section headers are real headings. Guide: a status card with a big blue symbol and "Ready" / "Next
+step" / "Arrived" / "Indoors"; idle tiles **Where am I** ("Describe what's ahead") | **Start route**
+("To The Ave and NE 50th"); walking, a **2 × 2 grid — Repeat | Next / Recenter | Stop route**
+(Stop: "Tap twice to end"); "Navigate to CIF from here" is **Directions from here** ("Walk to … with
+Apple Maps"). Details: "Obstacles" is **What's ahead**, rows read "Head height" / "Body height" on
+screen (VoiceOver labels unchanged), with a colour key. Tabs: larger icons, the word under each,
+selected in blue. **Demo route:** The Ave and NE 42nd → NE 50th by default (`RouteSource.bundled()`);
+`WAYMARK_DEMO_ROUTE=isr_cif` keeps the UIUC route for the XCUITests and e2e.py.
 
 **Progressive disclosure (UI rework 2026-10-17, owner: "simpler, don't lose any functionality").**
 Each page shows what a walk needs; everything else sits in a `CKMoreSection` — a ≥ 60 pt header
