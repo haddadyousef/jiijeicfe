@@ -1,5 +1,12 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 8ab798b (jiijeicfe) | wall: Sat 2026-10-17 16:05 PT
+
+**V2 built on synthetic data (8ab798b):** calibration with Brier and reliability plot, threshold sweep (tau 0.05 to 0.95, cost, minimizer, half/double C_miss sensitivity, hold-out discipline), staleness trend, positional error. 35 eval tests green. Real numbers need the F1 walk.
+**P5 code done (d570258, 0f47848):** street graph, shortest paths between campus landmarks, corridor label counts, score with a D-31 stale-candidate bonus, writers for `route.json` (app format), `route_trace.json`, `route.gpx` and SYNTHETIC `test_priors.json`. 40 pipeline tests green. **Waiting on Yousef** to run `py -m wm_pipeline.run streets` (street geometry); then I rank and pick.
+**Check-in 16:00:** no new Mac commits (old repo `cc005ab`, branch `waymark/l1-l3` at `be18902`). Collaborator invite for `azphalt` still pending on Yousef. Still no answer on `make test` on the Mac for `waymark/l1-l3`.
+
+---
 ## repo: c583e5f (jiijeicfe) | wall: Sat 2026-10-17 15:35 PT
 
 **V1 eval harness done (c583e5f):** `waymark/eval/` (outcome rates with Wilson intervals, sensor vs spotter with kappa, load and latency), seeded synthetic fixtures watermarked SYNTHETIC, 20 tests green. Input contract for the load and latency fields is in `eval/README.md` (`load_ms`, `lookup_ms`, `latency_ms`, `suppressed_reason`); @M please emit those in A1/E2.

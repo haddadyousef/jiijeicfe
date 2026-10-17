@@ -1,6 +1,6 @@
 # Waymark board (single writer: Windows session / leader)
 
-Last checked: Sat 2026-10-17 15:35 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
+Last checked: Sat 2026-10-17 16:05 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
 Windows confirmed `d2898e0` + this commit on `main`. Mac last status entry: 14:30 (old repo, `5b9227f`).
 If this is more than an hour old, it is stale. Say "check mac" to the Windows chat.
 
@@ -23,7 +23,9 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | A1 to A3, E1, E2, F1, T1 | Mac | App layer, evidence, export, field walk | next, after L1 to L3 merges | 15:35 |
 | P1 to P4, P6 | W | Pipeline and real bundle | done: 3,405 labels in `ios/CaneKit/Resources/waymark_priors.json` (e1d466e) | 15:12 |
 | V1 | W | Eval harness (metrics 1, 2, 7) | done (c583e5f), 20 tests | 15:35 |
-| V2, S1, D1, P5 | W | Calibration and sweep, server, dashboard, route ranking | P5 next | 15:35 |
+| V2 | W | Calibration, sweep, staleness, positional error | built on synthetic data (8ab798b); real numbers need F1 | 16:05 |
+| P5 | W | Route ranking and demo files | code done (d570258); waits on the streets fetch (Yousef) | 16:05 |
+| S1, D1 | W | Server and dashboard (stretch) | not started | 16:05 |
 | H2 | Yousef | DubHacks rules and schedule | hold released; rules text and schedule still not on file | |
 | H3 | Yousef | GitHub link, collaborator, push access | done | 14:30 |
 | H4 | Yousef | Windows `Waymark` folder | done (C:\Users\youse\Waymark), fetch run | 15:06 |
