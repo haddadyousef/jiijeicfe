@@ -3390,11 +3390,12 @@ final class AppModel {
     /// change); "" when the file is missing, which simply makes every route read as `mapkit`.
     static let bundledRouteName: String = (try? RouteSource.bundled().name) ?? ""
 
-    func startDemoRoute() {
+    /// - Parameter load: which bundled route (waymark: `RouteSource.aveSeattle` for the Seattle demo).
+    func startDemoRoute(_ load: () throws -> Route = RouteSource.bundled) {  // waymark: route loader
         cancelRouteBuild()
         cancelPendingRouteStart()
         do {
-            let route = try RouteSource.bundled()
+            let route = try load()  // waymark:
             beginRoute(route)
         } catch {
             routeError = error.localizedDescription
