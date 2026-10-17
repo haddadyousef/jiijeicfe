@@ -1,0 +1,121 @@
+//
+//  UtteranceEndTests.swift
+//  CaneKitLogicTests
+//
+//  Purpose: pins UtteranceEnd.swift — when push-to-talk listening ends on its own. A blind walker
+//  cannot see a "Listening…" label, so the engine must decide for them: submit once they have
+//  stopped talking, give up when nothing was said, never cut a sentence that is still arriving.
+//
+//  Key invariants under test:
+//    · Nothing is submitted before any words arrive (the walker may be thinking).
+//    · A non-empty transcript that has not changed for `silenceAfterSpeech` (1.5 s) is submitted.
+//    · Every partial-result change restarts the silence clock, so a slow talker is not cut off.
+//    · The hard cap (`maxListen`, 10 s) still ends listening — with or without words — and a
+//      run with words at the cap is a submit, not a timeout.
+//    · Whitespace-only transcripts count as no words.
+//    · The first terminal verdict is sticky: later updates repeat it and never flip back.
+//
+//  Source pinned: `ios/Logic/Sources/CaneKitLogic/UtteranceEnd.swift` (`UtteranceEndDetector`,
+//  `silenceAfterSpeech` 1.5 s, `maxListen` 10 s, `checkInterval` 0.25 s). Caller:
+//  `VoiceInputEngine.startListening()` (app), which builds one detector per listen and polls it
+//  every `checkInterval` and on each partial result → `stopListeningAndSubmit` on
+//  `.endOfUtterance`. Breaks these catch: a slow talker cut off mid-sentence, a stuck recogniser
+//  holding the microphone (and the muted beacon) open, a timeout that throws the walker's words away,
+//  and a double submission from a late tick.
+//
+
+import Testing
+@testable import CaneKitLogic
+
+/// The two numbers the engine's behaviour is built on. 1.5 s is long enough for a breath between
+/// clauses ("how is my… battery") and short enough that an answer feels immediate; 10 s is the
+/// pre-existing push-to-talk cap, kept so a stuck recogniser can never hold the microphone (and
+/// the muted beacon) indefinitely.
+/// ⚠ Do not shorten `silenceAfterSpeech` without a device test that counts cut-off sentences.
+@Test func endOfUtteranceNumbersArePinned() {
+    #expect(UtteranceEndDetector.silenceAfterSpeech == 1.5)
+    #expect(UtteranceEndDetector.maxListen == 10)
+    #expect(UtteranceEndDetector.checkInterval == 0.25)
+    #expect(UtteranceEndDetector.checkInterval < UtteranceEndDetector.silenceAfterSpeech)
+}
+
+/// Silence before the first word is thinking time, not the end of an utterance.
+@Test func noWordsMeansKeepListeningUntilTheCap() {
+    var d = UtteranceEndDetector(startedAt: 100)
+    #expect(d.update(transcript: "", now: 100.5) == .listening)
+    #expect(d.update(transcript: "   ", now: 105) == .listening)
+    #expect(d.update(transcript: "", now: 109.9) == .listening)
+    #expect(d.update(transcript: "", now: 110) == .timeout)
+}
+
+/// Words, then 1.5 s of an unchanged transcript → submit; a hair before that → still listening.
+@Test func steadyTranscriptForOneAndAHalfSecondsSubmits() {
+    var d = UtteranceEndDetector(startedAt: 0)
+    #expect(d.update(transcript: "how is", now: 0.8) == .listening)
+    #expect(d.update(transcript: "how is my battery", now: 1.4) == .listening)
+    #expect(d.update(transcript: "how is my battery", now: 2.8) == .listening)   // 1.4 s quiet
+    #expect(d.update(transcript: "how is my battery", now: 2.9) == .endOfUtterance)
+}
+
+/// A partial result that changes restarts the clock: a slow talker is not cut mid-sentence.
+@Test func everyChangeRestartsTheSilenceClock() {
+    var d = UtteranceEndDetector(startedAt: 0)
+    #expect(d.update(transcript: "take me", now: 1.0) == .listening)
+    #expect(d.update(transcript: "take me to", now: 2.4) == .listening)          // 1.4 s later, changed
+    #expect(d.update(transcript: "take me to", now: 3.8) == .listening)          // 1.4 s quiet
+    #expect(d.update(transcript: "take me to Grainger", now: 3.9) == .listening) // changed again
+    #expect(d.update(transcript: "take me to Grainger", now: 5.3) == .listening)
+    #expect(d.update(transcript: "take me to Grainger", now: 5.4) == .endOfUtterance)
+}
+
+/// The recogniser may pad the same words with leading or trailing whitespace; only a change in the
+/// trimmed text counts, so padding does not keep the microphone open. (Re-casing or
+/// re-punctuating *is* a change — the comparison is exact after trimming — and restarts the clock.)
+@Test func trailingWhitespaceIsNotAChange() {
+    var d = UtteranceEndDetector(startedAt: 0)
+    #expect(d.update(transcript: "stop", now: 1) == .listening)
+    #expect(d.update(transcript: "stop ", now: 2) == .listening)
+    #expect(d.update(transcript: " stop", now: 2.5) == .endOfUtterance)
+}
+
+/// The cap wins over an utterance still changing: with words on the clock it is a submit (the
+/// walker's words are not thrown away), without words it is a timeout.
+@Test func theHardCapEndsAChangingTranscriptAsASubmit() {
+    var d = UtteranceEndDetector(startedAt: 0)
+    for i in 1...9 {
+        #expect(d.update(transcript: String(repeating: "word ", count: i), now: Double(i)) == .listening)
+    }
+    #expect(d.update(transcript: "word word word word word word word word word word", now: 10)
+            == .endOfUtterance)
+}
+
+/// The verdict is sticky once given: a later update returns the same `.endOfUtterance` (it never
+/// flips back to `.listening` or on to `.timeout`). The engine stops on the first one, so a stale
+/// tick after that cannot start a second, different outcome.
+@Test func verdictIsStableAfterTheEnd() {
+    var d = UtteranceEndDetector(startedAt: 0)
+    _ = d.update(transcript: "hello", now: 1)
+    #expect(d.update(transcript: "hello", now: 2.5) == .endOfUtterance)
+    #expect(d.update(transcript: "hello", now: 3) == .endOfUtterance)
+}
+
+/// Step 58: a follow-up window after an answer is a shorter listen. The detector takes its cap as
+/// a parameter (default the push-to-talk 10 s), so a 5 s follow-up with nothing said times out at
+/// 5 s — silently, the app decides that — and words on the clock at the cap are still a submit.
+@Test func followUpWindowUsesAShorterCap() {
+    var silent = UtteranceEndDetector(startedAt: 0, maxListen: VoiceShellPolicy.followUpSeconds)
+    let s1 = silent.update(transcript: "", now: 4.9)
+    #expect(s1 == .listening)
+    let s2 = silent.update(transcript: "", now: 5.0)
+    #expect(s2 == .timeout)
+    var spoke = UtteranceEndDetector(startedAt: 0, maxListen: 5)
+    let w1 = spoke.update(transcript: "repeat", now: 4.5)
+    #expect(w1 == .listening)
+    let w2 = spoke.update(transcript: "repeat that", now: 5.0)
+    #expect(w2 == .endOfUtterance)
+    var press = UtteranceEndDetector(startedAt: 0)
+    let p1 = press.update(transcript: "", now: 9.9)
+    #expect(p1 == .listening)
+    let p2 = press.update(transcript: "", now: 10)
+    #expect(p2 == .timeout)
+}

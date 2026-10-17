@@ -1,0 +1,17 @@
+# Copy to ios/local.mk (git-ignored) and fill in YOUR values:
+#
+#   cp local.mk.example local.mk
+#
+# One value per line. A comment after a value is fine (the Makefile and gen.sh strip it).
+#
+# TEAM: your Personal Team id. Xcode → Settings → Accounts → sign in → select the team. Or, after
+#   Xcode has created your Apple Development certificate once:
+#     security find-certificate -c "Apple Development" -p | openssl x509 -noout -subject
+#   and take the OU= value (NOT the 10 characters in parentheses after your name).
+TEAM          =
+# DEVICE: your iPhone's identifier, from `make devices` (phone plugged in, unlocked, trusted).
+DEVICE        =
+# BUNDLE_PREFIX: unique to you. The app becomes <prefix>.waymark (plus .watchkitapp / .widget).
+#   Pick it once and never change it: a free team may register only 10 App IDs per 7 days, and
+#   this app uses 3 of them.
+BUNDLE_PREFIX = com.akashtadikonda

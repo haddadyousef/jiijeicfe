@@ -1,0 +1,307 @@
+# CaneKit — XcodeGen project spec.
+# Regenerate with `scripts/gen.sh` (never edit CaneKit.xcodeproj by hand; it is git-ignored).
+#
+# Targets
+#   CaneKit        iPhone app (iOS 26+)          bundle id $(BUNDLE_ID_PREFIX).waymark
+#   CaneKitWatch   watchOS companion (26+)       bundle id $(BUNDLE_ID_PREFIX).waymark.watchkitapp
+#   CaneKitWidget  Live Activity extension       bundle id $(BUNDLE_ID_PREFIX).waymark.widget
+#   CaneKitUITests XCUITests + screenshot tour   bundle id $(BUNDLE_ID_PREFIX).waymark.uitests  (simulator only)
+#
+# Waymark (DubHacks 2026): BUNDLE_ID_PREFIX and DEVELOPMENT_TEAM come from Config/Waymark.xcconfig,
+# which includes the git-ignored Config/Local.xcconfig that scripts/gen.sh writes from ios/local.mk
+# (BUNDLE_PREFIX / TEAM). Each teammate signs with their own free Personal Team, so each needs their
+# own prefix: Apple refuses a bundle id another team already registered (com.aritro.canekit is).
+# CaneKit and CaneKitWatch link the pure-logic SwiftPM package in ./Logic; the widget does not.
+# `Shared/LiveActivity` (NavActivityAttributes) is compiled into CaneKit and CaneKitWidget.
+#
+# Callers: `scripts/gen.sh` (`make gen`, `make run`) and CI's sim-build job (`WATCH=0`). XcodeGen
+# writes `CaneKit.xcodeproj`; regenerate only when this file or the source file list changed
+# (AGENTS.md hard rule 5). Tests: none of its own — `make sim` (and `make uitest` for UI) proves a
+# change; for the watch / widget embed, check `CaneKit.app` on the phone contains
+# `Watch/CaneKitWatch.app` and `PlugIns/CaneKitWidget.appex` (gen.sh asserts the phases).
+#
+# ⚠ Formatting is load-bearing: `WATCH=0 scripts/gen.sh` strips the watch with awk patterns that
+#   match this file's exact indentation — `  CaneKitWatch:` (2 spaces) for the target and the
+#   scheme, `      - target: CaneKitWatch` (6) and the `        embed: true` (8) on the next line.
+#   Keep 2-space indentation, never put a comment or anything else on those lines or between
+#   that dependency's two lines, and re-run `WATCH=0 scripts/gen.sh` after reformatting.
+#
+# The name split (deliberate — see AGENTS.md → "The name split"):
+#   What a HUMAN sees/hears  = Waymark. That is `CFBundleDisplayName` on all three targets (home
+#     screen, Settings, the Files app folder, and the word Siri matches in an App Shortcut phrase,
+#     because `\(.applicationName)` resolves to the display name).
+#   What the CODE is called  = CaneKit. Project name, target names, `PRODUCT_NAME`, the SwiftPM
+#     module `CaneKitLogic`, the scheme, every `ios/CaneKit/…` path and the Makefile all stay
+#     CaneKit. The bundle ids are `$(BUNDLE_ID_PREFIX).waymark*` since the Waymark rename (a new id
+#     makes iOS treat this as a different app from an installed OpenCane build; that is intended).
+#   Do NOT "fix" the mismatch by renaming targets or `PRODUCT_NAME`: `PRODUCT_NAME` names the
+#   built `CaneKit.app`, which the Makefile, gen.sh and scripts/e2e.py all reference by path.
+#
+# Signing: automatic, personal team. DEVELOPMENT_TEAM is passed on the xcodebuild command line
+# (see Makefile / local.mk) so this file never carries a team id.
+#
+# Concurrency: Swift 6 language mode with Xcode 26 "approachable concurrency" defaults
+# (everything is MainActor unless it opts out with `nonisolated`). What opts out: the depth /
+# camera pipeline (`DepthFrameProcessor`, `GroundSampler`, `MeshClassifier`, `FrameReplay`,
+# `DualCameraSession`'s relays), every framework-delegate relay class (ARKit, WatchConnectivity,
+# AVSpeechSynthesizer, AVAudioPlayer, SoundAnalysis, CMHeadphoneMotion, HealthKit and
+# WKExtendedRuntimeSession on the watch, MKLocalSearchCompleter), the vision and network clients
+# (`VLMClient` implementations, `OnDeviceVision`, `ElevenLabsVoice`, `Secrets`) and the Live
+# Activity payload `NavActivityAttributes` (AGENTS.md hard rule 1). The UI test target overrides
+# the default to `nonisolated` (below). The CaneKitLogic package is not governed by these settings:
+# it sets only Swift 6 language mode, so its types are nonisolated.
+
+name: CaneKit
+
+# Project-wide XcodeGen options. Deployment targets are 26.0 even though the demo phone runs
+# iOS 27: no iOS 27-only API is allowed (AGENTS.md hard rule 2). `xcodeVersion` only stamps the
+# generated project's compatibility; the build Mac uses Xcode 27.
+# Per-person signing: BUNDLE_ID_PREFIX + DEVELOPMENT_TEAM (see the header). Project-level, so every
+# target inherits them; nothing below sets either key, or it would override the xcconfig.
+configFiles:
+  Debug: Config/Waymark.xcconfig
+  Release: Config/Waymark.xcconfig
+
+options:
+  bundleIdPrefix: com.waymark
+  deploymentTarget:
+    iOS: "26.0"
+    watchOS: "26.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  xcodeVersion: "26.0"
+
+# The local SwiftPM package (ios/Logic/Package.swift). No remote packages, ever (hard rule 2).
+packages:
+  CaneKitLogic:
+    path: Logic
+
+# Build settings shared by every target (a target's own `settings.base` overrides a key).
+settings:
+  base:
+    # Swift 6 language mode with complete, compile-time data-race checking.
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    # Main-actor by default; opt out per type with `nonisolated` (see the header). The UI test
+    # target overrides this to nonisolated.
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: "YES"
+    # A nonisolated async function runs on its caller's actor instead of hopping to the global
+    # executor.
+    SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT: "YES"
+    # Personal team; DEVELOPMENT_TEAM comes from `make` (ios/local.mk), never from this file.
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: "YES"
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: "NO"
+    IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+    WATCHOS_DEPLOYMENT_TARGET: "26.0"
+    # Feed CFBundleVersion / CFBundleShortVersionString in every target's Info.plist below.
+    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "0.1"
+
+targets:
+
+  # ───────────────────────────── iPhone app ─────────────────────────────
+  CaneKit:
+    type: application
+    platform: iOS
+    sources:
+      - path: CaneKit
+        excludes:
+          - "Resources/Secrets.plist"     # copied in as a build resource below so a missing file is not fatal
+      - path: CaneKit/Resources/Secrets.plist
+        optional: true
+        buildPhase: resources
+      - path: Shared/LiveActivity
+      # Step 64: the Waymark contour-ring mark (VoiceTile rings + the island's brand mark).
+      - path: Shared/Brand
+      # Step 64: the "Talk to Waymark" control's intent (also compiled into the widget).
+      - path: Shared/Intents
+    # Embedding: the watch app lands in CaneKit.app/Watch/ (gen.sh patches XcodeGen #1613 for
+    # Xcode 26+) and the widget in CaneKit.app/PlugIns/ (a widget anywhere else never loads).
+    dependencies:
+      - package: CaneKitLogic
+      - target: CaneKitWatch
+        embed: true
+      - target: CaneKitWidget
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).waymark
+        # Names the build product CaneKit.app (Makefile, gen.sh, scripts/e2e.py use that path).
+        PRODUCT_NAME: CaneKit
+        # iPhone only.
+        TARGETED_DEVICE_FAMILY: "1"
+        # Follows the system appearance (design.md §2); the demo checklist sets Dark Mode.
+        INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SUPPORTS_MACCATALYST: "NO"
+        # HealthKit (read-only step count for the arrival summary, TripTracker).
+        CODE_SIGN_ENTITLEMENTS: CaneKit/CaneKit.entitlements
+    # XcodeGen writes these keys into CaneKit/Info.plist on every generate; edit them here.
+    info:
+      path: CaneKit/Info.plist
+      properties:
+        # The name a person sees and the word Siri matches ("… in Waymark") — see the header.
+        CFBundleDisplayName: Waymark
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Step 64: waymark://guide (Live Activity tap) and waymark://talk (accessory widget,
+        # handled by CaneKitApp.onOpenURL). Any other path just opens the app.
+        CFBundleURLTypes:
+          - CFBundleURLName: $(BUNDLE_ID_PREFIX).waymark
+            CFBundleURLSchemes: [waymark]
+        UILaunchScreen: {}
+        # The phone is clamped to the cane in portrait; the UI and the lane math assume it.
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # ARKit is required to install. LiDAR is not: a phone without it installs and says so
+        # at launch ("This phone has no LiDAR.").
+        UIRequiredDeviceCapabilities: [arkit, arm64]
+        # audio: beacon and speech keep playing with the screen locked; location: guidance keeps
+        # receiving GPS fixes in the background.
+        UIBackgroundModes: [audio, location]
+        # Trip logs (JSONL) and the hazard map (GeoJSON + photos) in Documents show up in the
+        # Files app → On My iPhone → Waymark (the display name, not the target name; review:
+        # they were unreachable on the phone).
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        # Lets LiveActivityController request the navigation Live Activity (CaneKitWidget).
+        NSSupportsLiveActivities: true
+        ITSAppUsesNonExemptEncryption: false
+        # Purpose strings — the system shows these on first use. They are spoken/visible text, so
+        # they say Waymark. Location is asked at launch (sighted helper present; skipped under
+        # CANEKIT_UITEST=1); Motion and HealthKit at route start.
+        NSCameraUsageDescription: "Waymark uses the camera and LiDAR to detect obstacles between your waist and head."
+        NSLocationWhenInUseUsageDescription: "Waymark uses your location and heading to guide you along the route."
+        # Step 47: Always is requested at the first route start (LocationService.requestAlwaysAuthorization).
+        # With Always, iOS draws no blue background-location pill in the Dynamic Island while a route
+        # runs with the screen locked, so Waymark's own Live Activity owns the island the way Apple
+        # Maps / Google Maps do; with When In Use only, the pill is mandatory and the activity is
+        # pushed into the minimal bubble (owner's phone pictures, 2026-09-12 21:48).
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Waymark keeps guiding you with the screen locked. Always lets it do that without the blue location banner covering its own route card."
+        NSMotionUsageDescription: "Waymark uses motion to tell when the cane is sweeping, to track your head direction with AirPods, and to count steps."
+        # Spoken commands: the push-to-talk / conversational assistant (VoiceInputEngine).
+        NSSpeechRecognitionUsageDescription: "Waymark can take spoken commands."
+        # Two microphone users, both opt-in, and each holds an explicit lease that moves the audio
+        # session to .playAndRecord through SpeechQueue.setMicrophoneEnabled (AGENTS.md hard rule
+        # 7): sound recognition (SoundWatcher — sirens, horns and vehicle sounds a blind pedestrian
+        # cannot see coming; "Listen for sirens and horns" on the Hazards card, off by default) and
+        # spoken commands (VoiceInputEngine).
+        NSMicrophoneUsageDescription: "Waymark can listen for sirens, car horns and vehicle sounds to warn you about traffic you cannot see, and for spoken commands."
+        NSHealthShareUsageDescription: "Waymark reads your step count for the arrival summary."
+        # The phone's own HealthKit request is read-only (TripTracker asks toShare: []); the
+        # workout is recorded by the watch (WatchModel). Kept so the string is present if the
+        # phone ever asks to share.
+        NSHealthUpdateUsageDescription: "Waymark records the guided walk as a workout so the watch can keep giving cues."
+
+  # ───────────────────────────── Watch app ─────────────────────────────
+  CaneKitWatch:
+    # Single-target watchOS app (no separate WatchKit extension); embedded in CaneKit.app and
+    # installed with it. WatchApp / WatchModel / WatchContentView / WatchTheme.
+    type: application
+    platform: watchOS
+    sources:
+      - path: CaneKitWatch
+    # CaneKitLogic for the wire contract (WatchEnvelope) and CrownAccumulator.
+    dependencies:
+      - package: CaneKitLogic
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).waymark.watchkitapp
+        # Same product name as the phone app; the bundle id is what tells them apart.
+        PRODUCT_NAME: CaneKit
+        # Apple Watch.
+        TARGETED_DEVICE_FAMILY: "4"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        # HealthKit: needed for the HKWorkoutSession keep-alive. Without it every launch silently
+        # falls back to the extended runtime session.
+        CODE_SIGN_ENTITLEMENTS: CaneKitWatch/CaneKitWatch.entitlements
+    info:
+      path: CaneKitWatch/Info.plist
+      properties:
+        CFBundleDisplayName: Waymark
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        WKApplication: true
+        # Pairs with the phone app for WatchConnectivity; the watch app does nothing on its own.
+        WKCompanionAppBundleIdentifier: $(BUNDLE_ID_PREFIX).waymark
+        WKRunsIndependentlyOfCompanionApp: false
+        WKBackgroundModes: [workout-processing, mindfulness]   # workout keep-alive + runtime-session fallback
+        NSMotionUsageDescription: "Waymark counts steps for the arrival summary."
+        NSHealthShareUsageDescription: "Waymark reads your step count for the arrival summary."
+        NSHealthUpdateUsageDescription: "Waymark records the guided walk as a workout so wrist cues keep working."
+
+  # ───────────────────────────── Live Activity widget ─────────────────────────────
+  CaneKitWidget:
+    # WidgetKit extension that draws the navigation Live Activity (NavLiveActivity). No package
+    # dependency: it needs only NavActivityAttributes from Shared/LiveActivity.
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: CaneKitWidget
+      - path: Shared/LiveActivity
+      - path: Shared/Brand
+      - path: Shared/Intents
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).waymark.widget
+        # Step 64: Shared/Intents/TalkControlIntent.swift compiles a no-op `perform` here (the app's
+        # copy runs, `openAppWhenRun`).
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) CANEKIT_WIDGET"
+        PRODUCT_NAME: CaneKitWidget
+        TARGETED_DEVICE_FAMILY: "1"
+        # Ships inside CaneKit.app (PlugIns/), never installed on its own.
+        SKIP_INSTALL: "YES"
+    info:
+      path: CaneKitWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Waymark
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+
+  # ───────────────────────────── UI tests (simulator) ─────────────────────────────
+  CaneKitUITests:
+    # CaneKitUITests.swift (functional) + CaneKitVisualTour.swift (screenshots); `make uitest`,
+    # `make tour`, `make uitest-streetview`. Drives CaneKit out of process, so it links no app code.
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: CaneKitUITests
+    dependencies:
+      - target: CaneKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).waymark.uitests
+        # The app the XCUIApplication() in the tests launches.
+        TEST_TARGET_NAME: CaneKit
+        # XCTestCase's setUp / test methods are nonisolated; under the MainActor default the
+        # subclasses do not compile. ⚠ Do not remove without re-running `make uitest`.
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+
+# Schemes. CaneKit builds the app (which embeds the watch app and widget) and tests the UI test
+# bundle; the Makefile passes SCHEME ?= CaneKit. CaneKitWatch builds / runs the watch app alone
+# (e.g. from Xcode to a paired watch); `WATCH=0 scripts/gen.sh` removes it with the watch target.
+schemes:
+  CaneKit:
+    build:
+      targets:
+        CaneKit: all
+        CaneKitUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - CaneKitUITests
+    archive:
+      config: Release
+  CaneKitWatch:
+    build:
+      targets:
+        CaneKitWatch: all
+    run:
+      config: Debug

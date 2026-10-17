@@ -1,0 +1,19 @@
+// Waymark — per-person signing settings, shared by every target (project.yml → configFiles).
+//
+// Defaults below are placeholders that build for the simulator (CODE_SIGNING_ALLOWED=NO) and in CI.
+// To sign for a real phone, put your own values in ios/local.mk:
+//
+//   TEAM          = ABCDE12345            # your Personal Team id (the OU= of your Apple Development cert)
+//   BUNDLE_PREFIX = com.yourname          # unique to YOU; each teammate needs a different one
+//
+// `make gen` (scripts/gen.sh) then writes them into Config/Local.xcconfig (git-ignored), which is
+// included last so it wins. Opening CaneKit.xcodeproj in Xcode picks them up too, so Xcode signs
+// without anyone touching Signing & Capabilities.
+//
+// Why a prefix per person: a free Personal Team cannot register a bundle id that any other team
+// already owns, and two teammates' free teams cannot share one either.
+
+BUNDLE_ID_PREFIX = com.example.waymark-dev
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"

@@ -1,0 +1,14 @@
+# Local only, never committed
+logs/
+pipeline/data/raw/
+eval/out/*
+!eval/out/summary.json
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+# secrets and per-person signing (also ignored at the repo root)
+**/Secrets.plist
+**/local.mk
+**/Local.xcconfig

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Waymark</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>$(BUNDLE_ID_PREFIX).waymark</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>waymark</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Waymark uses the camera and LiDAR to detect obstacles between your waist and head.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Waymark reads your step count for the arrival summary.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Waymark records the guided walk as a workout so the watch can keep giving cues.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Waymark keeps guiding you with the screen locked. Always lets it do that without the blue location banner covering its own route card.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Waymark uses your location and heading to guide you along the route.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Waymark can listen for sirens, car horns and vehicle sounds to warn you about traffic you cannot see, and for spoken commands.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Waymark uses motion to tell when the cane is sweeping, to track your head direction with AirPods, and to count steps.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Waymark can take spoken commands.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>location</string>
+	</array>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arkit</string>
+		<string>arm64</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+</dict>
+</plist>
