@@ -4,6 +4,29 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
+## repo: 784c0f1 (jiijeicfe `main`; branch `waymark/ui-v2` in progress) | wall: Sat 16:30 PT
+
+**Evidence per merged tree (Mac, Akash's run logs in `waymark/logs/mac/`, iPhone 18 Pro simulator, UIUC location):**
+
+| merge | tree checked | `make test` | `make sim` | `make uitest` |
+|---|---|---|---|---|
+| #2 UI-test location fix (418aa44) | 63ca61a | 1007 passed, exit 0 | — | 11 passed, 1 skipped, exit 0 |
+| #3 A1 (4dbfa2c) | 1ae605c (A1 + review fixes) | 1020 passed, exit 0 | BUILD SUCCEEDED, 0 warnings, exit 0 | not run on this tree (the UI branch's runs below include all of A1) |
+| #4 UI pass 1 (73a7f8e) | 8555faf | 1020 passed, exit 0 | BUILD SUCCEEDED, exit 0 | 11 passed, 1 skipped, exit 0; island tour taps Simulate walk |
+
+Earlier gate on `b6e11a6` (A1 before review): `make gen` exit 0, `make test` 1018 passed, `make sim` BUILD SUCCEEDED 0 warnings. Linux `swift test` on 1ae605c: 1013 passed.
+
+**A1 review fixes:** thanks for R1. Noted for the pitch and metric 7: a line can be dropped while the queue is busy (`speech_busy` is logged, inside the trigger distance), so cue counts < candidate counts.
+
+**Human instructions (Akash, 16:10), in progress on `waymark/ui-v2`:**
+- (1) **The demo route default is The Ave (D-35 item 2), and this is my answer to "what you chose".** `RouteSource.bundled()` returns `route_ave_seattle.json`; `WAYMARK_DEMO_ROUTE=isr_cif` returns the UIUC route. The XCUITests and `e2e.py` set it on every launch, so they assert on the same route and lines as before. The indoor ISR script hands over to `RouteSource.isrCif` explicitly. `WaymarkRouteTests` (2) pins the bundled copy byte-for-byte to `waymark/demo/route.json`. The Makefile `SIM_LAT/SIM_LON` default is the route start (D-35 item 1). Visible labels change because "CIF" is wrong for Seattle: "Start route to CIF" → "Start route" and "Navigate to CIF from here" → "Directions from here", with the test strings changed in the same commit. **This touches existing UI tests' label strings (not the UIUC route or what the tests check). It is a human instruction overriding the handoff's "do not change any existing test"; flagging it here.**
+- (2) **UI pass 2:** a full format redesign, not just colours.
+  - One button format: badge, bold title, subtitle, chevron; two-across tiles.
+  - Walking Guide is a 2 × 2 of Repeat / Next / Recenter / Stop.
+  - Blue brand accent; bigger cards and headings.
+
+**Order:** after UI pass 2: E1, E2, X-e2e, as you set. F1 waits for those.
+
 ## repo: 418aa44 (jiijeicfe `main`; branch `waymark/a1` at b6e11a6) | wall: Sat 15:47 PT
 
 **Answers W's open question: yes, `make test` ran on the Mac.** Akash ran it at ~15:38 on `waymark/uitest-location` = `main` d81026b (L1–L3) + a UI-test-only commit: **1007 tests in 23 suites passed, exit 0** (`waymark/logs/mac/l3-test.log`). So L1–L3 were merged (d81026b, on Akash's instruction) before the Mac gate, and the gate passed after it. No logic changed in between.
