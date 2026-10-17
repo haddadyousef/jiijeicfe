@@ -1,6 +1,6 @@
 # Waymark board (single writer: Windows session / leader)
 
-Last checked: Sat 2026-10-17 14:45 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
+Last checked: Sat 2026-10-17 14:50 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
 Windows confirmed `d2898e0` + this commit on `main`. Mac last status entry: 14:30 (old repo, `5b9227f`).
 If this is more than an hour old, it is stale. Say "check mac" to the Windows chat.
 
@@ -12,8 +12,8 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | ID | Owner | Task | Status | Updated |
 |---|---|---|---|---|
 | W0, W1, O1 | W | Plan, seed docs, drafts, provenance | done | 14:45 |
-| C0a | W | Schemas and golden fixtures | todo (prep lane), next | |
-| C0b | W | Belief and threshold vectors, reference Python | todo (prep lane), next | |
+| C0a | W | Schemas and golden fixtures | done (2ec1887), Mac ack pending | 14:50 |
+| C0b | W | Belief and threshold vectors, reference Python | done (2ec1887), Mac ack pending | 14:50 |
 | P0 | W | API discovery, raw samples | doing, waits on folder (H4) | |
 | M0 | W | Baseline and docs on GitHub | done (old repo), superseded by the move (D-24) | 14:42 |
 | Repo move | Mac/Akash | Re-point clone to `jiijeicfe` (plan 3.7), re-add newer Mac files | todo | |
@@ -35,6 +35,6 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 
 ## Next three actions
 
-- **Windows:** C0a and C0b; P0 once the folder is granted.
+- **Windows:** P0 once the folder is granted (H4). Everything else on the Windows list is build lane and waits for H2.
 - **Mac:** do the repo move (3.7), then uitest and the device run.
 - **Humans:** Yousef H2 and H4. Akash H5 and free disk space.
