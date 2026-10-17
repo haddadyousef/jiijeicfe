@@ -41,7 +41,13 @@ struct VoiceTile: View {
     /// Shown under the rings when there is no answer yet: the three words to start with.
     static let hintLine = "Tap to talk. Try “route”, “where am I” or “help”."
 
-    /// Rings + disc as one button (≥ 60 % of the page height), then the status line.
+    /// Share of the visible page the ring square takes. UI v2 (2026-10-17): the Guide passes 0.40
+    /// idle and 0.30 while walking, so the tiles under it (Where am I / Start route; Repeat / Stop
+    /// route) sit above the tab bar — the 04-navigating tour shot at 0.46 had the whole walking
+    /// grid below the fold under a long instruction. Still the largest target on the page.
+    var heightFraction: CGFloat = 0.46
+
+    /// Rings + disc as one button, then the status line.
     var body: some View {
         VStack(spacing: CKSpacing.md) {
             Button { model.toggleVoiceInput() } label: {
@@ -61,7 +67,7 @@ struct VoiceTile: View {
                 // UI audit 2026-09-13: 0.6 → 0.46 of the visible page so the compact row (Where am I /
                 // Start route) sits above the tab bar on a 17 Pro Max instead of cut in half, and
                 // stays reachable on smaller iPhones. Still the largest target on the page.
-                .containerRelativeFrame(.vertical) { height, _ in height * 0.46 }
+                .containerRelativeFrame(.vertical) { height, _ in height * heightFraction }
                 // The whole ring square is the target, not just the stroked pixels.
                 .contentShape(Rectangle())
             }
