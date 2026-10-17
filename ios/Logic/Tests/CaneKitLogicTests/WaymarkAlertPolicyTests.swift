@@ -215,3 +215,21 @@ private func reason(_ d: WaymarkDecision) -> String? { if case .silent(let r) = 
     #expect(WaymarkAlertPolicy.labelErrorM == 8)
     #expect(WaymarkAlertPolicy.maxGpsAccuracyM == 20)
 }
+
+// MARK: R1 / D-29 follow-ups
+
+@Test func curbRampsNeedAtLeastAnEvenBelief() {
+    // D-29 (1): curb ramps have no tau; at Detailed they speak only when p >= 0.5.
+    var low = WaymarkAlertPolicy(), even = WaymarkAlertPolicy()
+    #expect(reason(low.decide(hit(1, .curbRamp), p: 0.4999, inputs: ok())) == "below_threshold")
+    #expect(even.decide(hit(1, .curbRamp), p: 0.5, inputs: ok()) == .speak(.curbRamp, labelID: "ps:1"))
+    #expect(WaymarkAlertPolicy.curbRampMinP == 0.5)
+}
+
+@Test func aBackwardsClockDoesNotSilenceWaymarkForever() {
+    // R1 finding: `now - last < 20` stayed true forever after the wall clock stepped back.
+    var policy = WaymarkAlertPolicy()
+    #expect(policy.decide(hit(1), p: 0.9, inputs: ok(now: t0)) == .speak(.obstacle, labelID: "ps:1"))
+    #expect(reason(policy.decide(hit(2), p: 0.9, inputs: ok(now: t0 - 5))) == "spacing")     // small step back: still spaced
+    #expect(policy.decide(hit(2), p: 0.9, inputs: ok(now: t0 - 3600)) == .speak(.obstacle, labelID: "ps:2"))
+}

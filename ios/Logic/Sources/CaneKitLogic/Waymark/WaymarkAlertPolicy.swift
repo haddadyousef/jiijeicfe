@@ -9,20 +9,20 @@
 //    1. The type has a line (`crosswalk` / `other` never speak).                 not_spoken_type
 //    2. Cue level known and not Quiet; place known and not Indoors.               level_* / indoors / place_unknown
 //    3. Standard speaks obstacle / missing curb ramp / no sidewalk only.         level_detailed_only
-//    4. Belief p ≥ tau for the type (curb ramps have no tau: Detailed only).     below_threshold
+//    4. Belief p ≥ tau for the type; curb ramps (no tau) need p ≥ 0.5 (D-29).   below_threshold
 //    5. GPS good (accuracy ≤ 20 m, not "GPS weak") and fresh.                    gps_weak / gps_stale
 //    6. Not in a crossing settle, not while the walker is dictating.             crossing / voice_hold
 //    7. No LiDAR warning in the last 5 s (never talk over the cane's own cue).   lidar_recent
 //    8. Close enough: along-path ≤ trigger distance.                             not_yet
-//    9. Not already announced this route; at most 6 per route; 20 s apart.        already_announced / route_cap / spacing
+//    9. Not already announced this route; at most 6 per route; 20 s apart
+//       (|Δt|, so a clock stepping back cannot silence it forever).              already_announced / route_cap / spacing
 //  Only a `.speak` decision changes state. Unknown levels fail quiet: a renamed base-app level must
 //  never make Waymark louder.
 //  The app speaks a decision at `SpeechPriority.obstacle`, never `.nav` or `.safety` (plan 7.5).
 //
-//  Design choices to confirm with W (STATUS_M): curb ramps at Detailed speak without a p gate;
-//  "LiDAR warned" means any LiDAR cue (the app cannot match identities), which only makes Waymark
-//  quieter; the position-uncertainty margin is added to the trigger distance (warn earlier when GPS
-//  and the label position are uncertain), capped at the look-ahead.
+//  Rulings D-29: curb ramps at Detailed need p ≥ 0.5; "LiDAR warned" means any LiDAR cue (the app
+//  cannot match identities), which only makes Waymark quieter; the position-uncertainty margin is
+//  added to the trigger distance (warn earlier), capped at the look-ahead; Standard follows plan 5.2.
 //
 //  Portability (plan 1.4): Foundation only; cue level / place arrive as raw strings so this folder
 //  needs no base-repo type beyond `Coordinate` / `GeoMath`.
@@ -89,6 +89,9 @@ public struct WaymarkAlertPolicy: Sendable, Equatable {
     public static let leadTimeS = 8.0
     /// Bounds of the speed-based trigger distance, metres (design doc 8.3).
     public static let minTriggerM = 12.0, maxTriggerM = 35.0
+    /// Curb ramps have no tau (plan 5.4); D-29 (1): at Detailed they speak only when p ≥ 0.5, so a
+    /// ramp the evidence has mostly contradicted is not announced.
+    public static let curbRampMinP = 0.5
 
     /// Labels announced since the last `routeStarted()` / `routeEnded()`.
     private var announced: Set<String> = []
@@ -135,6 +138,7 @@ public struct WaymarkAlertPolicy: Sendable, Equatable {
         }
         guard p.isFinite else { return .silent(reason: "below_threshold") }
         if let tau = WaymarkThreshold.tau(for: type), p < tau { return .silent(reason: "below_threshold") }
+        if type == .curbRamp, p < Self.curbRampMinP { return .silent(reason: "below_threshold") }
         let acc = inputs.gpsAccuracyM
         if inputs.gpsWeak || !acc.isFinite || acc < 0 || acc > Self.maxGpsAccuracyM {
             return .silent(reason: "gps_weak")
@@ -147,7 +151,9 @@ public struct WaymarkAlertPolicy: Sendable, Equatable {
         guard hit.alongM <= trigger else { return .silent(reason: "not_yet") }
         guard !announced.contains(hit.prior.id) else { return .silent(reason: "already_announced") }
         guard spokenThisRoute < Self.maxPerRoute else { return .silent(reason: "route_cap") }
-        if let last = lastSpokenAt, inputs.nowUTC - last < Self.minSpacingS { return .silent(reason: "spacing") }
+        // |Δt|: a wall clock that steps backwards (time zone fix, NTP) must not silence Waymark
+        // forever (R1 finding); a small step back still counts as "too soon".
+        if let last = lastSpokenAt, abs(inputs.nowUTC - last) < Self.minSpacingS { return .silent(reason: "spacing") }
         announced.insert(hit.prior.id)
         spokenThisRoute += 1
         lastSpokenAt = inputs.nowUTC

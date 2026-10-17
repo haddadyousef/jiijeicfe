@@ -96,26 +96,27 @@ public struct WaymarkPrior: Sendable, Equatable, Codable, Identifiable {
         case sourceClusterID = "source_cluster_id"
     }
 
-    /// Decodes one label. `tags`, `n_unsure`, `cluster_size` and the nullable ids/dates may be
-    /// absent (defaults `[]`, 0, 1, nil). Range and format rules are checked by
-    /// `WaymarkPriorSet.decode`, which knows the label's id for the error.
+    /// Decodes one label. Every key of the bundle schema (`waymark/contracts/priors_v1.schema.json`)
+    /// must be present; `severity`, the three ids and the two dates may be `null`. A missing key is
+    /// a malformed bundle (golden case `missing_required_field`). Range and format rules are
+    /// checked by `WaymarkPriorSet.decode`, which knows the label's id for the error.
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
         type = try c.decode(WaymarkLabelType.self, forKey: .type)
         lat = try c.decode(Double.self, forKey: .lat)
         lng = try c.decode(Double.self, forKey: .lng)
-        severity = try c.decodeIfPresent(Double.self, forKey: .severity)
-        tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        severity = try c.decode(Double?.self, forKey: .severity)
+        tags = try c.decode([String].self, forKey: .tags)
         nAgree = try c.decode(Int.self, forKey: .nAgree)
         nDisagree = try c.decode(Int.self, forKey: .nDisagree)
-        nUnsure = try c.decodeIfPresent(Int.self, forKey: .nUnsure) ?? 0
-        clusterSize = try c.decodeIfPresent(Int.self, forKey: .clusterSize) ?? 1
-        streetEdgeID = try c.decodeIfPresent(Int.self, forKey: .streetEdgeID)
-        intersectionID = try c.decodeIfPresent(Int.self, forKey: .intersectionID)
-        osmWayID = try c.decodeIfPresent(Int.self, forKey: .osmWayID)
-        imageryDate = try c.decodeIfPresent(String.self, forKey: .imageryDate)
-        labelDate = try c.decodeIfPresent(String.self, forKey: .labelDate)
+        nUnsure = try c.decode(Int.self, forKey: .nUnsure)
+        clusterSize = try c.decode(Int.self, forKey: .clusterSize)
+        streetEdgeID = try c.decode(Int?.self, forKey: .streetEdgeID)
+        intersectionID = try c.decode(Int?.self, forKey: .intersectionID)
+        osmWayID = try c.decode(Int?.self, forKey: .osmWayID)
+        imageryDate = try c.decode(String?.self, forKey: .imageryDate)
+        labelDate = try c.decode(String?.self, forKey: .labelDate)
         sourceClusterID = try c.decode(Int.self, forKey: .sourceClusterID)
     }
 }

@@ -100,11 +100,23 @@ private func label(id: Int = 1, type: String = "obstacle", lat: String = "47.654
     #expect(set.labels.count == 1)
 }
 
-@Test func optionalCountsTakeTheirDefaults() throws {
-    let bare = #"{"id":"ps:9","type":"obstacle","lat":47.654,"lng":-122.305,"severity":null,"n_agree":0,"n_disagree":0,"source_cluster_id":9}"#
-    let p = try #require(try WaymarkPriorSet.decode(bundle(labels: [bare])).labels.first)
-    #expect(p.nUnsure == 0 && p.clusterSize == 1 && p.tags == [] && p.severity == nil)
-    #expect(p.streetEdgeID == nil && p.imageryDate == nil)
+@Test func everyLabelKeyIsRequiredEvenWhenItsValueMayBeNull() {
+    // The bundle schema (waymark/contracts/priors_v1.schema.json) requires all 16 label keys; the
+    // golden case `missing_required_field` (no n_unsure) must be rejected. Nullable keys must be
+    // present with `null`. (Plan 5.2's 0 / 1 defaults are the pipeline's job, from the API.)
+    let full = label()
+    for key in ["severity", "tags", "n_unsure", "cluster_size", "street_edge_id", "intersection_id",
+                "osm_way_id", "imagery_date", "label_date"] {
+        var obj = try! JSONSerialization.jsonObject(with: Data(full.utf8)) as! [String: Any]
+        obj.removeValue(forKey: key)
+        let without = String(data: try! JSONSerialization.data(withJSONObject: obj), encoding: .utf8)!
+        #expect(throws: WaymarkPriorError.self, "missing \(key)") { try WaymarkPriorSet.decode(bundle(labels: [without])) }
+    }
+}
+
+@Test func nullableKeysAcceptNull() throws {
+    let p = try #require(try WaymarkPriorSet.decode(bundle(labels: [label(severity: "null")])).labels.first)
+    #expect(p.severity == nil && p.streetEdgeID == nil && p.imageryDate == nil)
 }
 
 @Test func fractionalSeverityIsKept() throws {
