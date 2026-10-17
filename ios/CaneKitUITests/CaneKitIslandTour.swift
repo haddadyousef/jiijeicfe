@@ -46,7 +46,8 @@ final class CaneKitIslandTour: XCTestCase {
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
         // Waymark: the demo route defaults to the Seattle Ave walk; these tests assert on the UIUC
-        // route's lines ("Townsend", "Illinois Street") at the UIUC simulator location, so pin it.
+        // route's lines ("Townsend", "Illinois Street"), so pin it (the Mac gate also parks the
+        // simulator at UIUC: SIM_LAT=40.1140 SIM_LON=-88.2249; the Makefile default is the Ave start).
         app.launchEnvironment["WAYMARK_DEMO_ROUTE"] = "isr_cif"
         app.launch()
         springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")

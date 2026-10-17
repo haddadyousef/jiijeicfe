@@ -10,7 +10,7 @@
 //  Implements docs/design.md §6.2 (Depth grid), the lane ladder of §2, and the §4 / §7 rules
 //  "no animation on the depth grid, no colour cross-fades on lane tiles": tiles re-render at
 //  the depth engine's ~30 Hz normal / up to 60 Hz high-rate with instant changes. Deviation from §6.2: VoiceOver gets one
-//  element per row ("Head row", "Torso row") instead of one for the whole grid.
+//  element per row ("Head row", "Body row" — was "Torso row" until UI v2) instead of one for the whole grid.
 //
 //  Accessibility contract: tiles are hidden; each row is one element labelled "<Row> row" with
 //  a spoken value ("left one meter, center clear, right clear" / "no depth data").
@@ -26,7 +26,7 @@
 import CaneKitLogic
 import SwiftUI
 
-/// The "Obstacles" card: trust pill plus the Head and Torso rows of three lane tiles each.
+/// The "What's ahead" card (was "Obstacles"): trust pill plus the Head and Body rows of three lane tiles each.
 ///
 /// Pure display: takes a `LaneReport` value and has no state or actions (tiles are not tappable,
 /// design.md §3).
@@ -39,13 +39,13 @@ struct LaneGridView: View {
     private static let laneNames = ["Left", "Center", "Right"]
 
     /// "Obstacles" card: the trust pill right-aligned ("Trusted" = the gyro gate accepted the
-    /// frame, "Sweeping" = warnings paused while the cane swings), then the Head and Torso rows.
+    /// frame, "Sweeping" = warnings paused while the cane swings), then the Head and Body rows and the colour key.
     var body: some View {
         // UI audit 2026-09-13: pill beside the title's caption instead of alone on its own row;
         // "Trusted" / "Sweeping" → "Steady" / "Swinging" (what the cane is doing, in plain words).
         // UI v2 (2026-10-17): "Obstacles" → "What's ahead", plus a colour key under the rows.
         CKCard(title: "What's ahead", systemImage: "square.grid.3x2",
-               caption: "Nearest thing to your left, ahead and right, at head and body height.") {
+               caption: "Nearest thing to your left, center and right, at head and body height.") {
             HStack {
                 CKStatusPill(text: report.isTrusted ? "Steady" : "Swinging",
                              tone: report.isTrusted ? .trusted : .warning,
@@ -55,7 +55,7 @@ struct LaneGridView: View {
                 Spacer()
             }
             row(title: "Head", values: report.head, coverage: report.grid.headCoverage)
-            row(title: "Torso", values: report.torso, coverage: report.grid.torsoCoverage)
+            row(title: "Body", values: report.torso, coverage: report.grid.torsoCoverage)
             legend
         }
     }
@@ -68,6 +68,7 @@ struct LaneGridView: View {
             legendItem(CKColor.laneFar, "Far")
             legendItem(CKColor.laneNear, "Near")
             legendItem(CKColor.laneUrgent, "Stop")
+            legendItem(CKColor.laneNoData, "Not seen")
             Spacer(minLength: 0)
         }
         .font(.caption.weight(.semibold))
@@ -80,6 +81,8 @@ struct LaneGridView: View {
         HStack(spacing: 4) {
             RoundedRectangle(cornerRadius: 4, style: .continuous)
                 .fill(color)
+                .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .strokeBorder(CKColor.controlBorder, lineWidth: 1))   // pale swatches on a white card
                 .frame(width: 14, height: 14)
             Text(word).lineLimit(1)
         }
@@ -96,7 +99,7 @@ struct LaneGridView: View {
     ///     (`LaneGrid.headCoverage` / `torsoCoverage`, Step 51); false → the NO COVER tile.
     private func row(title: String, values: [Float], coverage: [Bool]) -> some View {
         VStack(alignment: .leading, spacing: CKSpacing.xs) {
-            Text(title == "Torso" ? "Body height" : "Head height")   // UI v2: everyday words on screen
+            Text("\(title) height")   // UI v2: "Head height" / "Body height"; VoiceOver "Head row" / "Body row"
                 .font(CKFont.secondary.weight(.semibold))
                 .foregroundStyle(CKColor.textSecondary)
             HStack(spacing: CKSpacing.sm) {

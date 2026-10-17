@@ -19,6 +19,19 @@ better overall", and the demo route default from UIUC to The Ave (W's D-35).
   Makefile parks the simulator at the route start; `WaymarkRouteTests` pins the bundled copy to
   `waymark/demo/route.json`.
 
+- **Review of the first cut (adversarial, every finding checked):** H1 Stop route moved to the walking
+  grid's top row (Repeat | Stop route / Next | Recenter), tiles back to 108 pt and a smaller header
+  symbol, so Stop stays above the tab bar; H2 new XCUITest `testDefaultRouteIsTheAveWalk` (no pin) —
+  ⚠ **`make gen` is required** after pulling (new resource `route_ave_seattle.json`); H3 AGENTS.md
+  rule 9; M1 the indoor ISR walk names the UIUC route; M2 `isrCif()` honours `CANEKIT_ROUTE_FILE`;
+  M3 "Directions from here" keeps a named last waypoint ("the CIF east entrance"); M4 loader types
+  `@MainActor` (also the Mac compile error); M5 dark-mode accent is ivory, not the CLEAR blue;
+  M6 `controlBorder` ≥ 3:1 for secondary buttons and section headers; M7 `CKTileRow` stacks tile
+  pairs at accessibility sizes and tiles stop truncating; L2 "Body row"; L3 legend outlines + "Not
+  seen"; L4 hints without a route file, no subtitle while Describing; docs and comments. Not done:
+  every historical doc that names the old labels (todo.md, stress_test_plan.md, route_isr_cif.md) —
+  they describe past steps.
+
 Test on the phone: Start route walks The Ave; every button shows a badge, title and subtitle.
 
 ## Waymark UI rework — colour-blind-safe and simpler (Sat Oct 17)

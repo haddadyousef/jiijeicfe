@@ -266,7 +266,8 @@ final class IndoorGuide {
         // static name is the trip's, because the outdoor leg reuses this activity after the handover.
         let tripName: String
         switch IndoorScriptCatalog.outdoorLeg(destination: destination) {
-        case .demoRoute: tripName = AppModel.bundledRouteName.isEmpty ? script.name : AppModel.bundledRouteName
+        // waymark: the ISR script hands over to the UIUC route, whatever the default demo route is.
+        case .demoRoute: tripName = (try? RouteSource.isrCif().name) ?? script.name
         case .navigate(let text): tripName = "To \(text)"
         }
         model.liveActivity.beginIndoor(name: tripName, say: p.currentSay, stepIndex: p.index,

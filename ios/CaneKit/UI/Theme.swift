@@ -14,7 +14,7 @@
 //    · every colour has light / dark / increased-contrast variants (UIKit trait providers)
 //    · text on any coloured fill is always `CKColor.ink`
 //    · numbers that change use tabular digits
-//    · big buttons are ≥ 72 pt tall, carry a word and a symbol, and take a VoiceOver hint
+//    · big buttons are ≥ 76 pt tall (UI v2), carry a word and a symbol, and take a VoiceOver hint
 //    · Reduce Motion is honoured by the animations we own (button press, tab switch)
 //
 //  Accessibility contract:
@@ -53,8 +53,11 @@ enum CKColor {
     static let surface       = dynamic(0xFFFFFF, 0x1A1816, hcLight: 0xFFFFFF, hcDark: 0x0A0A0A)
     /// Secondary-button fill and the no-data tile fill (via `laneNoData` / `neutral`).
     static let surfaceRaised = dynamic(0xEAE6DD, 0x26231F, hcLight: 0xE3DED3, hcDark: 0x141210)
-    /// Hairlines on cards and secondary buttons; flips to pure black / white under Increase Contrast.
+    /// Hairlines on cards; flips to pure black / white under Increase Contrast.
     static let border        = dynamic(0xC9C3B6, 0x3A362F, hcLight: 0x000000, hcDark: 0xFFFFFF)
+    /// Outline of controls that share their container's fill (secondary buttons, section headers):
+    /// ≥ 3:1 on the card and on the page ground in both modes (WCAG 1.4.11; UI v2 review M6).
+    static let controlBorder = dynamic(0x8A8577, 0x6E685E, hcLight: 0x000000, hcDark: 0xFFFFFF)
 
     // Text.
     /// Body text on `background` / `surface` (≥ 14:1).
@@ -62,11 +65,11 @@ enum CKColor {
     /// Hints, card titles, secondary rows (≥ 6.5:1). Never used for text a hazard depends on.
     static let textSecondary = dynamic(0x5C574D, 0xB5AFA3, hcLight: 0x3A362F, hcDark: 0xD9D4C9)
 
-    /// The brand accent (UI v2, 2026-10-17; was "cane white on ink"): deep blue `#1E40AF` in light
-    /// mode (white text 8.7:1, AAA), sky blue `#84ADF8` in dark mode (dark text 8.6:1). Blue is the
-    /// one hue every colour-vision type sees as itself. Primary buttons, the selected tab, the voice
-    /// disc and the button badges. It never carries hazard meaning; hazard is only the lane ladder.
-    static let accent   = dynamic(0x1E40AF, 0x84ADF8, hcLight: 0x1E3A8A, hcDark: 0xA8C5FF)
+    /// The brand accent (UI v2, 2026-10-17): deep blue `#1E40AF` in light mode (white text 8.7:1,
+    /// AAA); in dark mode cane ivory `#F4F1EA` with near-black text (17:1) — a sky blue there was the
+    /// CLEAR tile colour exactly (review M5). Primary buttons, the selected tab, the voice disc and
+    /// the tinted badges. It never carries hazard meaning; hazard is only the lane ladder.
+    static let accent   = dynamic(0x1E40AF, 0xF4F1EA, hcLight: 0x1E3A8A, hcDark: 0xFFFFFF)
     /// Text / symbols on an `accent` fill (primary `CKBigButton`, selected tab).
     static let onAccent = dynamic(0xFFFFFF, 0x0E0D0B, hcLight: 0xFFFFFF, hcDark: 0x000000)
     /// Text on every coloured fill (lane tiles, pills, banners). One rule, no exceptions.
@@ -203,8 +206,9 @@ enum CKMetrics {
     /// `CKBigButton` minimum height (UI v2: 76 pt, full or half width).
     static let bigButton: CGFloat = 76
     /// Minimum height of a `CKBigButton` in `tile` layout (badge over word over subtitle); the
-    /// pair's `HStack` stretches both tiles to the taller one. Step 47; UI v2 124 pt.
-    static let tile: CGFloat = 124
+    /// pair's row stretches both tiles to the taller one. Step 47; kept at 108 in UI v2 so the walking
+    /// grid's top row (with Stop route) stays above the tab bar (review H1).
+    static let tile: CGFloat = 108
     /// Hairline normally; a real border under Increase Contrast.
     static func border(for contrast: ColorSchemeContrast) -> CGFloat {
         contrast == .increased ? 3 : 1
@@ -253,6 +257,8 @@ struct CKBigButton: View {
     var value: String? = nil
     /// Tap handler. Runs on the main actor.
     let action: () -> Void
+    /// Accessibility text sizes lift the tile's two-line limits (nothing truncates; review M7).
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     /// A `Button` with the row or tile label, styled by `CKBigButtonStyle`.
     var body: some View {
@@ -279,12 +285,12 @@ struct CKBigButton: View {
     /// height the pair's `HStack` gives it (≥ `CKMetrics.tile`).
     private var tileLabel: some View {
         VStack(alignment: .leading, spacing: CKSpacing.sm) {
-            CKButtonBadge(systemImage: systemImage, role: role, size: 46)
+            CKButtonBadge(systemImage: systemImage, role: role, size: 40)
             Spacer(minLength: 0)
             Text(title)
                 .font(CKFont.button)
                 .multilineTextAlignment(.leading)
-                .lineLimit(2)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
                 .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
             if let subtitle {
@@ -292,7 +298,7 @@ struct CKBigButton: View {
                     .font(CKFont.secondary)
                     .foregroundStyle(subtitleStyle)
                     .multilineTextAlignment(.leading)
-                    .lineLimit(2)
+                    .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -351,6 +357,25 @@ struct CKBigButton: View {
     }
 }
 
+/// Two (or more) `CKBigButton` tiles side by side, as one row of equal height; at accessibility
+/// text sizes the tiles stack into one column instead of truncating in half the width (UI v2
+/// review M7). Used for every tile pair (Guide's idle row and walking grid, the spotter buttons).
+struct CKTileRow<Content: View>: View {
+    /// The tiles.
+    @ViewBuilder let content: () -> Content
+    /// Accessibility sizes switch to a column.
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// `HStackLayout` normally, `VStackLayout` at accessibility sizes; height fixed to the content.
+    var body: some View {
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: CKSpacing.sm))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: CKSpacing.sm))
+        layout { content() }
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
 /// The round symbol badge inside a `CKBigButton`: a translucent disc of the foreground colour
 /// behind the symbol, so the symbol reads as an icon on every fill. Hidden from VoiceOver.
 struct CKButtonBadge: View {
@@ -404,7 +429,7 @@ struct CKBigButtonStyle: ButtonStyle {
         configuration.label
             .foregroundStyle(foreground)
             .background(fill, in: shape)
-            .overlay(shape.strokeBorder(CKColor.border, lineWidth: role == .secondary
+            .overlay(shape.strokeBorder(CKColor.controlBorder, lineWidth: role == .secondary
                                         ? CKMetrics.border(for: contrast) + 0.5 : 0))
             .opacity(isEnabled ? 1 : 0.4)
             .opacity(configuration.isPressed && reduceMotion ? 0.85 : 1)
@@ -441,7 +466,7 @@ struct CKBigButtonStyle: ButtonStyle {
 /// Adds `.updatesFrequently` when asked, so VoiceOver re-reads a live pill on focus (§5 rule).
 struct CKStatusPill: View {
     /// Fill colour family: `trusted` / `warning` / `danger` use `ink` text; `neutral` uses
-    /// `textPrimary` on the raised surface; `accent` is ink-on-ivory / ivory-on-ink (the brand
+    /// `textPrimary` on the raised surface; `accent` is white-on-blue / ink-on-ivory (the brand, UI v2
     /// pairing) for a mark that is not a state — today only the "Campus" badge on a destination
     /// suggestion (design.md §2, §6.3). Accent never carries hazard meaning.
     enum Tone { case trusted, warning, danger, neutral, accent }
@@ -509,9 +534,9 @@ struct CKStatusPill: View {
 /// A flat surface with a hairline. Groups its children as one VoiceOver container whose label
 /// is the title, so the rotor can jump card to card.
 ///
-/// docs/design.md §3 (radius 20, `lg` padding, no shadow) and §8 ("`CKCard(title:)` groups
+/// docs/design.md §3 (radius 26 since UI v2, `lg` + 2 padding, no shadow) and §8 ("`CKCard(title:)` groups
 /// children as one VoiceOver container"). The title is drawn as a `.isHeader` so the headings
-/// rotor stops on "Guide", "Arrived" / "This trip" (Guide page); "Obstacles", "Hazards" (Sense);
+/// rotor stops on "Arrived" / "This trip" (Guide page; its status card is untitled since UI v2 and heads itself "Ready" / "Next step"); "What's ahead", "Sidewalk memory", "Hazards" (Details);
 /// "Cues", "Haptics", "Watch", "Mount", "This phone" (Settings). An untitled card (the Sense
 /// page's status card) gets an empty label here and sets its own label afterwards.
 struct CKCard<Content: View>: View {
@@ -639,13 +664,13 @@ struct CKRowDivider: View {
     }
 }
 
-/// A small uppercase group label above a run of cards on a page ("EVERYDAY", "TESTING TOOLS").
+/// A group heading above a run of cards on a page ("Everyday").
 /// A VoiceOver heading, so the rotor can jump between groups.
 struct CKSectionHeader: View {
     /// The group's name; drawn as written (UI v2; it was uppercased).
     let title: String
 
-    /// UI v2: a real heading — `CKFont.cardTitle` size in `textPrimary`, not small caps.
+    /// UI v2: a real heading — title2 rounded bold in `textPrimary`, not small caps.
     var body: some View {
         Text(title)
             .font(.system(.title2, design: .rounded).weight(.bold))
@@ -741,7 +766,7 @@ struct CKMoreSection<Content: View>: View {
             }
             .buttonStyle(.plain)
             .background(CKColor.surface, in: shape)
-            .overlay(shape.strokeBorder(CKColor.border, lineWidth: CKMetrics.border(for: contrast)))
+            .overlay(shape.strokeBorder(CKColor.controlBorder, lineWidth: CKMetrics.border(for: contrast) + 0.5))
             .accessibilityLabel(title)
             .accessibilityValue(expanded ? "expanded" : "collapsed")
             .accessibilityHint(expanded ? "Hides this section" : "Shows \(caption.map { $0.lowercased() } ?? "more")")

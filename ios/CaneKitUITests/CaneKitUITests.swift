@@ -66,7 +66,8 @@ final class CaneKitUITests: XCTestCase {
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
         // Waymark: the demo route defaults to the Seattle Ave walk; these tests assert on the UIUC
-        // route's lines ("Townsend", "Illinois Street") at the UIUC simulator location, so pin it.
+        // route's lines ("Townsend", "Illinois Street"), so pin it (the Mac gate also parks the
+        // simulator at UIUC: SIM_LAT=40.1140 SIM_LON=-88.2249; the Makefile default is the Ave start).
         app.launchEnvironment["WAYMARK_DEMO_ROUTE"] = "isr_cif"
         app.launch()
     }
@@ -78,6 +79,25 @@ final class CaneKitUITests: XCTestCase {
     /// (GuideCard); instruction texts containing "Townsend" / "Illinois Street" come from the
     /// `say` lines of CaneKit/Resources/route_isr_cif.json waypoints 1 and 2. Note waypoint 1's
     /// line already mentions "Illinois Street", so that wait alone does not prove Next advanced.
+    func testDefaultRouteIsTheAveWalk() {
+        // Waymark (UI v2 review H2): every other test pins the UIUC route, so this one relaunches
+        // without the pin and proves the default demo route is bundled and starts: its first line
+        // is route_ave_seattle.json waypoint 1, "Starting the route. Walk straight ahead."
+        app.terminate()
+        app.launchEnvironment["WAYMARK_DEMO_ROUTE"] = nil
+        app.launch()
+        let start = app.buttons["Start route"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10), "Start button should be on the guide card")
+        start.tap()
+        XCTAssertTrue(app.buttons["Stop route"].waitForExistence(timeout: 10), "the default route must start (route_ave_seattle.json in the bundle — run make gen)")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] 'Starting the route'")).firstMatch
+            .waitForExistence(timeout: 5), "first line of the Ave route")
+        let stop = scrollTo(app.buttons["Stop route"])
+        stop.tap()
+        app.buttons["Stop route"].tap()
+        XCTAssertTrue(app.buttons["Start route"].waitForExistence(timeout: 10))
+    }
+
     func testGuideStartsAndStopsDemoRoute() {
         let start = app.buttons["Start route"]
         XCTAssertTrue(start.waitForExistence(timeout: 10), "Start button should be on the guide card")

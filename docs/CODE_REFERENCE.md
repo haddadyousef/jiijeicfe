@@ -2923,9 +2923,11 @@ UI v2 (2026-10-17): `accent` `#1E40AF` / `#84ADF8` (HC `#1E3A8A` / `#A8C5FF`), `
 `CKMetrics.bigButton` 76, `tile` 124. `CKBigButton` rows: `CKButtonBadge` (40 pt) + title + subtitle +
 chevron; tiles: badge (46 pt) top-left, words below, left-aligned; secondary fill is `surface` with
 a border. `CKButtonBadge(systemImage:role:size:)` — translucent disc of the foreground colour.
-`CKIconBadge(systemImage:tinted:)` — `tinted` (card titles, section headers) = accent symbol on an
+`CKIconBadge(systemImage:tinted:)` — `tinted` (card titles, `CKMoreSection` headers) = accent symbol on an
 accent wash. `CKSectionHeader` — title2 rounded bold heading, not small caps.
-`RouteSource.bundled()` → the Seattle Ave route unless `WAYMARK_DEMO_ROUTE=isr_cif`; `isrCif()`,
+`CKTileRow` — tile pairs, one column at accessibility sizes; `CKColor.controlBorder` (#8A8577 / #6E685E,
+≥ 3:1) outlines secondary buttons and section headers; dark-mode `accent` is ivory #F4F1EA.
+`RouteSource.bundled()` → the Seattle Ave route unless `WAYMARK_DEMO_ROUTE=isr_cif`; `isrCif()` (honours `CANEKIT_ROUTE_FILE`),
 `aveSeattle()`; `AppModel.demoRouteDestination` ("The Ave and NE 50th"); `startDemoRoute(_ load:)`,
 `startSimulatedWalk(speedMps:load:)`.
 

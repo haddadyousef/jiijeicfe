@@ -91,6 +91,10 @@ enum RouteSource {
     /// The original UIUC route, ISR Townsend Hall → CIF (`Resources/route_isr_cif.json`). The indoor
     /// ISR script hands over to it (`IndoorGuide.handOver`), whatever the default demo route is.
     static func isrCif() throws -> Route {
+        // The Step 66 hook replaced "the bundled file", which was this one; keep that (review M2).
+        if let path = ProcessInfo.processInfo.environment["CANEKIT_ROUTE_FILE"], !path.isEmpty {
+            return try Route.load(from: Data(contentsOf: URL(fileURLWithPath: path)))
+        }
         guard let url = Bundle.main.url(forResource: "route_isr_cif", withExtension: "json") else {
             throw RouteError.missingBundledRoute
         }

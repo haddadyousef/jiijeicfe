@@ -89,15 +89,15 @@ struct StartDemoRouteIntent: AppIntent {
     }
 }
 
-/// Siri "Directions from here": Apple Maps walking directions from the live GPS fix to the
-/// CIF east entrance (`AppModel.navigateToCIFFromHere()`), for when the walker is not at ISR.
+/// Siri "Directions from here" (was "Navigate to CIF from here"): Apple Maps walking directions from
+/// the live GPS fix to the end of the demo route (`AppModel.navigateToCIFFromHere()`: The Ave and
+/// NE 50th by default, the CIF east entrance under `WAYMARK_DEMO_ROUTE=isr_cif`).
 ///
 /// ⚠ Plain `AppIntent`, not an App Shortcut: the ten shortcut slots are full and the Action
 /// button needed "Talk to Waymark" more (see `CaneKitShortcuts`). Still in the Shortcuts app
 /// as an action (a one-step shortcut around it goes on the Action button), and the Guide card
-/// button is unchanged. The Siri phrase for the same destination is now "Take me to CIF in
-/// Waymark" (`TakeMeToIntent` + the gazetteer, whose CIF entry is this same route-file
-/// waypoint) — say that instead.
+/// button is unchanged. For CIF, "Take me to CIF in Waymark" (`TakeMeToIntent` + the gazetteer)
+/// still reaches the CIF entrance whatever the demo route is.
 struct NavigateToCIFIntent: AppIntent {
     /// Shown in Shortcuts.
     static let title: LocalizedStringResource = "Directions from here"

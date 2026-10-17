@@ -65,7 +65,7 @@ struct GuideCard: View {
     /// box scrolls the Guide card above the keyboard. nil in previews (then nothing scrolls).
     var scroller: ScrollViewProxy? = nil
 
-    /// One `CKCard("Guide")`: instruction; distance + bearing (navigating or arrived, with a fix);
+    /// The status card (big symbol + "Ready" / "Next step" / "Arrived", UI v2): instruction; distance + bearing (navigating or arrived, with a fix);
     /// GPS pills; the `VoiceTile` microphone with the assistant's last answer; the compact row
     /// (navigating: Repeat / Next / Stop route; idle: Where am I / Start route); the
     /// describer's result / error; then either the rest of the route controls (Recenter, beacon +
@@ -123,9 +123,9 @@ struct GuideCard: View {
         CKCard {
             HStack(spacing: CKSpacing.md) {
                 Image(systemName: headerSymbol)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(CKColor.onAccent)
-                    .frame(width: 52, height: 52)
+                    .frame(width: 40, height: 40)
                     .background(Circle().fill(CKColor.accent))
                     .accessibilityHidden(true)
                 Text(headerWord)
@@ -206,28 +206,27 @@ struct GuideCard: View {
             // Step 62: the indoor leg uses the same row; next / repeat / stop reach the indoor step.
             if walking {
                 // UI v2 (2026-10-17): a 2 × 2 grid instead of three in a row plus Recenter below the
-                // fold — Repeat | Next on top, Recenter | Stop route under it (indoors, where there is
-                // no Recenter, Stop route takes the whole second row). Every label and action is
-                // unchanged (⚠ test contract: "Repeat", "Next", "Recenter", "Stop route").
+                // fold — Repeat | Stop route on top (Stop must be reachable without scrolling, design.md
+                // §6.1; review H1), Next | Recenter under it (indoors, where there is no Recenter, Next
+                // takes the whole second row). Every label and action is unchanged (⚠ test contract:
+                // "Repeat", "Next", "Recenter", "Stop route").
                 VStack(spacing: CKSpacing.sm) {
-                    HStack(alignment: .top, spacing: CKSpacing.sm) {
+                    CKTileRow {
                         CKBigButton(title: "Repeat", subtitle: "Say it again", systemImage: "arrow.counterclockwise",
                                     layout: .tile, hint: "Says the current instruction again") { model.repeatInstruction() }
+                        stopRouteButton
+                    }
+                    CKTileRow {
                         // `nextWaypoint()`, not `nav.next()`: one code path with the watch Next, the
                         // crown and Siri "Next waypoint in Waymark".
                         CKBigButton(title: "Next", subtitle: "Skip ahead", systemImage: "forward.fill", role: .secondary,
                                     layout: .tile, hint: "Skips to the next instruction") { model.nextWaypoint() }
-                    }
-                    .fixedSize(horizontal: false, vertical: true)
-                    HStack(alignment: .top, spacing: CKSpacing.sm) {
                         if model.nav.isNavigating {
                             CKBigButton(title: "Recenter", subtitle: "Ahead is forward", systemImage: "location.north.line",
                                         role: .secondary, layout: .tile,
                                         hint: "Sets straight ahead as the beacon's forward direction") { model.recenter() }
                         }
-                        stopRouteButton
                     }
-                    .fixedSize(horizontal: false, vertical: true)
                 }
                 if stopConfirmation.isArmed {
                     Text("Tap Stop route again within 3 seconds to end guidance.")
@@ -237,9 +236,9 @@ struct GuideCard: View {
                         .accessibilityLabel("Stop route is armed. Tap Stop route again within 3 seconds to end guidance.")
                 }
             } else {
-                HStack(alignment: .top, spacing: CKSpacing.sm) {
+                CKTileRow {
                     CKBigButton(title: model.describer.isDescribing ? "Describing…" : "Where am I",
-                                subtitle: "Describe what's ahead",
+                                subtitle: model.describer.isDescribing ? nil : "Describe what's ahead",
                                 systemImage: "eye", role: .secondary, layout: .tile,
                                 hint: "Takes a photo and reads out hazards and landmarks ahead",
                                 value: model.describer.isDescribing ? "in progress" : nil) { model.describeScene() }
@@ -247,10 +246,10 @@ struct GuideCard: View {
                     // ⚠ test contract: "Start route" is the first thing every UI test waits for (was "Start
                     // route to CIF" until the demo route became the Seattle Ave walk, 2026-10-17).
                     CKBigButton(title: "Start route", subtitle: routeSubtitle, systemImage: "figure.walk", layout: .tile,
-                                hint: "Starts the demo route to \(AppModel.demoRouteDestination)") { model.startDemoRoute() }
+                                hint: AppModel.demoRouteDestination.isEmpty ? "Starts the demo route"
+                                    : "Starts the demo route to \(AppModel.demoRouteDestination)") { model.startDemoRoute() }
                         .disabled(model.routeStartWaiting)
                 }
-                .fixedSize(horizontal: false, vertical: true)
             }
             if !model.describer.lastDescription.isEmpty {
                 Text(model.describer.lastDescription)

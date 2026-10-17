@@ -170,7 +170,7 @@ can put any of them on the Action button (section 3) by first making a one-step 
   are still felt on the cane, but not named."). It reads the state back from the app rather than
   from what you asked for, so a feature that refuses to start — a denied microphone, for instance —
   is never announced as on.
-- **Navigate to CIF from here** — walking directions to the CIF east entrance, wherever you start
+- **Directions from here** (was "Navigate to CIF from here") — walking directions to the end of the demo route (The Ave and NE 50th; the CIF east entrance under `WAYMARK_DEMO_ROUTE=isr_cif`), wherever you start
   (the Guide card button does the same thing). Its Siri phrase moved to "Take me to CIF in
   OpenCane" when its shortcut slot went to "Talk to OpenCane".
 
@@ -226,7 +226,7 @@ status, scene questions, places, posts — conversationally, with no wake word a
 microphone: it is useful at every moment of a walk, with or without a route running.
 
 All ten OpenCane shortcuts appear in that picker with no setup, because they are App Shortcuts.
-The Shortcuts-app-only actions (Recenter, Turn a feature on or off, Navigate to CIF from here)
+The Shortcuts-app-only actions (Recenter, Turn a feature on or off, Directions from here)
 do **not** appear there directly — to put one of those on the Action button, first make a
 one-step shortcut in the Shortcuts app that runs it, then choose that shortcut in step 5.
 

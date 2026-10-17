@@ -3377,7 +3377,8 @@ final class AppModel {
         logger.event("recenter", ["auto": true])
     }
 
-    /// Start the bundled demo route (ISR Townsend Hall → CIF).
+    /// Start the demo route (waymark: `RouteSource.bundled()` — the Seattle Ave walk by default, the
+    /// UIUC ISR Townsend Hall → CIF route under `WAYMARK_DEMO_ROUTE=isr_cif`).
     /// Triggered by the "Start route" button, `StartDemoRouteIntent`, and at launch by the
     /// `--demo-route` / `CANEKIT_DEMO_ROUTE=1` automation hook. On failure sets `routeError` and
     /// says "Route file missing."
@@ -3385,12 +3386,13 @@ final class AppModel {
     /// the demo route started would otherwise call `beginRoute` again and silently swap the walker
     /// onto the searched route mid-walk. A route already queued behind the depth interlock is
     /// cancelled too, for the same reason (the newest request wins).
-    /// The name inside `Resources/route_isr_cif.json`, so an uploaded route can be labelled
+    /// The demo route's name (`RouteSource.bundled()`), so an uploaded route can be labelled
     /// `bundled` rather than `mapkit`. Read once (the file is in the app bundle and cannot
     /// change); "" when the file is missing, which simply makes every route read as `mapkit`.
     static let bundledRouteName: String = (try? RouteSource.bundled().name) ?? ""
 
-    /// - Parameter load: which bundled route (waymark: `RouteSource.aveSeattle` for the Seattle demo).
+    /// - Parameter load: which bundled route (default the demo route; the indoor ISR handover passes
+    ///   `RouteSource.isrCif`).
     func startDemoRoute(_ load: @MainActor () throws -> Route = RouteSource.bundled) {  // waymark: route loader
         cancelRouteBuild()
         cancelPendingRouteStart()
@@ -3453,7 +3455,7 @@ final class AppModel {
                    searchLine: "Finding a route to \(place.name).")
     }
 
-    /// "Directions from here" (was "Directions from here"): Apple Maps walking directions from
+    /// "Directions from here" (was "Navigate to CIF from here"): Apple Maps walking directions from
     /// the live GPS fix to the last waypoint of the demo route (`RouteSource.bundled()`: The Ave and
     /// NE 50th by default, the CIF east entrance under `WAYMARK_DEMO_ROUTE=isr_cif`), as a coordinate
     /// (no search, so MapKit cannot pick a different place). GuideCard button and
@@ -3464,9 +3466,10 @@ final class AppModel {
             speech.say("Route file missing.", .nav)
             return
         }
-        // waymark: the Ave route's last waypoint has no name (its placeName would be "You have
-        // arrived"), so the destination is the route name's last part ("The Ave and NE 50th").
-        let place = Self.demoRouteDestination.isEmpty ? entrance.placeName : Self.demoRouteDestination  // waymark:
+        // waymark: a named last waypoint keeps its name ("the CIF east entrance"); the Ave route's has
+        // none (its placeName would be "You have arrived"), so it uses the route name's last part.
+        let place = (entrance.name?.isEmpty == false || Self.demoRouteDestination.isEmpty)
+            ? entrance.placeName : Self.demoRouteDestination  // waymark:
         buildRoute(to: .place(name: place, coordinate: entrance.coordinate),  // waymark:
                    searchLine: "Finding a walking route to \(place) from here.")  // waymark:
     }
