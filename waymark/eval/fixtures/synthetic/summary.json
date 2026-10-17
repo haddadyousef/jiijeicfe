@@ -1,0 +1,367 @@
+{
+  "holdout": null,
+  "inputs": {
+    "evidence_label_ids_not_in_priors": 0,
+    "evidence_lines": 109,
+    "evidence_rejected": 0,
+    "priors_labels": 60,
+    "records": 43,
+    "records_unreadable": 0
+  },
+  "load_latency": {
+    "cue_outcomes": {
+      "spacing": 8,
+      "spoken": 32
+    },
+    "cues": 40,
+    "fix_to_dispatch_ms": {
+      "max": 479.6,
+      "median": 324.8,
+      "min": 129.5,
+      "n": 40,
+      "note": null,
+      "p95": 475.8
+    },
+    "loads": 3,
+    "lookup_ms": {
+      "max": 1.99,
+      "median": 1.15,
+      "min": 0.23,
+      "n": 40,
+      "note": null,
+      "p95": 1.95
+    },
+    "prior_load_ms": {
+      "max": 90.0,
+      "median": 79.7,
+      "min": 47.2,
+      "n": 3,
+      "note": "p95 needs at least 20 records",
+      "p95": null
+    }
+  },
+  "outcome_rates": {
+    "all": {
+      "confirm_rate_decisive": {
+        "hi": 0.75317,
+        "k": 69,
+        "lo": 0.574418,
+        "n": 103,
+        "note": null,
+        "rate": 0.669903
+      },
+      "labels_with_evidence": 58,
+      "lines": 109,
+      "outcomes": {
+        "confirmed": {
+          "hi": 0.717543,
+          "k": 69,
+          "lo": 0.539455,
+          "n": 109,
+          "note": null,
+          "rate": 0.633028
+        },
+        "contradicted": {
+          "hi": 0.404047,
+          "k": 34,
+          "lo": 0.232611,
+          "n": 109,
+          "note": null,
+          "rate": 0.311927
+        },
+        "unverifiable": {
+          "hi": 0.114917,
+          "k": 6,
+          "lo": 0.02547,
+          "n": 109,
+          "note": null,
+          "rate": 0.055046
+        }
+      }
+    },
+    "crosswalk": {
+      "confirm_rate_decisive": {
+        "hi": 0.892209,
+        "k": 7,
+        "lo": 0.396778,
+        "n": 10,
+        "note": null,
+        "rate": 0.7
+      },
+      "labels_with_evidence": 4,
+      "lines": 10,
+      "outcomes": {
+        "confirmed": {
+          "hi": 0.892209,
+          "k": 7,
+          "lo": 0.396778,
+          "n": 10,
+          "note": null,
+          "rate": 0.7
+        },
+        "contradicted": {
+          "hi": 0.603222,
+          "k": 3,
+          "lo": 0.107791,
+          "n": 10,
+          "note": null,
+          "rate": 0.3
+        },
+        "unverifiable": {
+          "hi": 0.277533,
+          "k": 0,
+          "lo": 0.0,
+          "n": 10,
+          "note": null,
+          "rate": 0.0
+        }
+      }
+    },
+    "curb_ramp": {
+      "confirm_rate_decisive": {
+        "hi": 0.923324,
+        "k": 17,
+        "lo": 0.599994,
+        "n": 21,
+        "note": null,
+        "rate": 0.809524
+      },
+      "labels_with_evidence": 12,
+      "lines": 23,
+      "outcomes": {
+        "confirmed": {
+          "hi": 0.874514,
+          "k": 17,
+          "lo": 0.5353,
+          "n": 23,
+          "note": null,
+          "rate": 0.73913
+        },
+        "contradicted": {
+          "hi": 0.371376,
+          "k": 4,
+          "lo": 0.069787,
+          "n": 23,
+          "note": null,
+          "rate": 0.173913
+        },
+        "unverifiable": {
+          "hi": 0.26796,
+          "k": 2,
+          "lo": 0.02418,
+          "n": 23,
+          "note": null,
+          "rate": 0.086957
+        }
+      }
+    },
+    "missing_curb_ramp": {
+      "confirm_rate_decisive": {
+        "hi": 0.909991,
+        "k": 14,
+        "lo": 0.547854,
+        "n": 18,
+        "note": null,
+        "rate": 0.777778
+      },
+      "labels_with_evidence": 10,
+      "lines": 18,
+      "outcomes": {
+        "confirmed": {
+          "hi": 0.909991,
+          "k": 14,
+          "lo": 0.547854,
+          "n": 18,
+          "note": null,
+          "rate": 0.777778
+        },
+        "contradicted": {
+          "hi": 0.452146,
+          "k": 4,
+          "lo": 0.090009,
+          "n": 18,
+          "note": null,
+          "rate": 0.222222
+        },
+        "unverifiable": {
+          "hi": 0.175879,
+          "k": 0,
+          "lo": 0.0,
+          "n": 18,
+          "note": null,
+          "rate": 0.0
+        }
+      }
+    },
+    "no_sidewalk": {
+      "confirm_rate_decisive": {
+        "hi": 0.948632,
+        "k": 9,
+        "lo": 0.523019,
+        "n": 11,
+        "note": null,
+        "rate": 0.818182
+      },
+      "labels_with_evidence": 6,
+      "lines": 12,
+      "outcomes": {
+        "confirmed": {
+          "hi": 0.911058,
+          "k": 9,
+          "lo": 0.467695,
+          "n": 12,
+          "note": null,
+          "rate": 0.75
+        },
+        "contradicted": {
+          "hi": 0.448031,
+          "k": 2,
+          "lo": 0.046965,
+          "n": 12,
+          "note": null,
+          "rate": 0.166667
+        },
+        "unverifiable": {
+          "hi": 0.35388,
+          "k": 1,
+          "lo": 0.014865,
+          "n": 12,
+          "note": null,
+          "rate": 0.083333
+        }
+      }
+    },
+    "obstacle": {
+      "confirm_rate_decisive": {
+        "hi": 0.631886,
+        "k": 10,
+        "lo": 0.256346,
+        "n": 23,
+        "note": null,
+        "rate": 0.434783
+      },
+      "labels_with_evidence": 13,
+      "lines": 24,
+      "outcomes": {
+        "confirmed": {
+          "hi": 0.611653,
+          "k": 10,
+          "lo": 0.244676,
+          "n": 24,
+          "note": null,
+          "rate": 0.416667
+        },
+        "contradicted": {
+          "hi": 0.721087,
+          "k": 13,
+          "lo": 0.350749,
+          "n": 24,
+          "note": null,
+          "rate": 0.541667
+        },
+        "unverifiable": {
+          "hi": 0.202418,
+          "k": 1,
+          "lo": 0.007393,
+          "n": 24,
+          "note": null,
+          "rate": 0.041667
+        }
+      }
+    },
+    "surface_problem": {
+      "confirm_rate_decisive": {
+        "hi": 0.781193,
+        "k": 12,
+        "lo": 0.386582,
+        "n": 20,
+        "note": null,
+        "rate": 0.6
+      },
+      "labels_with_evidence": 13,
+      "lines": 22,
+      "outcomes": {
+        "confirmed": {
+          "hi": 0.730797,
+          "k": 12,
+          "lo": 0.346598,
+          "n": 22,
+          "note": null,
+          "rate": 0.545455
+        },
+        "contradicted": {
+          "hi": 0.570483,
+          "k": 8,
+          "lo": 0.197332,
+          "n": 22,
+          "note": null,
+          "rate": 0.363636
+        },
+        "unverifiable": {
+          "hi": 0.278149,
+          "k": 2,
+          "lo": 0.025295,
+          "n": 22,
+          "note": null,
+          "rate": 0.090909
+        }
+      }
+    }
+  },
+  "schema": "waymark.eval_summary.v1",
+  "sensor_vs_spotter": {
+    "ground": {
+      "agreement": 1.0,
+      "kappa": 1.0,
+      "matrix": {
+        "spotter_confirmed": {
+          "sensor_confirmed": 5,
+          "sensor_contradicted": 0
+        },
+        "spotter_contradicted": {
+          "sensor_confirmed": 0,
+          "sensor_contradicted": 3
+        }
+      },
+      "note": null,
+      "paired_labels": 8,
+      "undecided_pairs": 0
+    },
+    "lidar": {
+      "agreement": 0.911765,
+      "kappa": 0.793522,
+      "matrix": {
+        "spotter_confirmed": {
+          "sensor_confirmed": 22,
+          "sensor_contradicted": 1
+        },
+        "spotter_contradicted": {
+          "sensor_confirmed": 2,
+          "sensor_contradicted": 9
+        }
+      },
+      "note": null,
+      "paired_labels": 34,
+      "undecided_pairs": 3
+    },
+    "vision": {
+      "agreement": null,
+      "kappa": null,
+      "matrix": {
+        "spotter_confirmed": {
+          "sensor_confirmed": 0,
+          "sensor_contradicted": 0
+        },
+        "spotter_contradicted": {
+          "sensor_confirmed": 0,
+          "sensor_contradicted": 0
+        }
+      },
+      "note": "insufficient data (fewer than 5 paired labels)",
+      "paired_labels": 0,
+      "undecided_pairs": 0
+    }
+  },
+  "synthetic": true,
+  "watermark": "SYNTHETIC"
+}
