@@ -1,0 +1,344 @@
+{
+ "features": [
+  {
+   "geometry": {
+    "coordinates": [
+     -122.306388855,
+     47.6522331238
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 2,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 1,
+    "disagree_count": 0,
+    "intersection_id": null,
+    "label_cluster_id": 13290420,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "CurbRamp",
+    "median_severity": 1,
+    "osm_way_id": 283038445,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": 20109,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3052,
+     47.6538
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 1,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 1,
+    "disagree_count": 1,
+    "intersection_id": 4001,
+    "label_cluster_id": 9100000001,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "NoCurbRamp",
+    "median_severity": 3,
+    "osm_way_id": 283038447,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": 20111,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3061,
+     47.6531
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 2,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 2,
+    "disagree_count": 0,
+    "intersection_id": null,
+    "label_cluster_id": 9100000002,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "Obstacle",
+    "median_severity": 2.0,
+    "osm_way_id": 283038446,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": 20110,
+    "tag_counts": {
+     "bench": 1,
+     "pole": 2
+    },
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3043,
+     47.6544
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 3,
+    "avg_image_capture_date": "2018-09-01T00:00Z",
+    "avg_label_date": "2018-10-02T10:00:00.000Z",
+    "cluster_size": 4,
+    "disagree_count": 1,
+    "intersection_id": null,
+    "label_cluster_id": 9100000003,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "SurfaceProblem",
+    "median_severity": 1.5,
+    "osm_way_id": null,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": 20112,
+    "tag_counts": {
+     "cracks": 1
+    },
+    "unsure_count": 1,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3028,
+     47.6553
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 4,
+    "avg_image_capture_date": "2021-04-01T00:00Z",
+    "avg_label_date": "2021-04-30T00:00:00.000Z",
+    "cluster_size": 3,
+    "disagree_count": 0,
+    "intersection_id": 4002,
+    "label_cluster_id": 9100000004,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "Crosswalk",
+    "median_severity": null,
+    "osm_way_id": 283038448,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": 20113,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.305,
+     47.654
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 1,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 1,
+    "disagree_count": 0,
+    "intersection_id": null,
+    "label_cluster_id": 9100000005,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "Signal",
+    "median_severity": null,
+    "osm_way_id": null,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": null,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3055,
+     47.6542
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 1,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 1,
+    "disagree_count": 0,
+    "intersection_id": null,
+    "label_cluster_id": 9100000006,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "Occlusion",
+    "median_severity": null,
+    "osm_way_id": null,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": null,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3059,
+     47.6555
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 0,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 1,
+    "disagree_count": 2,
+    "intersection_id": null,
+    "label_cluster_id": 9100000007,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "Obstacle",
+    "median_severity": 2,
+    "osm_way_id": null,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": null,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": null,
+   "properties": {
+    "agree_count": 1,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 1,
+    "disagree_count": 0,
+    "intersection_id": null,
+    "label_cluster_id": 9100000008,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "Obstacle",
+    "median_severity": 2,
+    "osm_way_id": null,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": null,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.2,
+     47.654
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 1,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 1,
+    "disagree_count": 0,
+    "intersection_id": null,
+    "label_cluster_id": 9100000009,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "Obstacle",
+    "median_severity": 2,
+    "osm_way_id": null,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": null,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  }
+ ],
+ "type": "FeatureCollection"
+}

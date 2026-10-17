@@ -1,0 +1,107 @@
+{
+ "features": [
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3052,
+     47.6538
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 2,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 2,
+    "disagree_count": 1,
+    "intersection_id": 4001,
+    "label_cluster_id": 9100000001,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "NoCurbRamp",
+    "median_severity": 3,
+    "osm_way_id": 283038447,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": 20111,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3034,
+     47.655
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 0,
+    "avg_image_capture_date": null,
+    "avg_label_date": null,
+    "cluster_size": 1,
+    "disagree_count": 0,
+    "intersection_id": null,
+    "label_cluster_id": 9100000010,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "NoSidewalk",
+    "median_severity": null,
+    "osm_way_id": null,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": null,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     -122.3036,
+     47.6555
+    ],
+    "type": "Point"
+   },
+   "properties": {
+    "agree_count": 1,
+    "avg_image_capture_date": "2019-05-01T00:00Z",
+    "avg_label_date": "2019-07-24T18:34:41.145Z",
+    "cluster_size": 1,
+    "disagree_count": 0,
+    "intersection_id": null,
+    "label_cluster_id": 9100000011,
+    "label_ids": [
+     1,
+     2
+    ],
+    "label_type": "Obstacle",
+    "median_severity": 7,
+    "osm_way_id": null,
+    "region_id": 16,
+    "region_name": "University District",
+    "street_edge_id": null,
+    "tag_counts": {},
+    "unsure_count": 0,
+    "users": [
+     "00000000-0000-0000-0000-000000000000"
+    ]
+   },
+   "type": "Feature"
+  }
+ ],
+ "type": "FeatureCollection"
+}

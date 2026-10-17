@@ -1,0 +1,4 @@
+# Core pipeline is standard library only. Tests need:
+pytest>=8.0
+jsonschema>=4.20
+# Optional later (coverage plot, route ranking): matplotlib, networkx, shapely
