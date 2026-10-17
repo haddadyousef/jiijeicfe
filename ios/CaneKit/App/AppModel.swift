@@ -3391,7 +3391,7 @@ final class AppModel {
     static let bundledRouteName: String = (try? RouteSource.bundled().name) ?? ""
 
     /// - Parameter load: which bundled route (waymark: `RouteSource.aveSeattle` for the Seattle demo).
-    func startDemoRoute(_ load: () throws -> Route = RouteSource.bundled) {  // waymark: route loader
+    func startDemoRoute(_ load: @MainActor () throws -> Route = RouteSource.bundled) {  // waymark: route loader
         cancelRouteBuild()
         cancelPendingRouteStart()
         do {
@@ -3611,7 +3611,7 @@ final class AppModel {
     /// Advances synthesized GPS fixes between waypoints at `simulationSpeedMps` (default 1.4 m/s).
     /// - Parameter load: the route to start when idle (waymark: the indoor ISR handover passes
     ///   `RouteSource.isrCif`; everything else the default demo route).
-    func startSimulatedWalk(speedMps: Double? = nil, load: () throws -> Route = RouteSource.bundled) {  // waymark:
+    func startSimulatedWalk(speedMps: Double? = nil, load: @MainActor () throws -> Route = RouteSource.bundled) {  // waymark:
         if indoorHandlesSimulate() { return } // Step 62: synthetic steps while indoors
         stopSimulatedWalk()
         simulatedWalkGeneration &+= 1
