@@ -157,13 +157,15 @@ import Testing
 /// is 4 characters cheaper ("Ahead, X." → "X ahead." drops one comma per approach line).
 @Test func spokenPhrasesStayInsideTheCharacterBudget() {
     let total = SpokenPhrases.characterCount(SpokenPhrases.warningLines)
-    #expect(total == 1_718, "warning-line cost changed: \(total) characters")
+    // waymark: + 138 for the five WaymarkLines (1,718 base + 138 = 1,856).
+    #expect(total == 1_856, "warning-line cost changed: \(total) characters")
+    #expect(SpokenPhrases.characterCount(WaymarkLines.all) == 138)
     #expect(total <= SpokenPhrases.warningCharacterBudget)
     #expect(SpokenPhrases.characterCount(SpokenPhrases.obstacleNameLines) == 777)
     #expect(SpokenPhrases.characterCount(SpokenPhrases.approachLines) == 80)
     #expect(SpokenPhrases.characterCount(SpokenPhrases.signLines) == 290)
     #expect(SpokenPhrases.characterCount(SpokenPhrases.groundHazardLines) == 571)
-    #expect(SpokenPhrases.warningLines.count == 74)
+    #expect(SpokenPhrases.warningLines.count == 79)   // waymark: 74 base + 5
 }
 
 /// `bucketSamples` returns one distance per distinct phrase, ascending, and nothing for an empty
