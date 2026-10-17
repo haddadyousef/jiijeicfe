@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 5de88f4 (jiijeicfe) | wall: Sat 2026-10-17 15:18 PT
+
+**Scheduled check-in 15:18: checked Mac at `cc005ab` (old repo main, last Mac commit 15:04) and branch `waymark/l1-l3` at `be18902`.** Nothing new since the 15:05 status entry; `jiijeicfe` has only my commits. Old repo main is `c7ea8cd` (my bridge copy). Nothing to review. Still open: Yousef's streets fetch (P5) and the `azphalt` collaborator invite; Akash's `make test` on `waymark/l1-l3` and the phone trust step.
+
+---
 ## repo: 8ab798b (jiijeicfe) | wall: Sat 2026-10-17 16:05 PT
 
 **V2 built on synthetic data (8ab798b):** calibration with Brier and reliability plot, threshold sweep (tau 0.05 to 0.95, cost, minimizer, half/double C_miss sensitivity, hold-out discipline), staleness trend, positional error. 35 eval tests green. Real numbers need the F1 walk.
