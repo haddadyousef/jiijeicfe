@@ -36,13 +36,23 @@ def tile_bboxes(bbox: list[float], step_deg: float) -> list[list[float]]:
     return tiles
 
 
-def tile_url(tile: list[float]) -> str:
+KINDS = ("labelClusters", "streets")  # Project Sidewalk v3 endpoints we read (both GeoJSON FeatureCollections)
+
+
+def tile_url(tile: list[float], kind: str = "labelClusters") -> str:
     # Same URL shape that was verified on 2026-10-17 (bbox is longitude first, inline=true).
-    return f"{BASE_URL}/v3/api/labelClusters?bbox={tile[0]:.6f},{tile[1]:.6f},{tile[2]:.6f},{tile[3]:.6f}&inline=true"
+    if kind not in KINDS:
+        raise ValueError(f"unknown endpoint {kind!r}")
+    return f"{BASE_URL}/v3/api/{kind}?bbox={tile[0]:.6f},{tile[1]:.6f},{tile[2]:.6f},{tile[3]:.6f}&inline=true"
 
 
-def cache_name(url: str) -> str:
-    return "labelClusters_" + hashlib.sha256(url.encode("utf-8")).hexdigest()[:16] + ".json"
+def cache_name(url: str, kind: str = "labelClusters") -> str:
+    return f"{kind}_" + hashlib.sha256(url.encode("utf-8")).hexdigest()[:16] + ".json"
+
+
+def manifest_name(kind: str) -> str:
+    """labelClusters keeps its original manifest name; other kinds get their own so `build` never reads them."""
+    return "fetch_manifest.json" if kind == "labelClusters" else f"fetch_manifest_{kind}.json"
 
 
 def fetch_url(url: str, timeout: float = 60.0) -> bytes:
@@ -52,13 +62,13 @@ def fetch_url(url: str, timeout: float = 60.0) -> bytes:
 
 
 def fetch_all(bbox: list[float], raw_dir: Path, step_deg: float = 0.01, sleep_s: float = 1.0,
-              fetcher=fetch_url, log=print) -> list[dict]:
+              fetcher=fetch_url, log=print, kind: str = "labelClusters") -> list[dict]:
     """Fetch every tile not already cached. Returns the fetch manifest entries (also written to raw_dir)."""
     raw_dir.mkdir(parents=True, exist_ok=True)
     entries = []
     for i, tile in enumerate(tile_bboxes(bbox, step_deg)):
-        url = tile_url(tile)
-        path = raw_dir / cache_name(url)
+        url = tile_url(tile, kind)
+        path = raw_dir / cache_name(url, kind)
         fetched_at = None
         if not path.exists():
             if i:
@@ -81,7 +91,7 @@ def fetch_all(bbox: list[float], raw_dir: Path, step_deg: float = 0.01, sleep_s:
             "features": len(json.loads(data).get("features", [])),
             "fetched_at": fetched_at,
         })
-    manifest_path = raw_dir / "fetch_manifest.json"
+    manifest_path = raw_dir / manifest_name(kind)
     previous = {}
     if manifest_path.exists():
         previous = {e["file"]: e for e in json.loads(manifest_path.read_text(encoding="utf-8")).get("files", [])}

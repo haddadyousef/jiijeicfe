@@ -211,3 +211,15 @@ def test_cli_refuses_tampered_raw_file(tmp_path):
     victim.write_bytes(victim.read_bytes() + b" ")
     with pytest.raises(SystemExit):
         R.main(["build", "--raw", str(tmp_path / "raw"), "--out", str(tmp_path / "o")])
+
+
+def test_streets_kind_uses_its_own_url_cache_prefix_and_manifest(tmp_path):
+    tile = [-122.308, 47.652, -122.302, 47.656]
+    assert "/v3/api/streets?bbox=-122.308000,47.652000,-122.302000,47.656000" in F.tile_url(tile, "streets")
+    with pytest.raises(ValueError):
+        F.tile_url(tile, "users")
+    body = json.dumps({"type": "FeatureCollection", "features": []}).encode()
+    F.fetch_all([-122.308, 47.652, -122.302, 47.656], tmp_path, 0.01, 0, lambda url: body, log=lambda *_: None, kind="streets")
+    names = sorted(p.name for p in tmp_path.iterdir())
+    assert any(n.startswith("streets_") for n in names) and "fetch_manifest_streets.json" in names
+    assert "fetch_manifest.json" not in names  # `build` reads only the labelClusters manifest

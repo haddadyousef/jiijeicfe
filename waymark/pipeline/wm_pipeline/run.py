@@ -40,7 +40,7 @@ def load_raw(raw_dir: Path) -> tuple[list[dict], list[dict], str | None, list[fl
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="wm_pipeline.run")
-    ap.add_argument("step", choices=["fetch", "build", "all"])
+    ap.add_argument("step", choices=["fetch", "streets", "build", "all"])
     ap.add_argument("--bbox", nargs=4, type=float, metavar=("MINLNG", "MINLAT", "MAXLNG", "MAXLAT"), default=None)
     ap.add_argument("--raw", type=Path, default=HERE / "data" / "raw")
     ap.add_argument("--out", type=Path, default=HERE / "out")
@@ -55,6 +55,8 @@ def main(argv: list[str] | None = None) -> int:
     bbox = a.bbox or DEFAULT_BBOX
     if a.step in ("fetch", "all"):
         F.fetch_all(bbox, a.raw, a.step_deg, a.sleep)
+    if a.step == "streets":  # street-edge geometry for route ranking (P5); never read by `build`
+        F.fetch_all(bbox, a.raw, a.step_deg, a.sleep, kind="streets")
     if a.step in ("build", "all"):
         from . import bundle as B
         docs, files, latest, fm_bbox = load_raw(a.raw)
