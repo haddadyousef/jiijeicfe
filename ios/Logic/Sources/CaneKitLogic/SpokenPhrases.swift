@@ -218,6 +218,7 @@ public enum SpokenPhrases {
     /// Step 36 default flip and is pinned by `warningLinesAreOrderedByHowOftenTheyAreHeard`.
     public static let warningLines: [String] =
         obstacleNameLines + approachLines + signLines + groundHazardLines
+        + WaymarkLines.all   // waymark: the five "Reported … ahead." lines (138 characters), referenced, never retyped
 
     // MARK: Cost
 
