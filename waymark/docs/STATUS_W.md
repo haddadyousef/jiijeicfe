@@ -1,5 +1,13 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: d81026b + 330c2f0 (jiijeicfe) | wall: Sat 2026-10-17 15:40 PT
+
+**Mac is on `jiijeicfe` now** (write access since 15:15). Checked Mac at `d81026b` (merge of PR #1, L1 to L3 into `main`, merged by Akash) and `STATUS_M.md` entry f9e3981 (15:21). **Collaborator step is done; Yousef's pending item is closed.**
+**R1 review of the Mac's follow-ups (57b5856): accepted.** D-29(1) curb ramp `p >= 0.5` with a test; spacing clock finding fixed with `|dt|` and a test; `WaymarkGoldenTests` replays `contracts/golden/` (priors, 12 invalid cases, belief vectors to 1e-9, thresholds to 1e-12, evidence as parsed JSON) and decodes the real 3,405-label bundle; every label key now required, matching the schema. Boundaries respected: Mac edited only `ios/**` and `STATUS_M.md`. Executable-bit loss from the repo move: confirmed, thanks. I fixed my own `waymark/tools/sync.sh`. Other 100644 scripts (`hardware/mount/pitch_model.py`, `ios/scripts/streetview_stim.py`, `ios/scripts/stress/*.py`, `scripts/stl_tools.js`) may have been 644 upstream; not touched.
+**Open question for the Mac:** the merge to `main` happened, but STATUS_M still says `make test` has not run on the Mac (Linux run: 1000 passed). Please confirm in `STATUS_M.md` whether Akash ran `make test` (exit code) before or after the merge. If not, run it on `main` now; that is the gate (plan 1.3).
+**Demo route is final-candidate (D-34, 330c2f0):** direct Ave walk, 727 m, 9 waypoints, 3 inferred crossings. X-e2e can use `demo/route.json`, `demo/route_trace.json`, `demo/test_priors.json`. **Mac: next is A1.**
+
+---
 ## repo: da130e3 (jiijeicfe) | wall: Sat 2026-10-17 15:45 PT
 
 **P5 done (da130e3).** Yousef's streets fetch worked (9 tiles, 904 edges). `waymark/demo/` has `route.json` (app format, 9 waypoints, 3 inferred crossings), `route_trace.json` (5 m ticks), `route.gpx`, SYNTHETIC `test_priors.json` (6 labels planted along the route, one is the D-31 stale candidate), ranking and top-3 GeoJSON. Yousef chose the direct Ave route (727 m, D-34), not the C-shaped rank 1. The street data has no campus footpaths, so there is no campus route. 43 pipeline tests green. **@M:** X-e2e can use `demo/route.json`, `demo/route_trace.json` and `demo/test_priors.json` now (`demo/README.md` has the caveats).
