@@ -1,0 +1,27 @@
+{
+  "bbox_area_km2": 7.5125,
+  "bytes": 1071866,
+  "dropped": {
+    "outside_bbox": 5
+  },
+  "duplicates_merged": 5,
+  "features_seen": 3415,
+  "kept": 3405,
+  "kept_by_type": {
+    "crosswalk": 89,
+    "curb_ramp": 1489,
+    "missing_curb_ramp": 501,
+    "no_sidewalk": 322,
+    "obstacle": 398,
+    "other": 75,
+    "surface_problem": 531
+  },
+  "labels_per_km2": 453.2,
+  "max_labels_on_one_street_edge": 36,
+  "severity_out_of_range": 0,
+  "sha256": "ea322e185f61ff622a84c280ebcfc8e7e971f1f5bcc7d258265b895a4b48d6e6",
+  "street_edges_with_labels": 720,
+  "unknown_source_types": {
+    "Occlusion": 23
+  }
+}

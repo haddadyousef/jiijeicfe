@@ -1,6 +1,6 @@
 # Project Sidewalk (Seattle) API notes
 
-Owner: Windows session. Status: partial. Verified by web fetch only; no byte-exact raw responses are saved yet (P0 still open).
+Owner: Windows session. Status: P0 mostly done (2026-10-17 15:05 PT). Real tiles fetched natively by Yousef; byte-exact files are local and git-ignored, their SHA-256 is in `pipeline/out/manifest.json`. Still open: `streets`/`regions` (needed for P5).
 
 ## Server and endpoint
 
@@ -31,11 +31,49 @@ Properties (17 without `includeRawLabels`): `label_cluster_id, label_type, stree
 {"type":"Feature","geometry":{"type":"Point","coordinates":[-122.306388855,47.6522331238]},"properties":{"label_cluster_id":13290420,"label_type":"CurbRamp","street_edge_id":20109,"intersection_id":null,"osm_way_id":283038445,"region_id":16,"region_name":"University District","avg_image_capture_date":"2019-05-01T00:00Z","avg_label_date":"2019-07-24T18:34:41.145Z","median_severity":1,"agree_count":2,"disagree_count":0,"unsure_count":0,"cluster_size":1,"label_ids":[77288],"tag_counts":{}}}
 ```
 
-## Still to verify (P0)
+## Real fetch, 2026-10-17 (P0 results)
 
-- Byte-exact raw responses saved with SHA-256.
-- A cluster with non-empty `tag_counts` (how tags are keyed).
-- Rate limits and etiquette; whether large bboxes are accepted.
-- `streets` and `regions` on the Seattle server (needed for P5).
-- Whether a Linux shell on the Surface can reach the host. From the Windows cloud session the proxy returned 403.
+Bbox `[-122.32, 47.64, -122.29, 47.67]` (UW campus plus University District, about 7.5 km²), 9 tiles of 0.01°, one request per second, User-Agent naming the project. All 9 answered HTTP 200 with a GeoJSON `FeatureCollection`; no throttling or errors at that pace. 3,415 features total.
+
+| raw file (local, git-ignored) | features | bytes | sha256 (first 16) |
+|---|---|---|---|
+| `labelClusters_050154ebb6a6f8a1.json` | 433 | 246316 | `3746a8a4f6ec4041…` |
+| `labelClusters_1b93aa291b0147a4.json` | 12 | 6955 | `1fd910d1f75d3532…` |
+| `labelClusters_393ff0125007575e.json` | 651 | 392564 | `f9da957c721d0535…` |
+| `labelClusters_54e4c8f344d8e8e2.json` | 71 | 41699 | `fcf1b0ff6b43594a…` |
+| `labelClusters_57084313473a38a9.json` | 421 | 248088 | `e9e4bc1f0d50cad3…` |
+| `labelClusters_6fdbf3a24db1cfdc.json` | 279 | 160129 | `82bc1bb0cda90033…` |
+| `labelClusters_b47537cdfe1d330f.json` | 578 | 343867 | `fb85a5e9651183fa…` |
+| `labelClusters_c31a387ee717bded.json` | 249 | 142617 | `395bc816ecead450…` |
+| `labelClusters_dbb06005977b4d5f.json` | 721 | 426871 | `83c939ac167cabf5…` |
+
+Full hashes: `pipeline/out/manifest.json`.
+
+Source label types in the pull: CurbRamp 1492, SurfaceProblem 535, NoCurbRamp 502, Obstacle 399, NoSidewalk 323, Crosswalk 89, Signal 34, Occlusion 23, Other 18. **`Occlusion` is a ninth type not listed in the API docs.** The pipeline maps unknown types to `other` (plan 5.2), so these 23 land in `other` and are counted in `report.json` under `unknown_source_types`. `other` has no alert threshold, so this is harmless; revisit if the app ever speaks `other`.
+
+Tags: `tag_counts` is a JSON object mapping tag text to a count (not a list). 2,051 of 3,405 kept labels have at least one tag. The most common are `missing tactile warning` (413), `no alternate route` (280), `cracks` (260), `bumpy` (207), `uneven/slanted` (205), `points into traffic` (178). Tags are free text with spaces and slashes, so treat them as opaque strings.
+
+Severity: `median_severity` is null on 419 of 3,405 kept labels (mostly curb ramps and crosswalks, which are rarely rated). Obstacle severity: 3 → 168, 2 → 120, 1 → 97, null → 13. The pipeline keeps null as null.
+
+Dates: imagery from 2007-10 to 2025-09; label dates from 2019-04 to 2026-10. Imagery age varies a lot, which is what the staleness model is for.
+
+Quality filter: no cluster had `disagree_count > agree_count`, so `drop_majority_disagree` dropped nothing. 5 features fell just outside the bbox and 5 duplicate clusters appeared in two overlapping tiles and were merged.
+
+Density: 453 kept labels per km² (the earlier 330 figure was for one residential box). 720 street edges carry labels; the busiest edge has 36.
+
+Overlap and ids: `label_cluster_id` is unique across the server, so it is safe as `ps:<id>`.
+
+One real tagged feature (CC0; `users` and `label_ids` removed):
+
+```json
+{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.2928581238,47.6614322662]},"properties":{"label_cluster_id":13244609,"label_type":"Obstacle","street_edge_id":22477,"intersection_id":null,"osm_way_id":394229211,"region_id":10,"region_name":"Ravenna","avg_image_capture_date":"2018-10-01T00:00Z","avg_label_date":"2019-05-25T11:59:04.392500Z","median_severity":2,"agree_count":7,"disagree_count":0,"unsure_count":2,"cluster_size":2,"tag_counts":{"pole":2,"narrow":1}}}
+```
+
+## Rate limits and etiquette
+
+No limits are documented. We made 9 requests in about 30 seconds with a 1 s gap and saw no errors. Keep it sequential, keep the 1 s gap, and cache; do not refetch for demos (the app ships the bundle). A tile of 0.01° × 0.01° is 7 to 430 KB, so larger boxes are fine on size; we did not test a very large single box.
+
+## Still to verify
+
+- `streets` and `regions` on the Seattle server (needed for P5 route ranking). The shells cannot reach the host; Yousef can run a native fetch like the one above.
 - Data licence text: Project Sidewalk data is CC0; street geometry is OpenStreetMap, ODbL.

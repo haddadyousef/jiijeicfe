@@ -1,0 +1,123 @@
+{
+  "bbox_lnglat": [
+    -122.32,
+    47.64,
+    -122.29,
+    47.67
+  ],
+  "budgets": {
+    "max_bytes": 3145728,
+    "max_labels": 20000
+  },
+  "bundle": {
+    "bytes": 1071866,
+    "file": "waymark_priors.json",
+    "sha256": "ea322e185f61ff622a84c280ebcfc8e7e971f1f5bcc7d258265b895a4b48d6e6"
+  },
+  "counts": {
+    "dropped": {
+      "outside_bbox": 5
+    },
+    "duplicates_merged": 5,
+    "features_seen": 3415,
+    "kept": 3405,
+    "kept_by_type": {
+      "crosswalk": 89,
+      "curb_ramp": 1489,
+      "missing_curb_ramp": 501,
+      "no_sidewalk": 322,
+      "obstacle": 398,
+      "other": 75,
+      "surface_problem": 531
+    },
+    "unknown_source_types": {
+      "Occlusion": 23
+    }
+  },
+  "filters": {
+    "drop_majority_disagree": true,
+    "min_cluster_size": 1
+  },
+  "generated_at": "2026-10-17T22:04:01Z",
+  "raw_files": [
+    {
+      "bytes": 246316,
+      "features": 433,
+      "fetched_at": "2026-10-17T22:04:01Z",
+      "file": "labelClusters_050154ebb6a6f8a1.json",
+      "sha256": "3746a8a4f6ec404109a331fb52918482e562682ae46ecb42752eaf582c6160bc",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.300000,47.660000,-122.290000,47.670000&inline=true"
+    },
+    {
+      "bytes": 6955,
+      "features": 12,
+      "fetched_at": "2026-10-17T22:03:47Z",
+      "file": "labelClusters_1b93aa291b0147a4.json",
+      "sha256": "1fd910d1f75d353299568a7b889df586cdc142d24b3a60dbed65ca3f4e785fe4",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.300000,47.650000,-122.290000,47.660000&inline=true"
+    },
+    {
+      "bytes": 392564,
+      "features": 651,
+      "fetched_at": "2026-10-17T22:03:52Z",
+      "file": "labelClusters_393ff0125007575e.json",
+      "sha256": "f9da957c721d0535f2f55d9c5a586ac3817acf0fdc3f1e15857f6ee440015ac0",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.320000,47.660000,-122.310000,47.670000&inline=true"
+    },
+    {
+      "bytes": 41699,
+      "features": 71,
+      "fetched_at": "2026-10-17T22:03:34Z",
+      "file": "labelClusters_54e4c8f344d8e8e2.json",
+      "sha256": "fcf1b0ff6b43594a5bf69723ba2e35ae5da66bc0152b05ba370d4103ba121164",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.300000,47.640000,-122.290000,47.650000&inline=true"
+    },
+    {
+      "bytes": 248088,
+      "features": 421,
+      "fetched_at": "2026-10-17T22:03:31Z",
+      "file": "labelClusters_57084313473a38a9.json",
+      "sha256": "e9e4bc1f0d50cad33779bf991d3c6d6251733efff19bd20ea279ad4c59c534fb",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.310000,47.640000,-122.300000,47.650000&inline=true"
+    },
+    {
+      "bytes": 160129,
+      "features": 279,
+      "fetched_at": "2026-10-17T22:03:26Z",
+      "file": "labelClusters_6fdbf3a24db1cfdc.json",
+      "sha256": "82bc1bb0cda900330831f51340fc1d5b22d3bffb93b8ff2474a2598baae65073",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.320000,47.640000,-122.310000,47.650000&inline=true"
+    },
+    {
+      "bytes": 343867,
+      "features": 578,
+      "fetched_at": "2026-10-17T22:03:39Z",
+      "file": "labelClusters_b47537cdfe1d330f.json",
+      "sha256": "fb85a5e9651183fae56b4b7fbce40ddb86d855735b961886aa4f29ac9e7eab0e",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.320000,47.650000,-122.310000,47.660000&inline=true"
+    },
+    {
+      "bytes": 142617,
+      "features": 249,
+      "fetched_at": "2026-10-17T22:03:43Z",
+      "file": "labelClusters_c31a387ee717bded.json",
+      "sha256": "395bc816ecead45067ea9366f3252b8eeac1512e4dc426e11bcc7152f30fbd9a",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.310000,47.650000,-122.300000,47.660000&inline=true"
+    },
+    {
+      "bytes": 426871,
+      "features": 721,
+      "fetched_at": "2026-10-17T22:03:57Z",
+      "file": "labelClusters_dbb06005977b4d5f.json",
+      "sha256": "83c939ac167cabf5b00cc54f5b7a386de309f382eb4565bdfe062ae958245c15",
+      "url": "https://sidewalk-sea.cs.washington.edu/v3/api/labelClusters?bbox=-122.310000,47.660000,-122.300000,47.670000&inline=true"
+    }
+  ],
+  "schema": "waymark.pipeline_manifest.v1",
+  "source": {
+    "base_url": "https://sidewalk-sea.cs.washington.edu",
+    "license": "CC0-1.0",
+    "name": "Project Sidewalk",
+    "street_geometry": "OpenStreetMap contributors, ODbL"
+  }
+}
