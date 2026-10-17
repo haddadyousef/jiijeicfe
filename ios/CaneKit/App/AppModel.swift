@@ -2036,6 +2036,7 @@ final class AppModel {
     /// (`cueChangeNeeds400ms`, `hysteresisHoldsUntilPlusFifteenCentimetres`,
     /// `centerApproachFiresThenUpdatesDistance`).
     private func handle(_ report: LaneReport) {
+        ingestWaymarkDepth(report)           // waymark: E1 LiDAR evidence (counts and minima only)
         // A session interruption/failure can leave GPS guidance alive while depth has stopped.
         // Clear any latched obstacle cue immediately; recovery is announced only when this same
         // frame proves normal tracking, valid depth and the sweep trust bit.
@@ -2683,6 +2684,7 @@ final class AppModel {
         }
         speech.say(g.spokenLine, .safety, ttl: 3)
         waymark.lidarPulse()                 // waymark: 5 s quiet after a ground-hazard line
+        waymark.groundEvent(curbLike: g.kind == .dropOff || g.kind == .stepUp)  // waymark: E1 curb evidence
         let processor = depth.processor
         let dist = Double(g.distance)
         let delta = Double(g.delta)

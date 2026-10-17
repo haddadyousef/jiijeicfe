@@ -157,6 +157,7 @@ private struct SensePage: View {
         pageScroll {
             statusCard
             ObstaclesCard()
+            WaymarkCard()        // waymark: sidewalk memory switch + spotter buttons (A2 / E1)
             HazardsCard()
             CKMoreSection(title: "Diagnostics",
                           caption: "What answered your last question, the light and the voice.",

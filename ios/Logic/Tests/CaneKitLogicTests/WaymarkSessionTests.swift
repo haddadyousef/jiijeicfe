@@ -161,6 +161,18 @@ private func fix(north: Double, speed: Double = 1.3, accuracy: Double = 5) -> Ge
     #expect(near.records.first?["suppressed_reason"] == "crossing")
 }
 
+@Test func savedBeliefsRestoreForKnownLabelsOnly() {
+    // E1: evidence survives a relaunch (beliefs.json); ids not in this bundle are dropped.
+    var a = session([prior(1, .surfaceProblem, at(north: 10), agree: 0)])
+    a.record(.contradicted, sensor: .spotter, labelID: "ps:1", nowUTC: t0)
+    var saved = a.beliefs
+    saved["ps:999"] = WaymarkBelief()
+    var b = session([prior(1, .surfaceProblem, at(north: 10), agree: 0)])
+    b.restore(saved)
+    #expect(b.beliefs.keys.sorted() == ["ps:1"])
+    #expect(b.beliefs["ps:1"] == a.beliefs["ps:1"])
+}
+
 @Test func waymarkSettingIsClearedAfterACrashLoop() {
     #expect(LaunchRecovery.optionalFeatureKeys.contains("waymarkEnabled"))
 }

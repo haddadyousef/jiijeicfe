@@ -43,6 +43,28 @@ extension AppModel {
         waymark.enabled = waymarkEnabled
     }
 
+    /// E1: one `LaneReport` into the evidence tracker. Trusted = the gyro gate, depth live and
+    /// normal tracking; minima only over lanes whose band the camera can see (`…Coverage`);
+    /// coverage flags are the centre lane's.
+    /// - Parameter report: the frame `handle(_:)` just received.
+    func ingestWaymarkDepth(_ report: LaneReport) {
+        guard waymarkEnabled else { return }
+        let g = report.grid
+        func nearest(_ values: [Float], _ cover: [Bool]) -> Double {
+            var m = Double.infinity
+            for i in values.indices where i < cover.count && cover[i] && values[i].isFinite {
+                m = min(m, Double(values[i]))
+            }
+            return m
+        }
+        waymark.ingest(depth: WaymarkDepthSample(
+            trusted: report.isTrusted && report.depthAvailable && report.trackingNormal,
+            torsoMinM: nearest(g.torso, g.torsoCoverage), headMinM: nearest(g.head, g.headCoverage),
+            torsoCover: g.torsoCoverage.count > 1 && g.torsoCoverage[1],
+            headCover: g.headCoverage.count > 1 && g.headCoverage[1],
+            tiltDeg: report.cameraTiltDownDeg.map(Double.init)))
+    }
+
     /// One GPS fix into the Waymark engine with the base app's current gating state.
     /// - Parameter fix: the fix `location.onFix` just delivered.
     func ingestWaymark(_ fix: GeoFix) {

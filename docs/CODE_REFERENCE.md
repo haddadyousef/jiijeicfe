@@ -3485,6 +3485,13 @@ marked `// waymark:`.
   field evidence; `routeStarted()` / `routeEnded()`.
 - Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
 
+- `WaymarkEvidence.swift` (E1) — `WaymarkDepthSample`, `WaymarkEvidenceGates` (`hold`),
+  `WaymarkEvidenceVerdict`, `WaymarkEvidenceTracker` (`add(_:)` per LaneReport, `step(labels:at:headingDeg:legs:gates:)`
+  per fix: obstacle passes through the 8 m window, confirm < 2.0 m trusted, contradict on a clean ≥ 5-frame
+  pass with nothing < 2.5 m, else unverifiable; `groundEvent(...)` confirms the nearest ramp label within
+  11.5 m; `routeStarted()` / `routeEnded()`), `WaymarkSpotter.target(labels:at:headingDeg:)` (nearest
+  speakable label within 15 m). `WaymarkSession.restore(_:)` puts back saved beliefs (known ids only).
+
 ### App — `ios/CaneKit/Waymark/`
 - `WaymarkEngine.swift` — `@MainActor @Observable`. `load()` (off-main decode of
   `WAYMARK_PRIORS_FILE` or the bundled `waymark_priors.json`, logs `waymark_load {labels, load_ms}`),
@@ -3492,7 +3499,14 @@ marked `// waymark:`.
   `waymark_cue` + `lookup_ms`, + `latency_ms` when spoken), `lidarCue(active:)`, `lidarPulse()`,
   `routeStarted()`, `routeEnded()`; `state`, `lastLine`, `spokenCount` for the UI; outputs
   `onSpeak` (returns whether the queue took the line), `onLog`, `onLoaded`.
-- `AppModel+Waymark.swift` — `wireWaymark()` (init: `speech.nonResumable`, `onSpeak` →
+- E1 in `WaymarkEngine`: `ingest(depth:)`, `groundEvent(curbLike:)`, `spotter(_:)` (10 s undo,
+  `pendingTap`, `undoSpotter()`), `commit` → belief, `evidence.jsonl`, `beliefs.json`, `waymark_evidence`
+  log record (no coordinates); `lastEvidence`, `evidenceCount`, `spotterMessage` for the card.
+- `WaymarkStore.swift` (E1) — `Documents/waymark/evidence.jsonl` (append) and `beliefs.json` (atomic);
+  `appendEvidence`, `saveBeliefs`, `loadBeliefs`, `evidenceLineCount`; errors returned as text.
+- `WaymarkCard.swift` (A2 / E1) — Details card: the "Sidewalk memory" switch (moved from HazardsCard),
+  status line, "Confirm" / "Not there" tiles with the undo toast, saved-checks line.
+- `AppModel+Waymark.swift` — `ingestWaymarkDepth(_:)` (every `handle(_ report:)`), `wireWaymark()` (init: `speech.nonResumable`, `onSpeak` →
   `speech.say(line, .scene, ttl: 6)`, `onLog` → `logger.event`, `onLoaded` → prefetch the lines),
   `applyWaymarkSwitch()` (`start()`), `ingestWaymark(_:)` (every `location.onFix`; GPS-weak only
   while navigating; an indoor script counts as indoors).

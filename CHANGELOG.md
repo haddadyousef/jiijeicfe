@@ -2,6 +2,19 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark E1 — evidence from the walk (Sat Oct 17)
+
+- `WaymarkEvidenceTracker` (Logic, 13 tests): LiDAR passes for obstacles, curb events for ramp
+  labels, one verdict per label per route (design doc §9.1 / §9.2); `WaymarkSpotter` (§9.3).
+- App: every LaneReport and ground hazard feeds the tracker; outcomes update the beliefs and are
+  written to `Documents/waymark/evidence.jsonl` + `beliefs.json` and logged as `waymark_evidence`
+  (no coordinates). Beliefs are restored on load.
+- Details: new **Sidewalk memory** card (the switch moved here) with **Confirm** / **Not there** for a
+  walking helper, a 10 s Undo toast and a saved-checks line.
+
+Test on the phone: turn on Sidewalk memory, walk past a report, tap Confirm, see the toast, Undo works;
+after 10 s Files → Waymark → waymark/evidence.jsonl has a line.
+
 ## Waymark UI rework — colour-blind-safe and simpler (Sat Oct 17)
 
 Owner request: "more colour friendly, simpler to use, don't lose any functionality".
