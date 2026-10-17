@@ -42,6 +42,7 @@ final class CaneKitIslandTour: XCTestCase {
     /// Same launch as `CaneKitUITests` (`CANEKIT_UITEST=1` skips the location prompt and mutes).
     override func setUp() {
         continueAfterFailure = true
+        allowLocationPrompts()
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
         app.launch()

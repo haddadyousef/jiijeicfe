@@ -39,6 +39,7 @@ final class CaneKitVisualTour: XCTestCase {
     /// going after a failure.
     override func setUp() {
         continueAfterFailure = true
+        allowLocationPrompts()
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
         app.launch()
