@@ -52,10 +52,11 @@ Owner: Windows session (single writer). Mac proposes changes in `STATUS_M.md`. N
 - 2026-10-17 14:42 | D-25 | Mac-session commits follow D-23: authored as Akash (`azphalt`) noreply, no Claude co-author trailer, unless Akash says otherwise. | leader, pending Akash
 - 2026-10-17 14:49 | D-26 | Evidence lines are compared as parsed JSON (float tolerance 1e-9) in Swift tests, not byte for byte. Relaxes v1.0 8.1 (`WaymarkRecord` row). | leader
 - 2026-10-17 14:49 | D-27 | Bundle labels sorted ascending by numeric `source_cluster_id`. Clarifies WAYMARK_PLAN 5.2 determinism row. | leader
+- 2026-10-17 14:53 | D-28 | **Build lane hold RELEASED** by Yousef (14:52, message: "hold released"). H2 answers (rules text, schedule) are still not on file; Yousef is responsible for the rules. Plan 1.3 right-hand column starts now. | Yousef
 
 ## Pending human inputs (fill in when answered)
 
 - H1 paste the OpenCane authors' reply for the record: pending
-- H2 DubHacks rules answers and schedule: pending. Hold status: HOLD
+- H2 DubHacks rules answers and schedule: not on file. Hold status: RELEASED (D-28)
 - H3 done: GitHub linked, Claude can push to the new repo, Akash is pushing (account `azphalt`).
 - H5 hardware facts: pending
