@@ -50,6 +50,8 @@ Owner: Windows session (single writer). Mac proposes changes in `STATUS_M.md`. N
 - 2026-10-17 14:35 | D-23 | Windows-session commits are authored as Yousef with the GitHub noreply address, no Claude co-author trailer, so they show as `haddadyousef`. Commits before this one (ce106c1, 95480f3) keep their old author fields. | Yousef
 - 2026-10-17 14:42 | D-24 | Team repo moved to `github.com/haddadyousef/jiijeicfe` (Yousef, 14:37 initial commit; tree equals old `Waymark` main at 622ba38 except an older STATUS_M.md). Old `haddadyousef/Waymark` is frozen and kept as the full-history record. See PROVENANCE.md. | Yousef
 - 2026-10-17 14:42 | D-25 | Mac-session commits follow D-23: authored as Akash (`azphalt`) noreply, no Claude co-author trailer, unless Akash says otherwise. | leader, pending Akash
+- 2026-10-17 14:49 | D-26 | Evidence lines are compared as parsed JSON (float tolerance 1e-9) in Swift tests, not byte for byte. Relaxes v1.0 8.1 (`WaymarkRecord` row). | leader
+- 2026-10-17 14:49 | D-27 | Bundle labels sorted ascending by numeric `source_cluster_id`. Clarifies WAYMARK_PLAN 5.2 determinism row. | leader
 
 ## Pending human inputs (fill in when answered)
 

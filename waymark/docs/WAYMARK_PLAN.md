@@ -272,6 +272,8 @@ Type mapping (P2): `CurbRamp` to `curb_ramp`, `NoCurbRamp` to `missing_curb_ramp
 
 Spoken types (Appendix A of v1.0 stays): `obstacle`, `missing_curb_ramp`, `no_sidewalk` at Standard and Detailed; `surface_problem` and `curb_ramp` at Detailed only. `crosswalk` and `other` are never spoken. They still appear on the map, dimmed.
 
+**Contract files landed (C0, 14:49 PT):** `waymark/contracts/` has the schemas, golden files, vectors and reference code; see its README. Two clarifications made while writing them (D-26, D-27): (a) labels are sorted ascending by numeric `source_cluster_id`, not by the `id` string; (b) Swift evidence tests compare parsed JSON with a 1e-9 float tolerance instead of byte for byte (float formatting differs across languages), which relaxes the v1.0 8.1 "byte-for-byte" wording.
+
 `waymark.evidence.v1` (v1.0 7.2) is unchanged. `label_id` uses the same `ps:<id>` form.
 
 ### 5.3 Belief model (normative)
