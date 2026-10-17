@@ -4,6 +4,32 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
+## repo: 882a4b0 (jiijeicfe; branch `waymark/l1-l3` at bc702fb) | wall: Sat 15:21 PT
+
+**Moved to `jiijeicfe`** (this session got write access at 15:15). Read W's entries through c583e5f / 0f47848 and DECISIONS through D-33.
+
+**Done (evidence):**
+- Plan 3.7 re-add, commit 882a4b0: `STATUS_M.md` and `ios/scripts/waymark_g0.sh` from the old repo (they were newer there).
+- **Found and fixed: the move dropped the executable bit** on `ios/scripts/gen.sh`, `test.sh`, `e2e.py`, `cue_audit.py`, `waymark_g0.sh` (100755 in the old repo, 100644 here). `make gen` / `make test` / `make e2e` run them directly, so a fresh Mac clone would fail with "permission denied". Restored in 882a4b0. @W `waymark/tools/sync.sh` lost its bit too (your file; `sh waymark/tools/sync.sh` works meanwhile).
+- L1 to L3 cherry-picked from the old repo (D-33): b1ed481, f119474, 7494c69, unchanged.
+- R1 + C0 follow-ups, bc702fb (tests first; red: `curbRampMinP` missing and the golden cases):
+  - **D-29 (1)** curb ramps at Detailed need `p ≥ 0.5` (`WaymarkAlertPolicy.curbRampMinP`), with a test.
+  - **R1 clock finding** fixed: spacing uses `|now − last| < 20 s`, test `aBackwardsClockDoesNotSilenceWaymarkForever`.
+  - **C0 parity** `WaymarkGoldenTests`: `priors_sample.json` (7 labels, real label 1 field for field), `priors_unknown_type.json` (→ `.other`), all 12 `priors_invalid_cases.json` (every `decoder_must_reject: true` rejected; this decoder is stricter on bad_month / bbox_wrong_order / id_mismatch and accepts unsorted_labels), `belief_vectors.json` replayed per the README's ordering rule, every a / b / p / n_eff within 1e-9, `threshold_vectors.json` within 1e-12, `evidence_sample.jsonl` re-encoded and compared as parsed JSON (D-26).
+  - **Real bundle** `ios/CaneKit/Resources/waymark_priors.json` decodes with the strict decoder, sorted by cluster id (D-27), every label inside `bbox_lnglat`, labels within 150 m of the D-07 point.
+  - **Contract alignment:** every label key of `priors_v1.schema.json` is now required (golden `missing_required_field` must be rejected); nullable ones must be explicit `null`. My earlier 0 / 1 / [] defaults are removed.
+  - `swift test` on Linux Swift 6.0.3: **1000 tests passed, exit 0** (HeadNodDetectorTests set aside on Linux only). **Not yet run on the Mac.**
+- **Acks:** C0 as landed (2ec1887); D-26 and D-27 (both are honoured by the tests above); D-29 to D-33 read and applied.
+- G0 device result (old repo, 14:50): signed and installed as `com.akashtadikonda.waymark` on Akash's iPhone 17 Pro; launch waits on the one-time "trust developer" step. `make sim17` cannot create a 17 Pro Max on Xcode 27.1's iOS 27.1 runtime; `waymark_g0.sh uitest` now falls back to an available iPhone Pro simulator. UI tests not run yet.
+
+**Noted for A1 / E2:** `eval/README.md` input fields `load_ms`, `lookup_ms`, `latency_ms`, `suppressed_reason` will be emitted by `WaymarkEngine` in `waymark_load` / `waymark_cue`.
+
+**Blocked:** nothing on W. Mac-side gates are Akash's: trust the developer profile on the phone, `make test` on `waymark/l1-l3`, `waymark_g0.sh uitest`. @H
+
+**Next:** after the Mac `make test` passes, merge `waymark/l1-l3` to `main`; then A1 (`WaymarkEngine`, `WaymarkStore`, `waymarkEnabled` default off, AppModel wiring per `M_NOTES.md` §8).
+
+---
+
 ## repo: 5b9227f (L1-L3 on branch `waymark/l1-l3` at 1846d24) | wall: Sat 15:05 PT
 
 **Done (evidence):**
