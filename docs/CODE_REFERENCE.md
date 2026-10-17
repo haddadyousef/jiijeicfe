@@ -3502,6 +3502,9 @@ marked `// waymark:`.
 - E1 in `WaymarkEngine`: `ingest(depth:)`, `groundEvent(curbLike:)`, `spotter(_:)` (10 s undo,
   `pendingTap`, `undoSpotter()`), `commit` → belief, `evidence.jsonl`, `beliefs.json`, `waymark_evidence`
   log record (no coordinates); `lastEvidence`, `evidenceCount`, `spotterMessage` for the card.
+- `ios/scripts/waymark_export.py` (E2) — `export(evidence_paths, log_paths, out)`, `valid_evidence`,
+  `coord_keys` / `strip_coords`, `verify_no_coordinates`, `selftest()`; outputs the eval harness's
+  `evidence.jsonl` + `waymark_records.jsonl`; never a coordinate (exit 2 if one survives).
 - `WaymarkStore.swift` (E1) — `Documents/waymark/evidence.jsonl` (append) and `beliefs.json` (atomic);
   `appendEvidence`, `saveBeliefs`, `loadBeliefs`, `evidenceLineCount`; errors returned as text.
 - `WaymarkCard.swift` (A2 / E1) — Details card: the "Sidewalk memory" switch (moved from HazardsCard),

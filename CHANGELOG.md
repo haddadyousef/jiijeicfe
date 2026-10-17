@@ -2,6 +2,14 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark E2 — export without coordinates (Sat Oct 17)
+
+- `ios/scripts/waymark_export.py` (D-14): `--evidence evidence.jsonl --log canekit-*.jsonl --out DIR` writes
+  `evidence.jsonl` (valid `waymark.evidence.v1` lines, de-duplicated) and `waymark_records.jsonl`
+  (`waymark_load` / `_cue` / `_evidence` / `_spotter` records only, coordinate-like keys removed) plus a
+  counts-only `export_report.json`; re-reads its output and exits 2 if any coordinate survived.
+  `--selftest`: 8 checks on a built-in sample, all ok; the 8 golden evidence lines pass unchanged.
+
 ## Waymark E1 — evidence from the walk (Sat Oct 17)
 
 - `WaymarkEvidenceTracker` (Logic, 13 tests): LiDAR passes for obstacles, curb events for ramp
