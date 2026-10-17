@@ -1,0 +1,280 @@
+{
+  "cases": [
+    {
+      "events": [
+        {
+          "at": "2026-10-17T21:00:00Z",
+          "outcome": "contradicted",
+          "sensor": "spotter"
+        }
+      ],
+      "n_agree": 2,
+      "n_disagree": 0,
+      "name": "obstacle_2_0_spotter_contradicts_then_decays",
+      "reads": [
+        {
+          "a": 3.0,
+          "at": "2026-10-16T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 2.0,
+          "p": 0.75
+        },
+        {
+          "a": 3.0,
+          "at": "2026-10-17T21:00:00Z",
+          "b": 3.0,
+          "n_eff": 4.0,
+          "p": 0.5
+        },
+        {
+          "a": 3.0,
+          "at": "2026-12-16T21:00:00Z",
+          "b": 2.0,
+          "n_eff": 3.0,
+          "p": 0.6
+        },
+        {
+          "a": 3.0,
+          "at": "2027-02-14T21:00:00Z",
+          "b": 1.5,
+          "n_eff": 2.5,
+          "p": 0.6666666666666666
+        }
+      ],
+      "type": "obstacle"
+    },
+    {
+      "events": [
+        {
+          "at": "2026-10-17T21:00:00Z",
+          "outcome": "confirmed",
+          "sensor": "lidar_torso"
+        },
+        {
+          "at": "2026-10-17T21:00:00Z",
+          "outcome": "confirmed",
+          "sensor": "spotter"
+        }
+      ],
+      "n_agree": 1,
+      "n_disagree": 1,
+      "name": "missing_curb_ramp_1_1_torso_then_spotter_confirm",
+      "reads": [
+        {
+          "a": 2.0,
+          "at": "2026-10-16T21:00:00Z",
+          "b": 2.0,
+          "n_eff": 2.0,
+          "p": 0.5
+        },
+        {
+          "a": 5.0,
+          "at": "2026-10-17T21:00:00Z",
+          "b": 2.0,
+          "n_eff": 5.0,
+          "p": 0.7142857142857143
+        }
+      ],
+      "type": "missing_curb_ramp"
+    },
+    {
+      "events": [
+        {
+          "at": "2026-10-17T21:00:00Z",
+          "outcome": "confirmed",
+          "sensor": "lidar_torso"
+        },
+        {
+          "at": "2026-12-16T21:00:00Z",
+          "outcome": "contradicted",
+          "sensor": "lidar_torso"
+        }
+      ],
+      "n_agree": 0,
+      "n_disagree": 0,
+      "name": "obstacle_0_0_confirm_then_contradict_60d_later",
+      "reads": [
+        {
+          "a": 1.7071067811865475,
+          "at": "2026-11-16T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 0.7071067811865476,
+          "p": 0.6306019374818708
+        },
+        {
+          "a": 1.5,
+          "at": "2026-12-16T21:00:00Z",
+          "b": 2.0,
+          "n_eff": 1.5,
+          "p": 0.42857142857142855
+        },
+        {
+          "a": 1.25,
+          "at": "2027-02-14T21:00:00Z",
+          "b": 1.5,
+          "n_eff": 0.75,
+          "p": 0.45454545454545453
+        }
+      ],
+      "type": "obstacle"
+    },
+    {
+      "events": [
+        {
+          "at": "2026-10-17T21:00:00Z",
+          "outcome": "confirmed",
+          "sensor": "spotter"
+        },
+        {
+          "at": "2027-02-14T21:00:00Z",
+          "outcome": "unverifiable",
+          "sensor": "lidar_torso"
+        }
+      ],
+      "n_agree": 0,
+      "n_disagree": 0,
+      "name": "surface_problem_unverifiable_is_a_no_op",
+      "reads": [
+        {
+          "a": 2.0,
+          "at": "2027-02-14T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 1.0,
+          "p": 0.6666666666666666
+        },
+        {
+          "a": 1.5,
+          "at": "2027-06-14T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 0.5,
+          "p": 0.6
+        }
+      ],
+      "type": "surface_problem"
+    },
+    {
+      "events": [
+        {
+          "at": "2026-10-17T21:00:00Z",
+          "outcome": "confirmed",
+          "sensor": "lidar_torso"
+        }
+      ],
+      "n_agree": 0,
+      "n_disagree": 0,
+      "name": "crosswalk_uses_default_half_life_365",
+      "reads": [
+        {
+          "a": 1.5,
+          "at": "2027-10-17T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 0.5,
+          "p": 0.6
+        },
+        {
+          "a": 1.25,
+          "at": "2028-10-16T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 0.25,
+          "p": 0.5555555555555556
+        }
+      ],
+      "type": "crosswalk"
+    },
+    {
+      "events": [
+        {
+          "at": "2026-10-17T21:00:00Z",
+          "outcome": "confirmed",
+          "sensor": "ground"
+        },
+        {
+          "at": "2026-10-17T21:00:00Z",
+          "outcome": "contradicted",
+          "sensor": "vision"
+        }
+      ],
+      "n_agree": 0,
+      "n_disagree": 0,
+      "name": "same_instant_ground_and_vision_weights",
+      "reads": [
+        {
+          "a": 1.5,
+          "at": "2026-10-17T21:00:00Z",
+          "b": 1.5,
+          "n_eff": 1.0,
+          "p": 0.5
+        }
+      ],
+      "type": "no_sidewalk"
+    },
+    {
+      "events": [],
+      "n_agree": 10,
+      "n_disagree": 0,
+      "name": "many_agree_no_evidence",
+      "reads": [
+        {
+          "a": 11.0,
+          "at": "2026-10-17T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 10.0,
+          "p": 0.9166666666666666
+        },
+        {
+          "a": 11.0,
+          "at": "2027-11-21T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 10.0,
+          "p": 0.9166666666666666
+        }
+      ],
+      "type": "curb_ramp"
+    },
+    {
+      "events": [
+        {
+          "at": "2026-10-27T21:00:00Z",
+          "outcome": "confirmed",
+          "sensor": "spotter"
+        }
+      ],
+      "n_agree": 0,
+      "n_disagree": 0,
+      "name": "read_before_first_event_is_the_prior",
+      "reads": [
+        {
+          "a": 1.0,
+          "at": "2026-10-22T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 0.0,
+          "p": 0.5
+        },
+        {
+          "a": 3.0,
+          "at": "2026-10-27T21:00:00Z",
+          "b": 1.0,
+          "n_eff": 2.0,
+          "p": 0.75
+        }
+      ],
+      "type": "missing_curb_ramp"
+    }
+  ],
+  "constants": {
+    "half_life_days": {
+      "default": 365.0,
+      "obstacle": 60.0,
+      "surface_problem": 120.0
+    },
+    "weights": {
+      "ground": 0.5,
+      "lidar_head": 1.0,
+      "lidar_torso": 1.0,
+      "spotter": 2.0,
+      "vision": 0.5
+    }
+  },
+  "note": "Expected values come from ref/belief.py and are cross-checked against hand-computed rows in tests/test_contracts.py. Events are applied in time order (ties keep listed order) before each read at or after them; a read earlier than an event is taken before that event. Swift tolerance 1e-9.",
+  "schema": "waymark.belief_vectors.v1"
+}

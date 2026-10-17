@@ -1,0 +1,54 @@
+{
+  "bbox_lnglat": [
+    -122.308,
+    47.652,
+    -122.302,
+    47.656
+  ],
+  "generated_at": "2026-10-17T21:00:00Z",
+  "labels": [
+    {
+      "cluster_size": 1,
+      "id": "ps:13290420",
+      "imagery_date": "2019-05",
+      "intersection_id": null,
+      "label_date": "2019-07",
+      "lat": 47.652233,
+      "lng": -122.306389,
+      "n_agree": 2,
+      "n_disagree": 0,
+      "n_unsure": 0,
+      "osm_way_id": 283038445,
+      "severity": 1,
+      "source_cluster_id": 13290420,
+      "street_edge_id": 20109,
+      "tags": [],
+      "type": "curb_ramp"
+    },
+    {
+      "cluster_size": 1,
+      "id": "ps:9000000007",
+      "imagery_date": null,
+      "intersection_id": null,
+      "label_date": null,
+      "lat": 47.6541,
+      "lng": -122.3049,
+      "n_agree": 1,
+      "n_disagree": 0,
+      "n_unsure": 0,
+      "osm_way_id": null,
+      "severity": 2,
+      "source_cluster_id": 9000000007,
+      "street_edge_id": null,
+      "tags": [],
+      "type": "future_type"
+    }
+  ],
+  "schema": "waymark.priors.v1",
+  "source": {
+    "base_url": "https://sidewalk-sea.cs.washington.edu",
+    "license": "CC0-1.0",
+    "name": "Project Sidewalk",
+    "street_geometry": "OpenStreetMap contributors, ODbL"
+  }
+}

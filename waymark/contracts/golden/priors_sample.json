@@ -1,0 +1,151 @@
+{
+  "bbox_lnglat": [
+    -122.308,
+    47.652,
+    -122.302,
+    47.656
+  ],
+  "generated_at": "2026-10-17T21:00:00Z",
+  "labels": [
+    {
+      "cluster_size": 1,
+      "id": "ps:13290420",
+      "imagery_date": "2019-05",
+      "intersection_id": null,
+      "label_date": "2019-07",
+      "lat": 47.652233,
+      "lng": -122.306389,
+      "n_agree": 2,
+      "n_disagree": 0,
+      "n_unsure": 0,
+      "osm_way_id": 283038445,
+      "severity": 1,
+      "source_cluster_id": 13290420,
+      "street_edge_id": 20109,
+      "tags": [],
+      "type": "curb_ramp"
+    },
+    {
+      "cluster_size": 2,
+      "id": "ps:9000000001",
+      "imagery_date": "2019-05",
+      "intersection_id": null,
+      "label_date": "2019-08",
+      "lat": 47.6531,
+      "lng": -122.3061,
+      "n_agree": 2,
+      "n_disagree": 0,
+      "n_unsure": 0,
+      "osm_way_id": 283038446,
+      "severity": 3,
+      "source_cluster_id": 9000000001,
+      "street_edge_id": 20110,
+      "tags": [
+        "pole"
+      ],
+      "type": "obstacle"
+    },
+    {
+      "cluster_size": 1,
+      "id": "ps:9000000002",
+      "imagery_date": "2020-06",
+      "intersection_id": 4001,
+      "label_date": "2020-07",
+      "lat": 47.6538,
+      "lng": -122.3052,
+      "n_agree": 1,
+      "n_disagree": 1,
+      "n_unsure": 0,
+      "osm_way_id": 283038447,
+      "severity": 3,
+      "source_cluster_id": 9000000002,
+      "street_edge_id": 20111,
+      "tags": [],
+      "type": "missing_curb_ramp"
+    },
+    {
+      "cluster_size": 4,
+      "id": "ps:9000000003",
+      "imagery_date": "2018-09",
+      "intersection_id": null,
+      "label_date": "2018-10",
+      "lat": 47.6544,
+      "lng": -122.3043,
+      "n_agree": 3,
+      "n_disagree": 1,
+      "n_unsure": 1,
+      "osm_way_id": null,
+      "severity": 1.5,
+      "source_cluster_id": 9000000003,
+      "street_edge_id": 20112,
+      "tags": [
+        "cracks",
+        "uneven"
+      ],
+      "type": "surface_problem"
+    },
+    {
+      "cluster_size": 1,
+      "id": "ps:9000000004",
+      "imagery_date": null,
+      "intersection_id": null,
+      "label_date": null,
+      "lat": 47.655,
+      "lng": -122.3034,
+      "n_agree": 0,
+      "n_disagree": 0,
+      "n_unsure": 0,
+      "osm_way_id": null,
+      "severity": null,
+      "source_cluster_id": 9000000004,
+      "street_edge_id": null,
+      "tags": [],
+      "type": "no_sidewalk"
+    },
+    {
+      "cluster_size": 3,
+      "id": "ps:9000000005",
+      "imagery_date": "2021-04",
+      "intersection_id": 4002,
+      "label_date": "2021-04",
+      "lat": 47.6553,
+      "lng": -122.3028,
+      "n_agree": 4,
+      "n_disagree": 0,
+      "n_unsure": 0,
+      "osm_way_id": 283038448,
+      "severity": null,
+      "source_cluster_id": 9000000005,
+      "street_edge_id": 20113,
+      "tags": [],
+      "type": "crosswalk"
+    },
+    {
+      "cluster_size": 1,
+      "id": "ps:9000000006",
+      "imagery_date": "2019-11",
+      "intersection_id": null,
+      "label_date": "2019-12",
+      "lat": 47.6554,
+      "lng": -122.3022,
+      "n_agree": 0,
+      "n_disagree": 0,
+      "n_unsure": 2,
+      "osm_way_id": null,
+      "severity": 2,
+      "source_cluster_id": 9000000006,
+      "street_edge_id": 20114,
+      "tags": [
+        "fountain"
+      ],
+      "type": "other"
+    }
+  ],
+  "schema": "waymark.priors.v1",
+  "source": {
+    "base_url": "https://sidewalk-sea.cs.washington.edu",
+    "license": "CC0-1.0",
+    "name": "Project Sidewalk",
+    "street_geometry": "OpenStreetMap contributors, ODbL"
+  }
+}
