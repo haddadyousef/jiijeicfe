@@ -4,6 +4,41 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
+## repo: 418aa44 (jiijeicfe `main`; branch `waymark/a1` at b6e11a6) | wall: Sat 15:47 PT
+
+**Answers W's open question: yes, `make test` ran on the Mac.** Akash ran it at ~15:38 on `waymark/uitest-location` = `main` d81026b (L1–L3) + a UI-test-only commit: **1007 tests in 23 suites passed, exit 0** (`waymark/logs/mac/l3-test.log`). So L1–L3 were merged (d81026b, on Akash's instruction) before the Mac gate, and the gate passed after it. No logic changed in between.
+
+**G0 uitest is green** (`uitest-fix.log`, iPhone 18 Pro simulator, UIUC location): 11 passed, 1 skipped (Street View, by design), `** TEST SUCCEEDED **`, exit 0. The first run's 4 failures came from the simulator, not the rename. On a brand-new simulator the `sim-grant` location grant ran before the app was installed and did not stick, and XCTest's default handler tapped "Don't Allow". After that every route start was refused ("Location is off"). Fixed in PR #2 (418aa44): each UI test case answers the prompt itself (`allowLocationPrompts()`), and `sim-grant` also grants `location-always`. The iPhone 17 Pro Max cannot be created on Xcode 27.1 / iOS 27.1 ("Incompatible device"), so the Mac gate simulator is the **iPhone 18 Pro**.
+
+**A1 written, on `waymark/a1`, not merged:**
+- 340c442: `WaymarkSession` (Logic) has 11 tests and Linux `swift test` passes 1011, exit 0.
+  - At most one line per fix, closest hit first.
+  - Silences are logged once per (label, reason) per route; `not_yet` is never logged.
+  - `LaunchRecovery` clears `waymarkEnabled`.
+- b6e11a6: `ios/CaneKit/Waymark/WaymarkEngine.swift` + `AppModel+Waymark.swift`.
+  - The bundle loads off the main thread on first enable.
+  - Lines are spoken at `.obstacle` with ttl 6 s.
+  - Any `activeCue` change starts the 5 s quiet window.
+  - Logs: `waymark_load {labels, load_ms, source}` and `waymark_cue` + `lookup_ms` + `latency_ms` (fix timestamp → dispatch, spoken lines only), per `eval/README.md`.
+  - AppModel edits are one-liners marked `// waymark:`.
+  - `SpeechQueue.isVoiceHeld` added.
+  - Sense → Hazards has a "Sidewalk memory" switch (new label, off by default) with a status caption.
+- Mac `make gen` exit 0. `make test` and `make sim` are running now; A1 merges only after `make sim` is green. An adversarial review of the diff is also running.
+
+**D-35 handoff (15:55) read and accepted.** Next after A1 merges:
+- (1) Makefile default `SIM_LAT/SIM_LON` → 47.658324, −122.313219.
+- (2) Bundle `route_ave_seattle.json` without touching the UIUC route or its tests. The choice will be recorded here when made.
+- (3) X-e2e with `test_priors.json` through `WAYMARK_PRIORS_FILE`.
+- (4) Synthetic labels are never shown as real.
+
+**Human instruction (Akash, 15:35), queued after A1: UI rework.** Two parts:
+- A color-blind-safe palette. The lane ladder's FAR/NEAR yellow/orange pair is the deuteranopia weak spot.
+- A simpler Guide page, with advanced and testing toggles in collapsible sections, same 4 tabs, every control and every test-contract label kept.
+
+It touches only `ios/CaneKit/UI/**`. @W FYI; no contract impact.
+
+**Process note:** this session cannot delete branches on GitHub (403 on the refs API and on `git push --delete`). Akash deletes merged branches from his Terminal, or turns on "Automatically delete head branches".
+
 ## repo: f9e3981 (jiijeicfe; branch `waymark/l1-l3` at 6b145dc) | wall: Sat 15:21 PT
 
 **Moved to `jiijeicfe`** (this session got write access at 15:15). Read W's entries through c583e5f / 0f47848 and DECISIONS through D-33.
