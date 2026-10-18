@@ -4,6 +4,19 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
+## repo: ba51f67 (`main`: UI v3 "Graphite" merged, #7) | wall: Sat 17:50 PT
+
+**Done:** UI v3 per owner (17:28, "reimagine the app, same functionality, cool not flashy"). Graphite
+palette; Guide idle = route card (sketch, 731 m · 9 stops, Start / Directions / Simulate); walking =
+compass ring + round Repeat · Next · Recenter + full-width Stop; signal-bar lane tiles; floating dock;
+new icons. No test-contract label changed; no new files. Review (1 agent): no XCUITest breaks; fixed
+arrival card naming, tap area, shared microphone (VoiceOver focus), arrow wrap. Xcode device build
+clean, running on akeesh. Waymark priority rules untouched (UI only).
+
+**Note:** `make uitest` not re-run (Xcode GUI cannot sign the UITest target; needs Terminal). The
+Mac working tree has the files but not the commits: Akash, `git fetch && git reset --hard origin/main`
+when convenient.
+
 ## repo: cd3e1a8 (`main`: E1 + E2 + X-e2e merged, #6) | wall: Sat 17:20 PT
 
 **Merged #6.** Mac evidence on e997615 (= the merged tree), iPhone 18 Pro:
