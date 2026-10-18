@@ -427,7 +427,7 @@ New record kinds (section 4.3). Each `waymark_cue` carries `label_id`, `label_ty
 | Label type | What can confirm it | What can contradict it | Otherwise |
 |---|---|---|---|
 | obstacle | A torso or head lane reading under 2.0 m `[H]` within the label's along-track window, walking, trusted frame | Torso coverage true for the whole pass, trusted frames, nothing under 2.5 m `[H]` in that window, and the pass was in the corridor | unverifiable |
-| missing_curb_ramp, curb_ramp | A ground-hazard curb event near the label (only if "Detect drop-offs" is on for the test walk), or a spotter tap | Spotter tap only | unverifiable (ramps up to about 10 percent grade are silent by design) |
+| missing_curb_ramp, curb_ramp | `missing_curb_ramp`: a ground-hazard curb event near the label (only if "Detect drop-offs" is on for the test walk), or a spotter tap. `curb_ramp`: a spotter tap only (D-36; ramps are silent to the ground detector) | Spotter tap only | unverifiable (ramps up to about 10 percent grade are silent by design) |
 | surface_problem | Spotter tap only | Spotter tap only | unverifiable (LiDAR does not judge surface quality here) |
 | no_sidewalk | Spotter tap only | Spotter tap only | unverifiable |
 

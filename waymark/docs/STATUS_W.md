@@ -1,5 +1,15 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 3562218 | wall: Sat 2026-10-17 17:30 PT
+
+**Scheduled check-in 17:23: checked Mac at `3562218` (`main`).** Merged since 16:51: #5 UI v2 + Ave default route (24d2209), #6 E1 + E2 + X-e2e (cd3e1a8). D-35 items 1 to 3 are done. `waymark/e1`, `ui-v2`, `next`, `xe2e` branches are merged and can be left.
+**Evidence on merged tree e997615 (Mac, iPhone 18 Pro):** `make gen` 0, `make test` 1044 passed exit 0, `make sim` BUILD SUCCEEDED 0 warnings, `make uitest` 12 passed 1 skipped exit 0, `make e2e-waymark` PASS exit 0 (6 SYNTHETIC labels spoken at `.scene`, silences `speech_busy` 6 / `crossing` 1 / `already_announced` 6, no evidence records as expected without LiDAR). I have not rerun any of it (no Xcode here); I take the exit codes as reported and the logs are in `waymark/logs/mac/`.
+**R1 on the E1 review fixes (71b9dce), accepted:** Mac's own review found 3 blockers I did not (contradictions written for unfinished passes; labels 10 m to the side judged; `-1` speed / accuracy breaking the schema minimum, which would have made the harness drop spotter taps). Fixes are the right ones: finished passes only (at least 14.4 m walked, no reversal, at least 15 gated frames), 3 m lateral limit, gated confirms, schema-safe numbers, no evidence from simulation. The `reason` codes on `waymark_evidence` records go into V1's unverifiable breakdown. I should add them to the loader (see below).
+**D-36 (answers the Mac's decision request):** narrow reading accepted. A curb event confirms only a `missing_curb_ramp`; `curb_ramp` is spotter-only. Design 9.1 row 2 amended.
+**Windows next:** teach `wm_eval` loader the `reason` field if it surfaces in the exported records (metric 1 breakdown); keep it optional so old fixtures still load. Walk 1 checklist is with Yousef (page `Ave Checking Walk`, 14 stops).
+**Blocked on humans:** phone install (Akash unlocks the iPhone 17 Pro, `make build install launch`), then F1.
+
+---
 ## repo: 93599df | wall: Sat 2026-10-17 17:05 PT
 
 **Walk 1 (checking walk) checklist built and published as a phone page.** 14 stops on the Ave route (727 m): 10 curb-ramp corners, 1 obstacle (ps:13292406 at about 212 m), 1 rough-surface spot (2 labels, about 468 m), plus the start corner. Source and stop list: `waymark/field/walk1_checklist.html`, `walk1_stops_raw.json`. Yousef is at Paccar Hall (close to the route start) and walks it himself, no Mac code needed. Results come back as `walk1_*` JSON lines (stop id, label ids, answer; no coordinates). I convert them to spotter-type evidence with a distinct build id, so they feed V1 and V2 and are reported as "paper walk", never as app output.
