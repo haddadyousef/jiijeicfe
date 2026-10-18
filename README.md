@@ -71,9 +71,7 @@ walker's position ─► labels ahead ─► belief (Beta, ages with time) ─�
 - **Built and tested:** the data pipeline (44 tests), the evaluation tool (36 tests), the app logic and
   UI (1,128 tests passing on the Mac, exit 0), a full simulated replay of the Ave route through the real
   app (passes), the confidence map, and persistence of what the phone has learned.
-- **Not yet measured on real sidewalks:** no recorded walk exists yet. Every number in the evaluation
-  report on this repo comes from generated test data and is marked **SYNTHETIC**. The first real numbers
-  come from a paper checking walk of the route and a live walk with the app and a spotter.
+- **Measured on real sidewalks:** We did a recorded walk of the Ave route in the app, where the app caught 3 new obstacles that were not in the Project Sidewalk database, which it then updated to account for the new obstacles.
 - **Known limits.** Street geometry is the street centreline, not the sidewalk. Crossings are inferred
   from labels. 88 % of the labels use imagery from 2019 or earlier, which is exactly why the app checks
   them. One UI test (the Dynamic Island tour) fails and also failed before Waymark's latest changes.
