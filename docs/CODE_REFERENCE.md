@@ -3212,7 +3212,7 @@ Purpose: the "Hazards" card — the camera's second job made visible: switches f
   - `Toggle("Read signs", isOn: $model.signsEnabled)` — hint "Reads signs like sidewalk closed or detour, on the phone, offline" (default on).
   - `Toggle("Hazard watch", isOn: $model.hazardWatchEnabled)` — hint "While walking a route, checks the path for cones, barriers and scooters every 8 seconds" (default off).
   - `Toggle("Name people ahead", isOn: $model.namePeopleEnabled)` — hint "When you ask where am I, says how many people are ahead, which way and how far. Experimental — unverified on cane walks." (default off on a fresh install; persisted legacy opt-ins remain explicitly experimental; `PeopleAhead` plus `PeopleDetection`).
-  - Pill row: `CKStatusPill(text: model.hazards.watchProvider, .neutral, "eye", spoken: "Hazard watch uses …")` and `"\(model.hazardLog.records.count) mapped"` (`mappin.and.ellipse`, spoken "N hazards on the map"), then `Spacer`.
+  - Pill row: `CKStatusPill(text: model.hazards.watchProvider, .neutral, "eye", spoken: "Hazard watch uses …")` and `"\(model.hazardLog.records.count) logged"` (`mappin.and.ellipse`, spoken "N hazards logged on this walk, separate from sidewalk reports"), then `Spacer`.
   - Detection rows via `private func detection(_ source:, _ text:)` (caption `source.uppercased()` in `CKFont.pill` / `textSecondary` + the line in `CKFont.body`; one combined a11y element), each only when non-nil: `detection("LiDAR", model.lastGroundHazard)`, `detection("Sign", model.hazards.lastSign)`, `detection("Watch", model.hazards.lastCaution)`; further down `detection("Sound", model.sounds.lastAlert)` (in `soundStatus`, with `sounds.lastError` as `CKErrorText` and `sounds.labelReport` while running — all spoken rows) and `detection("Front camera", "detecting: \(model.faceHead.readout)")` (in `frontCameraReadout`, only while `faceHeadTrackingEnabled` and `DepthEngine.supportsFrontCameraWithLiDAR`, followed by "Head direction only — ARKit gives one camera picture at a time, and it is the back camera's." ⚠ never re-word this row into anything a reader could take for a selfie preview).
   - Error line `model.hazards.lastError ?? model.hazardLog.lastError` in `CKFont.secondary` / `laneUrgent`.
   - When `model.hazardLog.fileWritten`: `ShareLink(item: model.hazardLog.fileURL)` labelled "Share hazard map" (`square.and.arrow.up`), hint "Shares a GeoJSON map of every hazard found on this walk".
@@ -3510,6 +3510,11 @@ marked `// waymark:`.
   line is the first hit the policy allows, so the two can differ). Standing still / no direction keeps
   the last walking value with p read again; `routeStarted()` / `routeEnded()` forget it.
 - `WaymarkGlance.noneAhead`, `.waitingForGPS`, `.loadingLine`, `.failedLine`; `chip(…, failed:)`.
+- `WaymarkMap.swift` (judge demo) — `WaymarkMapSelection.labels(index:route:walker:)` (25 m corridor along
+  every route segment; 250 m around the walker only without a route; de-duplicated, ≤ 400 nearest the
+  walker / route start, sorted by id; `distanceToSegment`), `WaymarkConfidenceBand` (`init(p:)` on the shown
+  whole percent: likely ≥ 70, uncertain ≥ 40, else doubtful; `word`, `shape`), `WaymarkGlance.isSpoken`, `.imagery`, `.votes`, `.confidence`, `.confidenceSpoken`,
+  `WaymarkSession.confidence(of:nowUTC:)`.
 - Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
 
 - `WaymarkEvidence.swift` (E1) — `WaymarkDepthSample`, `WaymarkEvidenceGates` (`hold`),
@@ -3548,6 +3553,13 @@ marked `// waymark:`.
   / "… on · N reports", opens the sheet), `WaymarkAheadCard` (walking, not indoors, under Stop route: nearest
   report, "40 m · 72 % likely"; "Waiting for a fresh GPS fix" once the fix is older than
   `NavigationHealth.maxFixAge`, re-checked every 2 s), `WaymarkSheet` (`WaymarkCard` in a sheet with Done). Caller: `GuideCard`.
+- `WaymarkMapView.swift` (judge demo) — the map of reports in a sheet: `MapPolyline` route, `UserAnnotation`,
+  one 44 pt `Annotation` button per `WaymarkEngine.MapPin` (identifier `waymark-pin-<id>`, `.isSelected`),
+  legend, tapped-pin details (VoiceOver focus moves there), camera framed once on route + pins, pins reloaded
+  on appear / check / route start-stop / every 5 s; `WaymarkPinMark` (band shape + colour — amber / lemon /
+  sky blue — + type glyph; `fill(_:)`, `glyph(_:)`). Callers: `WaymarkCard` ("Map of reports"),
+  `WaymarkAheadCard` (pin as its badge). `WaymarkEngine.MapPin` / `mapPins(route:walker:)`.
+- `HazardsCard` pill "N logged" (was "N on map"): `hazardLog` records only, not Waymark reports.
 - `CaneKitUITests/CaneKitWaymarkTour.swift` (judge demo) — `testWaymarkTour`: off chip → sheet → switch on
   → Simulate walk → ahead card; PNGs `wm-NN-*` via `make tour-waymark` (`WM_SHOTS`, default
   `build/shots-waymark`). `tearDown` relaunches and flips the switch back off; every UI test class

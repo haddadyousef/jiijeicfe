@@ -9,7 +9,8 @@
 //      they apply to the nearest report within 15 m, ahead or just passed, and are held for 10 s
 //      with an Undo in a toast that names the report and its distance, so a mis-tap can be taken
 //      back; a line says why a tap did nothing ("No sidewalk report within 15 m.");
-//    · how many checks were saved and the last one ("Confirmed: obstacle, 3 m").
+//    · how many checks were saved and the last one ("Confirmed: obstacle, 3 m");
+//    · judge demo: "Map of reports" opens `WaymarkMapView` (pins coloured and shaped by confidence).
 //  Everything is words; the buttons are `CKBigButton` tiles. No XCUITest queries this card yet.
 //  Owner / caller: `SensePage` in ContentView.swift (after "What's ahead"). Reads
 //  `model.waymarkEnabled` and `model.waymark` (`WaymarkEngine`).
@@ -23,6 +24,8 @@ import CaneKitLogic
 struct WaymarkCard: View {
     /// Source of the switch binding and every line shown here.
     @Environment(AppModel.self) private var model
+    /// Judge demo task 2: the map of reports (`WaymarkMapView`) in a sheet.
+    @State private var showMap = false
 
     /// Switch, status, spotter buttons + toast, evidence line.
     var body: some View {
@@ -35,6 +38,12 @@ struct WaymarkCard: View {
                         hint: "Experimental. Speaks problems other people reported on the sidewalk ahead, such as obstacles or missing curb ramps. Never talks over obstacle warnings.")
             caption(status)
             if model.waymarkEnabled, case .loaded = model.waymark.state {
+                // Judge demo task 2: every report along the route, coloured and shaped by confidence.
+                CKBigButton(title: "Map of reports", subtitle: "Coloured and shaped by confidence",
+                            systemImage: "map.fill", role: .secondary,
+                            hint: "Opens a map of the sidewalk reports along the route. Tap a pin for its details.") {
+                    showMap = true
+                }
                 CKRowDivider()
                 Text("Walking with a helper? Tap when you pass a report:")
                     .font(CKFont.secondary)
@@ -64,6 +73,7 @@ struct WaymarkCard: View {
                 }
             }
         }
+        .sheet(isPresented: $showMap) { WaymarkMapView() }
     }
 
     /// The undo toast: what the tap applies to, and an Undo button. One VoiceOver element plus the

@@ -292,6 +292,29 @@ final class WaymarkEngine {
         }
     }
 
+    /// Judge demo task 2: one pin on the map of reports — the label and its belief p now.
+    struct MapPin: Identifiable, Equatable {
+        /// The label.
+        let prior: WaymarkPrior
+        /// Belief p at the moment the pins were computed.
+        let p: Double
+        /// The label id.
+        var id: String { prior.id }
+    }
+
+    /// Judge demo task 2: the labels the map draws (`WaymarkMapSelection`: along the route and
+    /// around the walker) with their current belief. Empty until the bundle has loaded.
+    /// - Parameters:
+    ///   - route: the route's waypoints (active route, else the demo route).
+    ///   - walker: the last GPS position, if any.
+    func mapPins(route: [Coordinate], walker: Coordinate?) -> [MapPin] {
+        guard let session else { return [] }
+        let now = Date().timeIntervalSince1970
+        return WaymarkMapSelection.labels(index: session.index, route: route, walker: walker).map {
+            MapPin(prior: $0, p: session.confidence(of: $0.id, nowUTC: now) ?? .nan)
+        }
+    }
+
     /// Shows and announces why a spotter tap did nothing (review M4).
     private func say(_ message: String) {
         spotterMessage = message

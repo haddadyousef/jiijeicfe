@@ -82,7 +82,15 @@ struct WaymarkAheadCard: View {
         let spoken = shown.map { WaymarkGlance.aheadSpoken(type: $0.type, alongM: $0.alongM, p: $0.p) } ?? title + "."
         return Button(action: open) {
             HStack(alignment: .center, spacing: CKSpacing.md) {
-                CKIconBadge(systemImage: "signpost.right.and.left.fill", tinted: true)
+                // Task 2: a report shows its map pin (band colour + shape, type glyph), so the card
+                // and the map of reports read the same; otherwise the feature's badge.
+                if let shown {
+                    WaymarkPinMark(band: WaymarkConfidenceBand(p: shown.p), type: shown.type, size: 32)
+                        .padding(-4)
+                        .accessibilityHidden(true)
+                } else {
+                    CKIconBadge(systemImage: "signpost.right.and.left.fill", tinted: true)
+                }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("SIDEWALK MEMORY")
                         .font(CKFont.pill).kerning(0.6)

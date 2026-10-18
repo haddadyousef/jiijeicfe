@@ -10,8 +10,11 @@
 //    01 guide-off          the Guide chip "Sidewalk memory off · Turn on"
 //    02 sheet-off          the chip opens the existing Sidewalk memory card in a sheet
 //    03 sheet-on           after flipping its switch: "N sidewalk reports loaded."
-//    04 guide-on           the chip now says how many reports are loaded
-//    05 walking-ahead      Simulate walk: the card under Stop names the nearest report ahead
+//    04 map                "Map of reports": the Ave route's reports, coloured and shaped by belief
+//    05 map-pin            the first obstacle pin tapped: type, confidence, street-imagery date,
+//                          Project Sidewalk votes
+//    06 guide-on           the chip now says how many reports are loaded
+//    07 walking-ahead      Simulate walk: the card under Stop names the nearest report ahead
 //
 //  ⚠ Simulator only. "Simulate walk" fixes never become evidence (WaymarkEngine.simulating), so
 //  these pictures show the interface, not field data. The switch this test turns on is turned off
@@ -56,7 +59,29 @@ final class CaneKitWaymarkTour: XCTestCase {
         flip(toggle)
         XCTAssertTrue(text(containing: "sidewalk reports loaded").waitForExistence(timeout: 15))
         pause(0.5); snap("sheet-on")
-        app.buttons["Done"].tap()
+
+        // Task 2: the map of reports, then one pin's details.
+        let mapButton = app.buttons["Map of reports"]
+        XCTAssertTrue(mapButton.waitForExistence(timeout: 5))
+        mapButton.tap()
+        XCTAssertTrue(text(containing: "on this map").waitForExistence(timeout: 10))
+        pause(2.5); snap("map")
+        // Pins are buttons with identifier "waymark-pin-<id>" (review 5); a hittable obstacle one.
+        let obstacles = app.buttons.matching(NSPredicate(
+            format: "identifier BEGINSWITH %@ AND label BEGINSWITH %@", "waymark-pin-", "Reported obstacle"))
+        _ = obstacles.firstMatch.waitForExistence(timeout: 5)
+        if let obstacle = obstacles.allElementsBoundByIndex.first(where: { $0.isHittable }) {
+            obstacle.tap()
+            XCTAssertTrue(text(containing: "Street imagery").waitForExistence(timeout: 5))
+            pause(0.8); snap("map-pin")
+        } else {
+            XCTFail("no obstacle pin on the map")
+        }
+        // Each sheet's own Done (review 4: two Done buttons are in the tree while the map is up).
+        app.navigationBars["Map of reports"].buttons["Done"].tap()
+        XCTAssertTrue(app.navigationBars["Map of reports"].waitForNonExistence(timeout: 5))
+        app.navigationBars["Sidewalk memory"].buttons["Done"].tap()
+        XCTAssertTrue(app.navigationBars["Sidewalk memory"].waitForNonExistence(timeout: 5))
 
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Sidewalk memory on")).firstMatch
                         .waitForExistence(timeout: 5))

@@ -122,9 +122,11 @@ struct HazardsCard: View {
             HStack(spacing: CKSpacing.sm) {
                 CKStatusPill(text: model.hazards.watchProvider, tone: .neutral, systemImage: "eye",
                              spoken: "Hazard watch uses \(model.hazards.watchProvider)")
-                CKStatusPill(text: "\(model.hazardLog.records.count) on map", tone: .neutral,
+                // waymark (judge demo): this counts hazards the cane logged on this walk (hazardLog,
+                // GeoJSON), never Project Sidewalk reports; "on map" read as if it were the Waymark map.
+                CKStatusPill(text: "\(model.hazardLog.records.count) logged", tone: .neutral,
                              systemImage: "mappin.and.ellipse",
-                             spoken: "\(model.hazardLog.records.count) hazards on the map")
+                             spoken: "\(model.hazardLog.records.count) hazards logged on this walk, separate from sidewalk reports")
                 Spacer(minLength: 0)
             }
             if let g = model.lastGroundHazard { detection("LiDAR", g) }

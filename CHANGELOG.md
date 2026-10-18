@@ -2,6 +2,43 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark judge demo 2 — map of reports, coloured and shaped by confidence (Sat Oct 17)
+
+- `WaymarkMapView` (Apple MapKit only): the bundled Project Sidewalk labels within 25 m of the route
+  (active route, else the demo route; 250 m around the walker only when there is no route), at most 400
+  (`WaymarkMapSelection`, CaneKitLogic). Each pin is coloured AND shaped by its belief band
+  (`WaymarkConfidenceBand`, decided on the whole percent shown): likely ≥ 70 % = filled circle (amber),
+  40–69 % = filled diamond (lemon), < 40 % = hollow ring (sky blue) — three steps of the existing
+  colour-blind-safe lane ladder (each ≥ 10:1 against ink), never STOP's rose — plus a type glyph;
+  crosswalk / other are faded (never spoken, plan 5.2). Band edges are display choices, not alert thresholds.
+- Tap a pin (44 pt target): "Reported obstacle", "50 % likely · Uncertain", "Street imagery from Oct 2018",
+  "Project Sidewalk votes: 5 agree · 5 disagree", tags, the report id and "a report, not something this
+  phone detected"; VoiceOver focus moves to the details. Each pin is a button labelled "Reported obstacle,
+  50 percent likely, uncertain"; the legend reads each band's range.
+- Linked from the Sidewalk memory card ("Map of reports", on Details and in the Guide's sheet). The Guide's
+  ahead card shows the report's map pin (same colour + shape) as its badge.
+- "0 ON MAP" explained and fixed: that Hazards-card pill counted `hazardLog` records — hazards the cane
+  logged on this walk (GeoJSON) — never Waymark reports. It now reads "N logged" (VoiceOver: "… hazards
+  logged on this walk, separate from sidewalk reports"); the map's own panel counts Waymark reports ("N
+  Project Sidewalk reports on this map"). No XCUITest queries that pill. design.md §6 and CODE_REFERENCE fixed.
+- Logic first (`WaymarkMapTests`, 15 tests; red in `j2-red.log`, `j2b-red.log`).
+- Independent review (1 agent, did not write the diff), each finding checked in the code:
+  - Fixed M1 (p = 0.696 read "70 % · Uncertain"): band from the shown percent; edge tests at 0.695 / 0.395.
+  - Fixed M2: pins were ~28 pt and the clear padding was not tappable → 44 pt frame + `contentShape`.
+  - Fixed M3: pins went stale while open → reload on route start / stop and every 5 s.
+  - Fixed M4 / M5: tour tapped `Done.firstMatch` and a `descendants(.any)` label → each sheet's own nav-bar
+    Done with `waitForNonExistence`; pins found by identifier `waymark-pin-<id>` and `isHittable`.
+  - Fixed M6: `.automatic` also framed a far-away walker → the camera opens on route + pins.
+  - Fixed L7 (VoiceOver focus + `.isSelected`), L8 ("likely" said twice), L9 (rose = STOP colour on pins →
+    amber / lemon / sky blue), L10 (docs; "1 reports"), L11 ("N logged this walk" too long → "N logged"),
+    L12 (tests: sample midpoint coverage, cap with route and no walker, rounding edges).
+  - Rejected L13 (details panel does not scroll at the largest text sizes): its Close button is always
+    on screen and dismisses it; no content is lost.
+  - Mine, from the first map shot: 162 overlapping pins incl. side streets → corridor 40 → 25 m and no
+    walker circle while a route is shown; pin mark 28 → 24 pt.
+- test on device: Details → Sidewalk memory on → Map of reports: pins along the Ave in three shapes;
+  tap one → type, %, imagery date, votes; Hazards card pill says "0 logged".
+
 ## Waymark judge demo 1 — sidewalk memory on the Guide (Sat Oct 17)
 
 - Off (the shipped default, unchanged): a chip on the Guide, "Sidewalk memory off · Turn on", opens the

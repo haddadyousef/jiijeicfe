@@ -154,7 +154,7 @@ tour: sim-grant
 	  -only-testing:CaneKitUITests/CaneKitVisualTour test
 
 # Waymark judge demo: sidewalk memory screenshots (CaneKitWaymarkTour) on the default Ave route —
-# Guide chip off / on, the sheet, the ahead card while walking. PNGs land in WM_SHOTS.
+# Guide chip off / on, the sheet, the map of reports, the ahead card while walking. PNGs in WM_SHOTS.
 WM_SHOTS ?= $(DERIVED)/shots-waymark
 tour-waymark: sim-grant
 	mkdir -p $(WM_SHOTS)

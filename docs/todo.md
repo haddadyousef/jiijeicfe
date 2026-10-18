@@ -2,7 +2,7 @@
 
 - [ ] Waymark judge demo (Sat Oct 17, branch `waymark/judge-demo`)
   - [x] 1. Sidewalk memory on the Guide: off chip → sheet with the existing switch; ahead card under Stop.
-  - [ ] 2. Map of reports coloured and shaped by confidence; "0 on map" badge explained.
+  - [x] 2. Map of reports coloured and shaped by confidence; "0 on map" badge explained.
   - [ ] 3. Learning visible (before → after, source); persistence checked.
   - [ ] 4. Demo cleanup: Where am I tile, neutral Profile, no UIUC in the default build.
   - [ ] 5. Verification runs and STATUS_M entry.
