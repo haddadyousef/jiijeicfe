@@ -1,5 +1,29 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 0ae3306 | wall: Sun 2026-10-18 06:46 PT
+
+**Scheduled check-in 06:44: checked Mac at `0ae3306` (`main`).** No change since 06:15: no new commits on `main`, `waymark/island-fix` (e53ef65) and `waymark/rebrand` (98d57c6) unchanged, no new `STATUS_M` entry or handoff. Still open: Mac merge + green `make test sim uitest e2e-waymark` on the rebrand merge; README disclosure (D-39) unanswered by Yousef; no Walk 1 results. Quiet; next check in 120 minutes (about 08:45).
+
+---
+## repo: 1e75456 + branches | wall: Sun 2026-10-18 06:15 PT
+
+**Scheduled check-in 06:10: checked Mac at `1e75456` (`main`, no new commits) and two new Mac branches.** R1, nothing blocking:
+- **`waymark/island-fix` (e53ef65, PR #9):** test-only. The one code change is `ios/CaneKitUITests/CaneKitIslandTour.swift` (`scrollTo` now treats an element under the navigation bar as not tappable and swipes it back down); the rest is CHANGELOG, CODE_REFERENCE, todo. The Mac's cause: "Stop route" sat at y 50-126 under the translucent bar (62-116), so both Stop taps hit the bar. That is ordinary scrolled content passing under a translucent bar, and the swipe-down removes it, so I read it as a test bug, not a layout bug. @M: confirm "Stop route" is fully visible at the default scroll position on the phone (no swipe).
+- **`waymark/rebrand` (98d57c6, 81 files):** renames the leftover base-project names (types, the Talk intent, `OpenCaneControls.swift` to `WaymarkControls.swift`), tidies the repo root into `archive/`, livelier README. Checked: it adds no edits to `waymark/**` (the diff against `main` there is only that it is behind my newer commits, so merge, not overwrite); bundle ids still `$(BUNDLE_ID_PREFIX).waymark*`; stored-data keys, `Secrets.plist` key names, the Grok Bot contract and applied migration names deliberately kept. Mac reports `make test` 1128 passed, `make gen`/`make sim` exit 0, `make uitest` 12 passed / 1 skipped / 1 failed (the island test, fixed by PR #9). No `make uitest` on the merged branch is reported yet, no `make e2e-waymark` / `make tour-waymark`. @M: rerun `make test sim uitest e2e-waymark` on the merge and report exit codes before merging. Phone check: re-pick the Action button shortcut "Talk to Waymark".
+- **Disclosure, still open (D-39):** the rebrand README has no OpenCane mention, and it also removes the attribution header in `docs/README.md`. `PROVENANCE.md` still discloses (OpenCane `fe86e10`, pre-existing, H2 rule check pending), so the repo is not hiding it, but the README a judge opens first says nothing. Needs Yousef's decision; a one-line "Built on OpenCane" suggested again.
+- No Walk 1 results yet. Next check in 30 minutes (Mac is active).
+
+---
+## repo: 344358b | wall: Sun 2026-10-18 04:10 PT
+
+**Scheduled check-in 04:08: checked Mac at `344358b` (`main`).** No change since 02:06: no Mac commits or `STATUS_M` entry since 23:40; no Walk 1 results; README disclosure (D-39) unanswered. Open @M: `testDynamicIsland` (`make uitest` exit 2). Next check in 120 minutes (about 06:10).
+
+---
+## repo: 0b71833 | wall: Sun 2026-10-18 02:07 PT
+
+**Scheduled check-in 02:06: checked Mac at `0b71833` (`main`).** No new Mac commits or `STATUS_M` entry since 23:40. Open @M: diagnose `testDynamicIsland` (`make uitest` exit 2). No Walk 1 results. The README still has no OpenCane disclosure (D-39); Yousef has not answered. Quiet night; next check in 120 minutes.
+
+---
 ## repo: ac277ef | wall: Sun 2026-10-18 00:15 PT
 
 **Scheduled check-in 00:04: checked Mac at `ac277ef` (`main`).** No new Mac commits or `STATUS_M` entry since 23:40 (judge demo, merged as #8). The only changes are Yousef's two README commits (see D-39). Open @M, unchanged: diagnose `testDynamicIsland` (`make uitest` exit 2) before the live walk.
