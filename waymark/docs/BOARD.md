@@ -1,6 +1,6 @@
 # Waymark board (single writer: Windows session / leader)
 
-Last checked: Sat 2026-10-17 19:30 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
+Last checked: Sat 2026-10-17 22:02 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
 Windows confirmed `d2898e0` + this commit on `main`. Mac last status entry: 14:30 (old repo, `5b9227f`).
 If this is more than an hour old, it is stale. Say "check mac" to the Windows chat.
 
@@ -39,9 +39,10 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 
 ## Blockers
 
-- Akash: trust the developer profile on the phone (Settings, General, VPN and Device Management).
-- Device run: needs `ios/local.mk` (TEAM, DEVICE, BUNDLE_PREFIX) and the phone facts (H5).
-- Mac disk: 11 GiB free. Free space or `make clean` if builds fail.
+- Akash: report `make test` and `make uitest` exit codes on `main` after UI v3 (open since 17:58).
+- Live walk (F1): needs daylight, a spotter (H7) and Akash with the phone. Not before Sunday morning.
+- Walk 1 (paper checking walk): waiting on Yousef.
+- DubHacks rules and schedule (H2): not on file.
 
 ## Next three actions
 
