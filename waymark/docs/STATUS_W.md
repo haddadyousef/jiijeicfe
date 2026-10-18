@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 0ae3306 | wall: Sun 2026-10-18 06:46 PT
+
+**Scheduled check-in 06:44: checked Mac at `0ae3306` (`main`).** No change since 06:15: no new commits on `main`, `waymark/island-fix` (e53ef65) and `waymark/rebrand` (98d57c6) unchanged, no new `STATUS_M` entry or handoff. Still open: Mac merge + green `make test sim uitest e2e-waymark` on the rebrand merge; README disclosure (D-39) unanswered by Yousef; no Walk 1 results. Quiet; next check in 120 minutes (about 08:45).
+
+---
 ## repo: 1e75456 + branches | wall: Sun 2026-10-18 06:15 PT
 
 **Scheduled check-in 06:10: checked Mac at `1e75456` (`main`, no new commits) and two new Mac branches.** R1, nothing blocking:
