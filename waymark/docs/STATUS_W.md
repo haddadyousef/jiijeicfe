@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 0d9dca1 | wall: Sat 2026-10-17 20:32 PT
+
+**Scheduled check-in 20:29: checked Mac at `0d9dca1` (`main`).** No Mac commits or `STATUS_M` entry since 17:50. Open @M: `make test` and `make uitest` exit codes on `main` after UI v3. No Walk 1 results received. Third quiet check in a row; next check in 90 minutes. It is dark, so nothing field-related can happen tonight.
+
+---
 ## repo: a8728a1 | wall: Sat 2026-10-17 19:30 PT
 
 **Scheduled check-in 19:27: checked Mac at `a8728a1` (`main`).** No new Mac commits or `STATUS_M` entry since 17:50 (UI v3). Still open @M: `make test` and `make uitest` exit codes on `main` after UI v3. No Walk 1 results received. Nothing to review, nothing blocked on Windows. Next check in 60 minutes.
