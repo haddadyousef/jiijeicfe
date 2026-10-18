@@ -67,7 +67,7 @@ export WAYMARK_BUNDLE := $(BUNDLE)
 XCB     = xcodebuild -project CaneKit.xcodeproj -scheme $(SCHEME) -configuration $(CONFIG) -derivedDataPath $(DERIVED) \
           BUNDLE_ID_PREFIX=$(BUNDLE_PREFIX)
 
-.PHONY: gen test build install launch run sim devices clean check-env uitest tour island sim17 sim-grant e2e uitest-streetview audit
+.PHONY: gen test build install launch run sim devices clean check-env uitest tour island sim17 sim-grant e2e e2e-waymark uitest-streetview audit
 
 # Regenerate the Xcode project from project.yml (see scripts/gen.sh for WATCH=0 / PATCH_WATCH_EMBED).
 gen:
@@ -169,6 +169,10 @@ island: sim-grant
 SCENARIO ?= all
 e2e: sim sim-grant
 	python3 scripts/e2e.py --sim "$(SIM)" --scenario $(SCENARIO)
+
+# Waymark X-e2e (D-35 item 3): the Ave route with W's SYNTHETIC test priors, sidewalk memory on.
+e2e-waymark: sim sim-grant
+	python3 scripts/e2e.py --sim "$(SIM)" --scenario waymark_ave
 
 # Cue load of one walk (scripts/cue_audit.py, Step 35): mounted or handheld, head band wall vs
 # overhang, cues and spoken lines per minute, replays. LOG=path, or no LOG to pull the newest trip

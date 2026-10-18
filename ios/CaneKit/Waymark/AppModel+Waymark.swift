@@ -52,8 +52,10 @@ extension AppModel {
     }
 
     /// Applies the stored "Sidewalk memory" switch. Called once from `start()`.
+    /// `WAYMARK_ENABLED=1` (automation: e2e.py `waymark_ave`) turns it on for this launch without
+    /// touching the stored setting.
     func applyWaymarkSwitch() {
-        waymark.enabled = waymarkEnabled
+        waymark.enabled = waymarkEnabled || ProcessInfo.processInfo.environment["WAYMARK_ENABLED"] == "1"
     }
 
     /// E1: one `LaneReport` into the evidence tracker. Trusted = the gyro gate, depth live and
@@ -61,7 +63,7 @@ extension AppModel {
     /// coverage flags are the centre lane's.
     /// - Parameter report: the frame `handle(_:)` just received.
     func ingestWaymarkDepth(_ report: LaneReport) {
-        guard waymarkEnabled else { return }
+        guard waymark.enabled else { return }
         let g = report.grid
         func nearest(_ values: [Float], _ cover: [Bool]) -> Double {
             var m = Double.infinity

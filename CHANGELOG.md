@@ -2,6 +2,15 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark X-e2e — the Ave replay with sidewalk memory on (Sat Oct 17)
+
+- `e2e.py --scenario waymark_ave` / `make e2e-waymark` (D-35 item 3): replays W's `route_trace.json` on
+  the default (Ave) route at ≤ 2.5 m/s with `WAYMARK_PRIORS_FILE` = W's SYNTHETIC `test_priors.json`
+  and `WAYMARK_ENABLED=1` (new launch-only hook in `applyWaymarkSwitch`). Checks: the generic route
+  checks, `check_stress`, and `check_waymark` (6-label SYNTHETIC bundle, ≥ 2 Waymark lines at `.scene`,
+  `lookup_ms` / `latency_ms` present, no contradiction without LiDAR, no coordinate in evidence records).
+  `check_stress` now counts Waymark lines separately (two reports may share a line).
+
 ## Waymark E2 — export without coordinates (Sat Oct 17)
 
 - `ios/scripts/waymark_export.py` (D-14): `--evidence evidence.jsonl --log canekit-*.jsonl --out DIR` writes

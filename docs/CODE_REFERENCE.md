@@ -3517,6 +3517,8 @@ marked `// waymark:`.
 - E1 in `WaymarkEngine`: `ingest(depth:)`, `groundEvent(curbLike:)`, `spotter(_:)` (10 s undo,
   `pendingTap`, `undoSpotter()`), `commit` → belief, `evidence.jsonl`, `beliefs.json`, `waymark_evidence`
   log record (no coordinates); `lastEvidence`, `evidenceCount`, `spotterMessage` for the card.
+- `ios/scripts/e2e.py` `waymark_ave` (X-e2e) — `check_waymark(events)`; `run_scenario(..., env=)`; the
+  app's `WAYMARK_ENABLED=1` launch hook (`AppModel.applyWaymarkSwitch`). `make e2e-waymark`.
 - `ios/scripts/waymark_export.py` (E2) — `export(evidence_paths, log_paths, out)`, `valid_evidence`,
   `coord_keys` / `strip_coords`, `verify_no_coordinates`, `selftest()`; outputs the eval harness's
   `evidence.jsonl` + `waymark_records.jsonl`; never a coordinate (exit 2 if one survives).
