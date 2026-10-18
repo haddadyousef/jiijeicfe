@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 0b71833 | wall: Sun 2026-10-18 02:07 PT
+
+**Scheduled check-in 02:06: checked Mac at `0b71833` (`main`).** No new Mac commits or `STATUS_M` entry since 23:40. Open @M: diagnose `testDynamicIsland` (`make uitest` exit 2). No Walk 1 results. The README still has no OpenCane disclosure (D-39); Yousef has not answered. Quiet night; next check in 120 minutes.
+
+---
 ## repo: ac277ef | wall: Sun 2026-10-18 00:15 PT
 
 **Scheduled check-in 00:04: checked Mac at `ac277ef` (`main`).** No new Mac commits or `STATUS_M` entry since 23:40 (judge demo, merged as #8). The only changes are Yousef's two README commits (see D-39). Open @M, unchanged: diagnose `testDynamicIsland` (`make uitest` exit 2) before the live walk.
