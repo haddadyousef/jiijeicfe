@@ -7,7 +7,8 @@
 //  mobility, Step 44). The visible control is an SF Symbol; the word is the
 //  VoiceOver label and the XCUITest `app.buttons[...]` key (docs/design.md §6, §9).
 //
-//  The sliding ivory/ink capsule and the icon scale honour Reduce Motion (instant swap).
+//  UI v3 "Graphite": a floating dock (raised capsule inset from the edges) with new symbols.
+//  The sliding graphite capsule and the icon scale honour Reduce Motion (instant swap).
 //  Tab changes do not speak through SpeechQueue — VoiceOver already announces the selected
 //  button; a spoken cue would double-speak (design.md §7).
 //
@@ -49,10 +50,11 @@ enum RootTab: Int, CaseIterable, Identifiable, Hashable {
     /// SF Symbol drawn in the tab. Hidden from VoiceOver (the word is `title`).
     var systemImage: String {
         switch self {
-        case .guide: "figure.walk"
-        case .sense: "square.grid.3x3.fill"
-        case .settings: "gearshape.fill"
-        case .profile: "person.crop.circle"
+        // UI v3 "Graphite": walking figure in motion, a sensor sweeping ahead, sliders, an ID card.
+        case .guide: "figure.walk.motion"
+        case .sense: "dot.radiowaves.up.forward"
+        case .settings: "slider.horizontal.3"
+        case .profile: "person.text.rectangle"
         }
     }
 
@@ -67,7 +69,7 @@ enum RootTab: Int, CaseIterable, Identifiable, Hashable {
     }
 }
 
-/// Icon-only bottom bar: a sliding accent capsule behind the selected symbol.
+/// The bottom dock: four symbols with their words, a sliding graphite capsule behind the selected one.
 ///
 /// Implements docs/design.md §4 (tab switch) and §6 (four pages). The capsule uses `matchedGeometryEffect`
 /// so it travels between icons on a short spring; Reduce Motion skips the travel and the icon scale.
@@ -101,22 +103,26 @@ struct CKTabBar: View {
     /// (`ignoresSafeArea(edges: .bottom)`), so there is no ivory strip below the bar on Face ID
     /// phones and the bar still sits clear of the indicator; on a Home-button phone (no bottom
     /// inset) the `xs` padding keeps it off the edge. Four equal columns fit every iPhone width.
+    ///
+    /// UI v3 "Graphite": a floating dock — the row sits in a raised capsule inset from the screen
+    /// edges with a soft shadow, over the page ground (ContentView paints the ground under the
+    /// home indicator), instead of a full-width bar with a hairline.
     var body: some View {
+        let dock = RoundedRectangle(cornerRadius: 30, style: .continuous)
         HStack(spacing: 0) {
             ForEach(RootTab.allCases) { tab in
                 tabButton(tab)
             }
         }
-        .padding(.horizontal, CKSpacing.sm)
+        .padding(.horizontal, CKSpacing.xs)
+        .padding(.vertical, CKSpacing.xs)
+        .background(CKColor.surface, in: dock)
+        .overlay(dock.strokeBorder(CKColor.border.opacity(contrast == .increased ? 1 : 0.8),
+                                   lineWidth: CKMetrics.border(for: contrast)))
+        .shadow(color: Color.black.opacity(0.10), radius: 18, x: 0, y: 8)
+        .padding(.horizontal, CKSpacing.gutter)
         .padding(.top, CKSpacing.xs)
         .padding(.bottom, CKSpacing.xs)
-        .background(CKColor.surface.ignoresSafeArea(edges: .bottom))
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(CKColor.border)
-                .frame(height: CKMetrics.border(for: contrast))
-                .accessibilityHidden(true)
-        }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Waymark tabs")
         .sensoryFeedback(.selection, trigger: selection)
@@ -156,8 +162,8 @@ struct CKTabBar: View {
                         }
                     }
                 Text(tab.title)
-                    .font(.footnote.weight(selected ? .bold : .semibold))
-                    .foregroundStyle(selected ? CKColor.accent : CKColor.textSecondary)
+                    .font(.caption.weight(selected ? .bold : .semibold))
+                    .foregroundStyle(selected ? CKColor.textPrimary : CKColor.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     .accessibilityHidden(true)

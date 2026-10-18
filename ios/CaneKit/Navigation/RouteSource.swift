@@ -102,7 +102,7 @@ enum RouteSource {
     }
 
     /// waymark: the Seattle demo route (`Resources/route_ave_seattle.json`, D-35): The Ave and NE 42nd
-    /// to The Ave and NE 50th, 727 m, a byte copy of `waymark/demo/route.json` (WaymarkRouteTests).
+    /// to The Ave and NE 50th, 731 m, a byte copy of `waymark/demo/route.json` (WaymarkRouteTests).
     /// Same errors as `bundled()`; ignores `CANEKIT_ROUTE_FILE` (that hook replaces the UIUC file).
     static func aveSeattle() throws -> Route {  // waymark:
         guard let url = Bundle.main.url(forResource: "route_ave_seattle", withExtension: "json") else {

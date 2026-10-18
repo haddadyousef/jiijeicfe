@@ -83,7 +83,8 @@ struct ContentView: View {
                     // after `.clipped()`, because the clip cut the bar's own safe-area background
                     // and left an ivory strip under the tabs on Face ID iPhones.
                     .background {
-                        if !keyboardUp { CKColor.surface.ignoresSafeArea(edges: .bottom) }
+                        // UI v3: the floating dock sits on the page ground, not a surface strip.
+                        if !keyboardUp { CKColor.background.ignoresSafeArea(edges: .bottom) }
                     }
                     .accessibilityHidden(keyboardUp)
             }
@@ -161,7 +162,7 @@ private struct SensePage: View {
             HazardsCard()
             CKMoreSection(title: "Diagnostics",
                           caption: "What answered your last question, the light and the voice.",
-                          systemImage: "sparkles", storageKey: "details.diagnostics") {
+                          systemImage: "stethoscope", storageKey: "details.diagnostics") {
                 SceneEngineCard()
             }
         }
@@ -502,7 +503,7 @@ private struct SettingsPage: View {
     /// `CuePlace.title` ("Standard", "Detailed", "Indoors", "Outdoors").
     /// - Parameter model: the `@Bindable` model from `body`.
     private func cueSettings(_ model: Bindable<AppModel>) -> some View {
-        CKCard(title: "Alerts", systemImage: "bell.badge",
+        CKCard(title: "Alerts", systemImage: "bell.and.waves.left.and.right",
                caption: "How much Waymark says and taps while you walk.") {
             // A segmented picker does not show or speak its own title on iOS, so each gets a visible
             // label and a VoiceOver container named after it; otherwise a swipe hears "Quiet, button"
@@ -553,7 +554,7 @@ private struct SettingsPage: View {
     /// - Parameter model: the `@Bindable` model from `body`.
     private func voiceSettings(_ model: Bindable<AppModel>) -> some View {
         let hasKey = model.wrappedValue.speech.naturalVoice != nil
-        return CKCard(title: "Voice", systemImage: "waveform") {
+        return CKCard(title: "Voice", systemImage: "person.wave.2") {
             Picker("Voice", selection: model.naturalVoiceEnabled) {
                 Text("Natural").tag(true)
                 Text("iPhone").tag(false)
@@ -616,7 +617,7 @@ private struct SettingsPage: View {
     /// whatever this says — `CameraRate.previewCap`), audio beacon (on), trip log (on).
     /// - Parameter model: the `@Bindable` model from `body`, so each toggle gets a binding.
     private func mountSettings(_ model: Bindable<AppModel>) -> some View {
-        CKCard(title: "Phone on cane", systemImage: "iphone.gen3") {
+        CKCard(title: "Phone on cane", systemImage: "iphone.rear.camera") {
             MountAimRow()
             CKRowDivider()
             CKToggleRow(title: "Phone is upright", subtitle: "Turn off if it's clamped sideways",
@@ -705,7 +706,7 @@ private struct SettingsPage: View {
     /// "This phone" card: which hardware / package features this device actually has, so a
     /// teammate can tell at a glance why depth or mesh cues are missing.
     private var capabilityCard: some View {
-        CKCard(title: "This phone", systemImage: "checklist") {
+        CKCard(title: "This phone", systemImage: "checkmark.seal") {
             capabilityRow("Depth sensor (LiDAR)", model.lidarSupported)
             capabilityRow("Recognizes doors, walls and seats", model.meshClassificationSupported)
             capabilityRow("App self-check", Self.logicPackageOK)
@@ -827,7 +828,7 @@ private struct SceneEngineCard: View {
     var body: some View {
         let f = facts(at: Date())
         let chain = SceneEngineSummary.chain(f)
-        CKCard(title: "Recent activity", systemImage: "sparkles",
+        CKCard(title: "Recent activity", systemImage: "clock.arrow.circlepath",
                caption: "What answered your last question and what Waymark is watching for.") {
             HStack(spacing: CKSpacing.sm) {
                 CKStatusPill(text: chain.text, tone: .neutral, systemImage: "brain",
