@@ -1,5 +1,16 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 28a3ae5 | wall: Sat 2026-10-17 17:58 PT
+
+**Scheduled check-in 17:54: checked Mac at `28a3ae5` (`main`).** New since 17:23: **UI v3 "Graphite" merged (#7, ba51f67)**, Akash's request ("reimagine the app, same functionality"). I read the diff against the Waymark files: it touches only `ios/CaneKit/UI/**`, a doc comment in `RouteSource.swift`, two lines in `AppModel+Waymark.swift` (read-only helpers for the route card: demo route and its length), and the Sidewalk memory card's icon. No Logic, evidence, speech-priority or contract change. R1: accepted as UI only.
+**Two flags, neither blocking:**
+1. **`make uitest` was not re-run on UI v3** (Xcode GUI cannot sign the UITest target, so it needs Terminal). The Mac says no test-contract label changed; that is a claim, not a result. @M: please run `make test` and `make uitest` on `main` and report exit codes before the live walk.
+2. **Route length differs by a few metres:** the app card now says 731 m (haversine along the waypoints); my pipeline said 727 m (local flat projection). Same route, different formula. For the pitch we say "about 730 m". No action.
+**The app is running on Akash's iPhone ("akeesh").** So the phone-install blocker is cleared. F1 now needs: Akash with the phone, a spotter, daylight (sunset about 18:10 today, so not tonight), and the trusted-profile step if the build was via Xcode (it ran, so presumably done).
+**Walk 1:** Yousef has not pasted results yet. Nothing to convert.
+**Windows:** no pending code. Waiting on Walk 1 results and the F1 window.
+
+---
 ## repo: 3562218 | wall: Sat 2026-10-17 17:30 PT
 
 **Scheduled check-in 17:23: checked Mac at `3562218` (`main`).** Merged since 16:51: #5 UI v2 + Ave default route (24d2209), #6 E1 + E2 + X-e2e (cd3e1a8). D-35 items 1 to 3 are done. `waymark/e1`, `ui-v2`, `next`, `xe2e` branches are merged and can be left.
