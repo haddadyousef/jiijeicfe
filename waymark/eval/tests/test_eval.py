@@ -204,3 +204,14 @@ def test_cli_end_to_end_is_byte_deterministic_and_exit_codes(tmp_path):
     argv = ["--priors", str(FIX / "priors.json"), "--evidence", str(FIX / "evidence.jsonl"), str(bad), "--out", str(tmp_path / "o3")]
     assert run_main(argv) == 1
     assert run_main(argv + ["--allow-rejected"]) == 0
+
+
+def test_unverifiable_reasons_counts_only_unverifiable_with_a_reason():
+    recs = [{"kind": "waymark_evidence", "outcome": "unverifiable", "reason": "lateral"},
+            {"kind": "waymark_evidence", "outcome": "unverifiable", "reason": "lateral"},
+            {"kind": "waymark_evidence", "outcome": "unverifiable", "reason": "route_end"},
+            {"kind": "waymark_evidence", "outcome": "unverifiable"},
+            {"kind": "waymark_evidence", "outcome": "confirmed", "reason": "x"},
+            {"kind": "waymark_cue", "outcome": "unverifiable", "reason": "y"}]
+    assert metrics.unverifiable_reasons(recs) == {"lateral": 2, "route_end": 1}
+    assert metrics.unverifiable_reasons([]) == {}

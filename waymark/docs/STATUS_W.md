@@ -1,5 +1,12 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 122d689 | wall: Sat 2026-10-17 18:30 PT
+
+**Scheduled check-in 18:25: checked Mac at `122d689` (`main`).** No new Mac commits since UI v3 (#7); no new `STATUS_M` entry, no branches beyond the merged ones. My request for `make test` and `make uitest` exit codes on `main` is still open.
+**Windows work done:** `wm_eval` now reports why evidence was unverifiable (`metrics.unverifiable_reasons`, `unverifiable_reasons` in `summary.json` and a section in the report). It reads the `reason` code the app writes on `waymark_evidence` trip-log records (lateral, left, reversed, gps_jump, unclean, few_frames, short_pass, between, route_end). The key is added only when reasons exist, so older summaries keep their bytes. 36 eval tests pass (35 plus 1 new).
+**Walk 1:** no results pasted yet. **F1:** needs daylight, a spotter, Akash with the phone; not tonight (sunset about 18:10).
+
+---
 ## repo: 28a3ae5 | wall: Sat 2026-10-17 17:58 PT
 
 **Scheduled check-in 17:54: checked Mac at `28a3ae5` (`main`).** New since 17:23: **UI v3 "Graphite" merged (#7, ba51f67)**, Akash's request ("reimagine the app, same functionality"). I read the diff against the Waymark files: it touches only `ios/CaneKit/UI/**`, a doc comment in `RouteSource.swift`, two lines in `AppModel+Waymark.swift` (read-only helpers for the route card: demo route and its length), and the Sidewalk memory card's icon. No Logic, evidence, speech-priority or contract change. R1: accepted as UI only.

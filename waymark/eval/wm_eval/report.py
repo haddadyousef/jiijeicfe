@@ -29,7 +29,7 @@ def build_summary(priors: dict, evidence: list[dict], records: list[dict], *, re
         evidence = [e for e in evidence if e["label_id"] in keep]
     tune_items, hold_items = v2_items(priors, evidence, tune_ev)
     unknown = sorted({e["label_id"] for e in evidence if e["label_id"] not in priors})
-    return {
+    out = {
         "schema": "waymark.eval_summary.v1",
         "synthetic": synthetic,
         "watermark": "SYNTHETIC" if synthetic else None,
@@ -45,6 +45,10 @@ def build_summary(priors: dict, evidence: list[dict], records: list[dict], *, re
         "staleness": v2.staleness(evidence, priors),
         "positional_error": v2.positional_error(evidence),
     }
+    reasons = metrics.unverifiable_reasons(records)
+    if reasons:   # only when the app logged reasons, so summaries from older logs keep their bytes
+        out["unverifiable_reasons"] = reasons
+    return out
 
 
 def v2_items(priors: dict, evidence: list[dict], tune_evidence: list[dict] | None = None):
@@ -155,6 +159,11 @@ def report_md(summary: dict) -> str:
         for sname, r in pe.items():
             sug = "needs 20 events" if r["suggested_label_error_m"] is None else f"{r['suggested_label_error_m']} m"
             L.append(f"| {sname} | {r['n']} | {r['median']} | {r['mean']} | {r['p90_abs']} | {sug} |")
+    if summary.get("unverifiable_reasons"):
+        L += ["", "## Why evidence was unverifiable", "",
+              "From the app's trip-log records (the evidence line itself does not carry a reason).", "",
+              "| Reason | Records |", "|---|---|"]
+        L += [f"| {k} | {v} |" for k, v in summary["unverifiable_reasons"].items()]
     ll = summary["load_latency"]
     L += ["", "## 7. Load and latency (milliseconds)", "", f"{ll['loads']} load records, {ll['cues']} cue records.", "",
           "| measure | n | min | median | p95 | max | note |", "|---|---|---|---|---|---|---|"]

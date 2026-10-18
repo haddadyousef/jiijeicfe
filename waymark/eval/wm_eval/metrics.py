@@ -119,3 +119,13 @@ def load_latency(records: list[dict]) -> dict:
         "lookup_ms": _timing([r["lookup_ms"] for r in cues if r.get("lookup_ms") is not None]),
         "fix_to_dispatch_ms": _timing([r["latency_ms"] for r in cues if r.get("latency_ms") is not None]),
     }
+
+
+def unverifiable_reasons(records: list[dict]) -> dict:
+    """Why evidence came back unverifiable, from exported `waymark_evidence` trip-log records.
+    The app writes a `reason` code on those records only (not on the evidence line, whose schema is closed):
+    lateral, left, reversed, gps_jump, unclean, few_frames, short_pass, between, route_end.
+    Returns {} when no record carries a reason, so reports from older logs are unchanged."""
+    c = Counter(str(r["reason"]) for r in records
+                if r.get("kind") == "waymark_evidence" and r.get("outcome") == "unverifiable" and r.get("reason"))
+    return dict(sorted(c.items()))
