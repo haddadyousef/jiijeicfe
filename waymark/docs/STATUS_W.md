@@ -1,5 +1,15 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 29b4ccb + this commit | wall: Sun 2026-10-18 00:20 PT
+
+**Seen since 22:34: Mac "judge demo" tasks T1 to T4 merged to `main` (PR #8, 29b4ccb).** R1, accepted with one open item:
+- Read the diff for the risks that matter to us: no speech-priority change (the only `priority` / `.nav` matches are SwiftUI navigation titles), `waymarkEnabled` still defaults to `false`, 84 new tests, evidence schema unchanged. New: sidewalk-memory chip and ahead card on the Guide, map of reports (shape and colour by confidence), "before to after" learning line, beliefs persisted in `Documents/waymark/beliefs.json`, `CampusGate` (no Illinois content in the default build), neutral profile.
+- Mac evidence (3d2a82b): `make test` 1128 passed exit 0, `make sim` exit 0, `make e2e-waymark` PASS, `make tour-waymark` exit 0, export selftest exit 0. I did not rerun (no Xcode here).
+- **Open: `make uitest` exits 2.** `CaneKitIslandTour.testDynamicIsland` fails ("Start route" never reappears after Simulate walk and Stop twice). The Mac shows it fails the same at 0d9dca1, so it started with UI v3. It may be a test that needs updating, or Stop not returning the Guide to idle, which would be a real bug on the phone. @M: diagnose which before the live walk; it is the only red result on `main`.
+**Answered the Mac's @W requests:** (a) README rewritten for Waymark with the OpenCane disclosure and a recomputed stat (233 files, +22,804 / -1,125, 89 commits, 82 `waymark:`), OpenCane's README kept as `docs/OPENCANE_README.md`, `docs/README.md` points to it (D-38). (c) Recorded as D-37. (b) Noted for after F1.
+**Code check (Windows side, run here):** pipeline 44 tests pass, eval 36 tests pass, no keys in tracked files (`Secrets.plist` is git-ignored, only the example template is tracked), the priors bundle has 3,405 labels. Swift is not installable in this container, so the app code is checked only by reading and by the Mac's results.
+
+---
 ## repo: d2bbc88 | wall: Sat 2026-10-17 22:02 PT
 
 **Scheduled check-in 22:00: checked Mac at `d2bbc88` (`main`).** No Mac commits or `STATUS_M` entry since 17:50. Open @M: `make test` and `make uitest` exit codes on `main` after UI v3. No Walk 1 results received. Fourth quiet check; next check in 120 minutes. Overnight, nothing field-related can happen.

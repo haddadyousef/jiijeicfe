@@ -1,146 +1,161 @@
-# OpenCane: a smart-cane kit that clips an iPhone onto the cane you already own
+# Waymark: a sidewalk memory for a smart cane
 
-OpenCane clamps an iPhone to a white cane and turns the phone into the only computer in the kit.
-Its LiDAR sees obstacles between waist and head height, which the cane tip misses. Its Taptic
-Engine shakes the cane to warn about them. GPS and a waypoint engine guide the walk. AirPods Pro
-play a spatial beacon that clicks from the direction to walk, and speak instructions. An Apple Watch
-taps turns and crossings onto the wrist and carries Repeat / Next / Describe / Recenter. An optional
-**Grok Bot** hook posts cane events to a family-alert routine — falls, close obstacles, low battery,
-trip start/end, and periodic breadcrumbs — and the bot decides whether to email or text registered
-contacts. Nothing needs to be bought (the phone mount is 3D-printed), and the kit runs **untethered
-on the phone**.
+**Waymark gives a smart cane a memory of the sidewalk, so a blind walker hears "pole ahead" or "no curb
+ramp at this corner" before the phone's sensors can see it. It starts with 3,405 community-mapped
+hazards in Seattle's U District and gets sharper with every walk, because it learns which reports are
+still true today.**
 
-**OpenCane** is the app: native iOS 26 SwiftUI, Swift 6 strict concurrency, Apple frameworks only.
-It lives in [`ios/`](ios/). Inside the repo the code is still called **CaneKit** — the Xcode
-project, targets, scheme, the `CaneKitLogic` module, the `ios/CaneKit/…` paths and the bundle id
-`com.aritro.canekit` all keep that name on purpose, so every command below still matches the files.
-Only what a person sees or hears says OpenCane. See [`AGENTS.md`](AGENTS.md) → "The name split".
+Built at DubHacks '26 by **Yousef Haddad** (UW CS; data, evaluation, plan) and **Akash Tadikonda**
+(iOS app). Waymark runs on **OpenCane**, an existing iPhone smart-cane app (see
+[Built on OpenCane](#built-on-opencane)).
 
-Hackathon (54FoundersHack): Champaign-Urbana, Sat Sep 12 – Sun Sep 13 2026.
-Team: **Aritro**, **Aarav**, **Tejas** (software / iOS app); 
-**Sagar**, **Tommy** (hardware, 3D printing, CAD).
+## The problem
 
-> **Teammates: after `git pull`, read [`docs/TEAM_BRIEF.md`](docs/TEAM_BRIEF.md) (2 minutes), then
-> [`docs/TEAM_HANDOFF.md`](docs/TEAM_HANDOFF.md).** It says
-> what is proven, what is not, who does what next, the mount angle, and which decisions are final.
+A white cane finds what is at foot level. An iPhone clipped to the cane can see further with LiDAR, but
+only a few metres, and it cannot tell that a curb ramp is missing or a slab is lifted. Other people
+have already looked at these sidewalks: the University of Washington's **Project Sidewalk** has volunteers
+label curb ramps, missing ramps, obstacles, surface problems and missing sidewalks from street-level
+imagery. Waymark turns that public map into spoken warnings that arrive early, and then checks the map
+against what the walker actually meets.
 
-## The demo
+## What it does
 
-A cane user walks from **ISR Townsend Hall to CIF** on the UIUC campus. The route is 9 waypoints,
-989 m: out the ISR front doors, west on Illinois St, north on Goodwin, west on Springfield, then to
-the CIF east entrance, with three street crossings (Green St, Goodwin at Springfield, Mathews). On
-the way:
+- **Warns ahead.** Walking the demo route, the app says things like "Reported obstacle ahead" or
+  "Reported curb ramp" before you get there. It always says "reported": it is a report, not a
+  measurement.
+- **Never gets in the way.** Waymark speaks at the lowest priority and only into silence. It never
+  speaks over, or delays, the cane's own safety cues (head height, close obstacle, navigation).
+- **Shows its confidence.** Every report has a likelihood. A map of reports along the route shows each
+  one by colour and shape (colour-blind safe), with its source, imagery date and votes.
+- **Learns.** A LiDAR pass that finds the obstacle confirms it. A clean pass that finds nothing
+  contradicts it. A sighted spotter walking alongside can tap **Confirm** or **Not there**. The
+  confidence moves and is remembered on the phone ("Not there · 50 % → 43 % · spotter"). A report that
+  can no longer be trusted stops being announced. If the phone cannot tell, it changes nothing.
+- **Is measured.** An evaluation tool turns the recorded walks into hit rates with error bars, how well
+  the stated likelihoods match what happens, how sensor and spotter agree, and how old imagery affects
+  accuracy.
 
-- Wrist taps come before every turn and crossing.
-- The beacon keeps the heading between waypoints.
-- Veer cues fire if the user drifts off course.
-- The cane buzzes for obstacles ahead and at head height.
-- "Where am I" describes the scene: a cloud vision model when a key is set, otherwise on the phone
-  (Apple Vision + Apple's on-device language model), so it works offline.
-- The camera reads safety signs ("Sign: sidewalk closed.") on the phone, the LiDAR can warn about
-  curbs and drop-offs (off by default until tuned on the cane), and every hazard lands on a
-  shareable GeoJSON map.
-- With **family alerts** on (opt-in, Settings → Family alerts), the app POSTs cane events to the
-  **Grok Bot** routine "OpenCane cane events"; the bot decides who to notify from the event type and
-  severity. Register family emails in Settings; add `OPENCANE_GROKBOT_WEBHOOK_URL` and
-  `OPENCANE_GROKBOT_WEBHOOK_KEY` to `Secrets.plist` (see [`ios/README.md` §4.1](ios/README.md)).
-- On arrival the phone speaks a summary of distance, minutes and steps.
+## The demo route
 
-Any other destination works through MapKit walking directions. The route and its evidence are in
-[`docs/route_isr_cif.md`](docs/route_isr_cif.md). Go / no-go criteria for a blindfolded walk are in
-[`ios/README.md` §5](ios/README.md#5-testing).
+**The Ave (University Way NE), from NE 42nd St to NE 50th St**: about 730 m, nine waypoints, three
+crossings, straight north through the U District. On the real map this stretch has 47 curb ramps,
+1 obstacle and 2 surface problems. The "memory learned" moment in the replay uses **clearly labelled
+synthetic** labels, because the real stretch has few hazards. Details and caveats:
+[`waymark/demo/README.md`](waymark/demo/README.md).
 
-## Hardware
+## How it works
 
-| Part | Role |
-|---|---|
-| iPhone 17 Pro Max (iOS 27) | The only computer. LiDAR depth, Core Haptics through the cane, GPS + compass, camera for "Where am I" |
-| Non-metal stick, 27.65 mm shaft (a broom handle, for the prototype) | The cane |
-| Printed phone mount | Clamps the phone to the shaft. The live design is the screwless mount ([`hardware/mount_screwless/`](hardware/mount_screwless/)); slice locally with [`scripts/`](scripts/) (see [`hardware/3d_print_files/README.md`](hardware/3d_print_files/README.md)). Overview: [`hardware/README.md`](hardware/README.md); tilt reasoning: [`hardware/mount/DESIGN.md`](hardware/mount/DESIGN.md). |
-| AirPods Pro | Spatial-audio beacon, speech, head yaw for the beacon |
-| Apple Watch | Wrist taps for turns / crossings / arrival, Repeat / Next / Describe / Recenter, crown = Next |
-| Power bank on the strap | ARKit + LiDAR run ≈ 3–4 h on the phone battery |
-| Mac with Xcode 27 RC | Signs and installs only. Nothing talks to it at runtime. |
+```
+Project Sidewalk labels (CC0) ──► pipeline ──► priors bundle (3,405 labels, in the app, works offline)
+                                                       │
+walker's position ─► labels ahead ─► belief (Beta, ages with time) ─► cost-weighted threshold ─► spoken report
+                                                       ▲
+         LiDAR passes + curb events + spotter taps ────┘ (evidence: confirmed / contradicted / unverifiable)
+                                                       │
+                                     export (no coordinates) ─► evaluation tool ─► numbers
+```
 
-The ESP32 haptic grip and ToF sensor pod (`firmware/`, `cad/`, `ios/stretch/`) were cut on Sep 10
-and are stretch goals only.
+- **Priors.** `waymark/pipeline/` fetches Project Sidewalk label clusters and street geometry for the
+  U District and builds one small bundle (`ios/CaneKit/Resources/waymark_priors.json`: 1,489 curb ramps,
+  531 surface problems, 501 missing curb ramps, 398 obstacles, 322 no-sidewalk, 89 crosswalks, 75
+  other). The labeler ids are never kept.
+- **Belief and thresholds.** Each label becomes a probability that it is still there. Evidence fades
+  with time (on a scale of about 60 days for obstacles, 120 for surface problems, a year for the rest). A label is spoken only when the
+  probability beats a threshold set from the cost of a false alarm against the cost of a miss.
+- **Evidence.** What counts as confirm, contradict or "cannot tell" is conservative and written down
+  ([`waymark/docs/WAYMARK_DESIGN.md`](waymark/docs/WAYMARK_DESIGN.md) §9). Most curb and surface evidence
+  comes from the spotter, because the phone cannot judge those yet.
+- **Evaluation.** `waymark/eval/` reads the exported evidence and reports the metrics.
+
+## Status
+
+- **Built and tested:** the data pipeline (44 tests), the evaluation tool (36 tests), the app logic and
+  UI (1,128 tests passing on the Mac, exit 0), a full simulated replay of the Ave route through the real
+  app (passes), the confidence map, and persistence of what the phone has learned.
+- **Not yet measured on real sidewalks:** no recorded walk exists yet. Every number in the evaluation
+  report on this repo comes from generated test data and is marked **SYNTHETIC**. The first real numbers
+  come from a paper checking walk of the route and a live walk with the app and a spotter.
+- **Known limits.** Street geometry is the street centreline, not the sidewalk. Crossings are inferred
+  from labels. 88 % of the labels use imagery from 2019 or earlier, which is exactly why the app checks
+  them. One UI test (the Dynamic Island tour) fails and also failed before Waymark's latest changes.
+
+## Built on OpenCane
+
+Waymark is built on **OpenCane**, an existing iPhone smart-cane app (pre-existing; github.com/aritroBh/OpenCane
+at `fe86e10`, used with the authors' permission). OpenCane provides the LiDAR obstacle detection, haptics,
+navigation, speech and the Apple Watch app.
+
+**What we built at DubHacks '26:** Waymark's sidewalk memory. That is the Project Sidewalk (CC0) labels for
+Seattle as offline priors, spoken only as reports and never over the cane's own warnings; the belief model
+and cost-weighted thresholds; evidence from LiDAR passes and a sighted spotter that visibly updates
+confidence; the map of reports; the Python data pipeline, data contracts and evaluation tool; and a
+UW / U District demo route.
+
+Since OpenCane `fe86e10`: 233 files changed, +22,804 / −1,125 lines, 89 commits, 82 of them `waymark:`.
+Everything under `waymark/` and every file named `Waymark…` is new. `waymark/docs/PROVENANCE.md` has the
+commands to see exactly what changed. OpenCane's own README is kept in
+[`docs/OPENCANE_README.md`](docs/OPENCANE_README.md).
+
+Inside the code the app is still called **CaneKit** (the Xcode project, targets and module). That is a
+code name inherited from OpenCane and kept so that every command below matches the files.
+
+## Data and credits
+
+- Labels: **UW Project Sidewalk** (CC0), Seattle. No labeler ids are stored.
+- Street geometry: **© OpenStreetMap contributors** (ODbL), via Project Sidewalk.
+- Base app: **OpenCane** by Aritro and collaborators (see [`docs/OPENCANE_README.md`](docs/OPENCANE_README.md)).
 
 ## Repo map
 
 | Path | What |
 |---|---|
-| [`docs/TEAM_BRIEF.md`](docs/TEAM_BRIEF.md), [`docs/TEAM_HANDOFF.md`](docs/TEAM_HANDOFF.md) | **Read first after a pull** (brief, then handoff). State of the project at a named commit, what is proven, who does what, final decisions; `TEAM_HANDOFF.md` §10 is how an AI agent resumes. |
-| [`AGENTS.md`](AGENTS.md) | **Read before editing.** Hard rules, "How we engineer", commands, and the deliberate behaviours that look like bugs. [`CLAUDE.md`](CLAUDE.md) is its short form. |
-| [`docs/README.md`](docs/README.md) | Index of every doc with when to read it, plus a "Where do I find…" table |
-| [`docs/CODE_REFERENCE.md`](docs/CODE_REFERENCE.md) | Map of every file, type and function, with the data-flow diagram |
-| [`CHANGELOG.md`](CHANGELOG.md) | Build log, newest first, one entry per step (Step 37 is the latest), each with its "test on device" list |
-| [`ios/`](ios/) | The app (code name CaneKit, display name OpenCane): `CaneKit/` iPhone app, `CaneKitWatch/`, `CaneKitWidget/` Live Activity, `Shared/`, `Logic/` SwiftPM package (`CaneKitLogic`, every numeric decision + its unit tests), `CaneKitUITests/`, `project.yml` (XcodeGen), `Makefile`, `scripts/` (test, e2e, cue audit, probes). See [`ios/README.md`](ios/README.md). |
-| [`docs/`](docs/) | Design system, cue design v2 research, auditory-load notes, hands-free guide, device setup, route evidence, todo checklist, stress-test plan, ideas and pitch, `superpowers/` speech-load spec + plan |
-| [`hardware/`](hardware/) | Physical kit: `mount_screwless/` (the live mount, OpenSCAD source), `3d_print_files/` (print runbook; G-code/STLs generated locally), `mount/` (screwed draft + tilt model), `cane_tip/` (printed rolling ball tip) |
-| [`scripts/`](scripts/) | Windows mount toolchain (PowerShell + Node): render STLs, slice G-code, verify the screwless mount |
-| `firmware/`, `cad/`, `ios/stretch/` | ESP32 grip firmware and OpenSCAD drafts. Stretch / legacy only. |
-| [`graphify-out/`](graphify-out/) | Knowledge graph of the repo (code + docs; the committed build has 3,527 nodes, built from `076fcaa`). `GRAPH_REPORT.md` lists the communities, `graph.html` opens in a browser. Query it with `graphify query "<question>"`; refresh with `graphify update .` after code changes. |
-| `opencane-hardware-brief.html` | One-page hardware brief for a browser |
+| [`waymark/docs/`](waymark/docs/) | Plan, design, decisions (`DECISIONS.md`), board, status files, provenance, Project Sidewalk API notes |
+| [`waymark/pipeline/`](waymark/pipeline/) | Python: fetch Project Sidewalk, build the priors bundle, rank routes, write the demo route |
+| [`waymark/contracts/`](waymark/contracts/) | JSON schemas for priors and evidence, golden fixtures, reference belief code |
+| [`waymark/eval/`](waymark/eval/) | Python: the evaluation tool, with a synthetic fixture |
+| [`waymark/demo/`](waymark/demo/) | The Ave route in the app's format, replay trace, GPX, synthetic test labels |
+| [`waymark/field/`](waymark/field/) | Checklist for the paper checking walk |
+| [`ios/CaneKit/Waymark/`](ios/CaneKit/Waymark/), [`ios/Logic/Sources/CaneKitLogic/Waymark/`](ios/Logic/Sources/CaneKitLogic/Waymark/) | Waymark's app code and its tested logic |
+| [`ios/`](ios/) | The app (OpenCane base, code name CaneKit). See [`ios/README.md`](ios/README.md) |
+| [`docs/`](docs/), [`AGENTS.md`](AGENTS.md), [`hardware/`](hardware/) | OpenCane's docs, engineering rules and phone-mount hardware |
 
 ## Quick start
 
-**Mac.** You need Xcode 27 RC with the watchOS platform, plus `brew install xcodegen`. The full
-day-0 list is in [`ios/README.md` §1](ios/README.md#1-day-0-checklist).
+**Data and evaluation (Windows or Mac; Python 3.10+).**
+
+```sh
+cd waymark/pipeline && pip install -r requirements.txt
+py -m wm_pipeline.run all          # fetch + build the priors bundle (needs the Project Sidewalk host)
+py -m wm_pipeline.run demo --pick 3   # regenerate the Ave demo route files
+py -m pytest -q                    # 44 tests
+
+cd ../eval && pip install -r requirements.txt
+py -m wm_eval.run --synthetic --out out/synthetic   # report on generated data, marked SYNTHETIC
+py -m pytest -q                    # 36 tests
+```
+
+Use `python3` instead of `py` on a Mac. After a real walk:
+`python3 ios/scripts/waymark_export.py --evidence evidence.jsonl --log canekit-*.jsonl --out <dir>`
+strips coordinates from the phone's files, and `py -m wm_eval.run --priors ios/CaneKit/Resources/waymark_priors.json --evidence ... --out out/walk1` reports on them.
+
+**App (Mac with Xcode 27 and `brew install xcodegen`).**
 
 ```sh
 cd ios
-make test      # 567 logic tests; works with the Swift 6 toolchain / Command Line Tools alone
-make gen       # generate CaneKit.xcodeproj; creates the git-ignored Secrets.plist from the template
-make sim17     # once: create the iPhone 17 Pro Max / iOS 27 simulator
-make sim       # simulator build
-# before uitest / tour: give the simulator a GPS fix, or the route tests fail
-#   xcrun simctl location <udid> set 40.1140,-88.2249     (udid: xcrun simctl list devices)
-make uitest    # XCUITests on that simulator
-make tour      # one screenshot per screen state → ios/build/shots
-make e2e       # GPS replay of the demo route through the real app (~20 min; SCENARIO=clean for one)
+make test            # logic tests; works with the Swift toolchain alone
+make gen             # generate the Xcode project (needed after pulling new files)
+make sim             # simulator build; the simulator parks at the start of the Ave route
+make e2e-waymark     # replay the Ave route through the real app with synthetic labels (~6 min)
+make tour-waymark    # screenshots of the Waymark screens
+make run             # build, install and launch on the phone (needs ios/local.mk, see ios/README.md)
 ```
 
-Every automated run is silent: the app mutes speech and the beacon under `CANEKIT_MUTE=1` or
-`CANEKIT_UITEST=1` (the UI tests and `make e2e` set them). Every `make` target is explained in
-[`ios/README.md` §3](ios/README.md#3-build-install-launch).
+Sidewalk memory is **off by default**. Turn it on from the Guide screen. Automated runs are silent.
+API keys, signing and the phone setup are in [`ios/README.md`](ios/README.md); never commit
+`ios/CaneKit/Resources/Secrets.plist`.
 
-**Phone.** Turn on Developer Mode on the iPhone and the Watch, and add your Apple ID in Xcode
-(Settings > Accounts; a free Personal Team). After `make gen`, open `ios/CaneKit.xcodeproj` once,
-select the CaneKit target > Signing & Capabilities and pick the Personal Team: that creates the
-Apple Development certificate. The Team ID is shown in Xcode > Settings > Accounts > the team's
-details, or read it from the certificate: the `OU=` value printed by
-`security find-certificate -c "Apple Development" -p | openssl x509 -noout -subject`. (The 10
-characters in parentheses of an "Apple Development: Name (…)" identity are not the Team ID.) Then:
+## Safety
 
-```sh
-cd ios
-make devices                       # find the phone's identifier
-# create ios/local.mk (git-ignored):
-#   TEAM   = ABCDE12345            # the OU= value from the Apple Development certificate
-#   DEVICE = 00008150-…            # from make devices
-make run                           # gen + build + install + launch
-make audit                         # after a walk: pull the newest trip log off the phone, measure its cue load
-```
-
-Put API keys in `ios/CaneKit/Resources/Secrets.plist` **before** `make run`, because the file is
-bundled into the app. Never commit it. Keys: ElevenLabs voice, the "Where am I" cloud model, and the
-Grok Bot family-alert webhook (`OPENCANE_GROKBOT_WEBHOOK_URL` / `_KEY` — the routine decides whether
-to text family; an HTTP 200 only means the bot started a run). Without keys the app uses the system
-voice, describes scenes on the phone, and family alerts stay disabled. Then follow
-[`docs/devices_setup.md`](docs/devices_setup.md) for the AirPods, the watch and the untethered demo
-(warm the voice cache on Wi-Fi, turn on Guided Access, battery above 40 %).
-
-## Links
-
-- [`docs/TEAM_BRIEF.md`](docs/TEAM_BRIEF.md), then [`docs/TEAM_HANDOFF.md`](docs/TEAM_HANDOFF.md): start here after a pull
-- [`AGENTS.md`](AGENTS.md): rules for anyone editing the repo
-- [`ios/README.md`](ios/README.md): build, sign, secrets, testing, gotchas
-- [`docs/README.md`](docs/README.md): every doc, and where to find things
-- [`docs/devices_setup.md`](docs/devices_setup.md): AirPods + Apple Watch + untethered demo checklist
-- [`docs/design.md`](docs/design.md): UI and cue design system
-- [`docs/cue_design_v2.md`](docs/cue_design_v2.md): research behind the calmer cue design (Steps 35–45)
-- [`docs/handsfree.md`](docs/handsfree.md): every voice command and the Action button, for the walker
-- [`docs/todo.md`](docs/todo.md): what's still open
-- [`docs/stress_test_plan.md`](docs/stress_test_plan.md): device tests, failure injection, go/no-go, demo run sheet
-- [`hardware/README.md`](hardware/README.md): the printed phone mount (Sagar, Tommy); print runbook in [`hardware/3d_print_files/README.md`](hardware/3d_print_files/README.md)
-- [`docs/ideas.md`](docs/ideas.md): why phone-only (§9), pitch, prior art
+Waymark is a research prototype and an aid, not a replacement for a cane or for the walker's judgment. It
+never speaks over the cane's own safety cues, it labels everything it says as a report, and field tests
+need a sighted spotter within arm's reach at every crossing.

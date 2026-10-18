@@ -1,6 +1,6 @@
 # Waymark board (single writer: Windows session / leader)
 
-Last checked: Sat 2026-10-17 22:02 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
+Last checked: Sun 2026-10-18 00:20 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
 Windows confirmed `d2898e0` + this commit on `main`. Mac last status entry: 14:30 (old repo, `5b9227f`).
 If this is more than an hour old, it is stale. Say "check mac" to the Windows chat.
 
@@ -25,7 +25,9 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | X-e2e | Mac | Replay with synthetic priors | done (see above) | 17:30 |
 | E1, E2 | Mac | Evidence from LiDAR / curb events / spotter taps; export script | merged (#6, cd3e1a8), `make test` 1044 passed; D-36 curb-ramp ruling | 17:30 |
 | A2, A3, F1, T1 | Mac | Card and map, field walk, tuning | phone install done (Akash's phone); F1 waits for a spotter, daylight and a clean `make test` / `make uitest` on `main` | 17:30 |
-| UI rework | Mac (Akash request) | Palette, simpler pages, UI v3 Graphite | passes 1, 2 and v3 merged (#4, #5, #7); `make uitest` not re-run on v3 | 17:58 |
+| UI rework | Mac (Akash request) | Palette, simpler pages, UI v3 Graphite | passes 1, 2 and v3 merged (#4, #5, #7) | 00:20 |
+| Judge demo T1 to T4 | Mac | Guide chip and ahead card, map of reports, learning shown and saved, UIUC gate, neutral profile | merged (#8, 29b4ccb), `make test` 1128 exit 0; `make uitest` exit 2 (island tour, since UI v3) | 00:20 |
+| README, disclosure | W | Waymark README, OpenCane README kept in docs/ | done (D-38) | 00:20 |
 | P1 to P4, P6 | W | Pipeline and real bundle | done: 3,405 labels in `ios/CaneKit/Resources/waymark_priors.json` (e1d466e) | 15:12 |
 | V1 | W | Eval harness (metrics 1, 2, 7) | done (c583e5f), 20 tests | 15:35 |
 | V2 | W | Calibration, sweep, staleness, positional error | built on synthetic data (8ab798b); real numbers need F1 | 16:05 |
@@ -39,7 +41,7 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 
 ## Blockers
 
-- Akash: report `make test` and `make uitest` exit codes on `main` after UI v3 (open since 17:58).
+- `make uitest` is red on `main` (`testDynamicIsland`, since UI v3): Mac to diagnose test-vs-bug before the live walk.
 - Live walk (F1): needs daylight, a spotter (H7) and Akash with the phone. Not before Sunday morning.
 - Walk 1 (paper checking walk): waiting on Yousef.
 - DubHacks rules and schedule (H2): not on file.
