@@ -30,110 +30,170 @@ private func gates(_ ok: Bool = true) -> WaymarkEvidenceGates {
     WaymarkEvidenceGates(speedMps: ok ? 1.3 : 0.2, gpsAccuracyM: 5, fixFresh: true)
 }
 
-/// Walk north from 0 to `to` metres in 1 m steps, feeding `frames(northNow)` before each fix.
-private func walk(_ t: inout WaymarkEvidenceTracker, labels: [WaymarkPrior], to: Double,
+/// Walk north through `path` (metres north at each fix), feeding `frames(north)` before each fix.
+private func walk(_ t: inout WaymarkEvidenceTracker, labels: [WaymarkPrior], path: [Double],
                   frames: (Double) -> [WaymarkDepthSample], gatesAt: (Double) -> WaymarkEvidenceGates = { _ in gates() })
     -> [WaymarkEvidenceVerdict] {
     var out: [WaymarkEvidenceVerdict] = []
-    var n = 0.0
-    while n <= to {
+    for n in path {
         for f in frames(n) { t.add(f) }
         out += t.step(labels: labels, at: at(n), headingDeg: 0, legs: nil, gates: gatesAt(n))
-        n += 1
     }
     return out
 }
 
+/// 1 m steps from `from` to `to` (inclusive).
+private func metres(_ from: Double, _ to: Double) -> [Double] {
+    stride(from: from, through: to, by: from <= to ? 1 : -1).map { $0 }
+}
+
+/// The window with 5 m GPS accuracy: 8 + 5 = 13 m; a full pass of a label at 20 m runs 0 → 40.
+private let fullPass = metres(0, 40)
+
 @Test func anObstacleSeenUnderTwoMetresIsConfirmed() {
     var t = WaymarkEvidenceTracker()
-    let l = label(1, .obstacle, at(20))
-    let v = walk(&t, labels: [l], to: 30) { n in [frame(torso: 20 - n)] }
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass) { n in [frame(torso: max(0.4, 20 - n))] }
     #expect(v.count == 1)
     #expect(v.first?.labelID == "ps:1" && v.first?.outcome == .confirmed && v.first?.sensor == .lidarTorso)
+    // along_m is where the deciding reading was taken (review M1), not where the pass ended.
+    #expect(abs((v.first?.alongM ?? 99) - 0) <= 1.01)
+}
+
+@Test func aConfirmationSurvivesTheLabelPositionError() {
+    // The real obstacle is 5 m past the mapped point (label error 8 m): still confirmed (review B1).
+    var t = WaymarkEvidenceTracker()
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass) { n in [frame(torso: max(0.4, 25 - n))] }
+    #expect(v.first?.outcome == .confirmed)
 }
 
 @Test func aHeadReadingCountsOnlyWithHeadCover() {
     var covered = WaymarkEvidenceTracker()
     let l = label(1, .obstacle, at(20))
-    let yes = walk(&covered, labels: [l], to: 30) { n in [frame(head: 20 - n, headCover: true)] }
+    let yes = walk(&covered, labels: [l], path: fullPass) { n in [frame(head: max(0.4, 20 - n), headCover: true)] }
     #expect(yes.first?.outcome == .confirmed && yes.first?.sensor == .lidarHead)
     var blind = WaymarkEvidenceTracker()
-    let no = walk(&blind, labels: [l], to: 30) { n in [frame(head: 20 - n, headCover: false)] }
+    let no = walk(&blind, labels: [l], path: fullPass) { n in [frame(head: max(0.4, 20 - n), headCover: false)] }
     #expect(no.first?.outcome != .confirmed)
 }
 
-@Test func aCleanEmptyPassContradicts() {
+@Test func aCleanFullPassContradicts() {
     var t = WaymarkEvidenceTracker()
-    let v = walk(&t, labels: [label(1, .obstacle, at(20))], to: 30) { _ in [frame(), frame(), frame()] }
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass) { _ in [frame(), frame(), frame()] }
     #expect(v.count == 1 && v.first?.outcome == .contradicted && v.first?.sensor == .lidarTorso)
 }
 
 @Test func aBetweenReadingIsUnverifiable() {
-    // 2.2 m is above the 2.0 m confirm bar and below the 2.5 m clear bar: no claim either way.
     var t = WaymarkEvidenceTracker()
-    let v = walk(&t, labels: [label(1, .obstacle, at(20))], to: 30) { n in [frame(torso: max(2.2, 20 - n))] }
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass) { n in [frame(torso: max(2.2, 20 - n))] }
     #expect(v.first?.outcome == .unverifiable)
 }
 
 @Test func anUntrustedFrameSpoilsAContradictionButNotAConfirmation() {
     var t = WaymarkEvidenceTracker()
-    let v = walk(&t, labels: [label(1, .obstacle, at(20))], to: 30) { n in [frame(trusted: n != 15)] }
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass) { n in [frame(trusted: n != 15), frame()] }
     #expect(v.first?.outcome == .unverifiable)
     var c = WaymarkEvidenceTracker()
-    let w = walk(&c, labels: [label(1, .obstacle, at(20))], to: 30) { n in
+    let w = walk(&c, labels: [label(1, .obstacle, at(20))], path: fullPass) { n in
         [frame(trusted: n != 15), frame(torso: max(0.5, 20 - n))] }
     #expect(w.first?.outcome == .confirmed)
 }
 
 @Test func untrustedCloseReadingsNeverConfirm() {
     var t = WaymarkEvidenceTracker()
-    let v = walk(&t, labels: [label(1, .obstacle, at(20))], to: 30) { n in [frame(torso: 20 - n, trusted: false)] }
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass) { n in [frame(torso: max(0.4, 20 - n), trusted: false)] }
     #expect(v.first?.outcome == .unverifiable)
 }
 
 @Test func missingTorsoCoverSpoilsAContradiction() {
     var t = WaymarkEvidenceTracker()
-    let v = walk(&t, labels: [label(1, .obstacle, at(20))], to: 30) { _ in [frame(torsoCover: false)] }
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass) { _ in [frame(torsoCover: false)] }
     #expect(v.first?.outcome == .unverifiable)
 }
 
 @Test func standingStillInsideTheWindowSpoilsAContradiction() {
-    // §9.2: evidence counts only while walking. A stop inside the window makes the pass unverifiable.
     var t = WaymarkEvidenceTracker()
-    let v = walk(&t, labels: [label(1, .obstacle, at(20))], to: 30, frames: { _ in [frame()] },
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass, frames: { _ in [frame()] },
                  gatesAt: { n in gates(n != 16) })
     #expect(v.first?.outcome == .unverifiable)
 }
 
+@Test func aCloseReadingOutsideTheGatesDoesNotConfirm() {
+    // Review H1: §9.2 gates apply to confirmations too (here: standing still at the label).
+    var t = WaymarkEvidenceTracker()
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: fullPass,
+                 frames: { n in [frame(torso: n == 19 ? 1.0 : .infinity)] }, gatesAt: { n in gates(n != 19) })
+    #expect(v.first?.outcome != .confirmed)
+}
+
+@Test func turningBackIsNeverAContradiction() {
+    // Review B1: walk to 6 m short of the label, turn round, walk away.
+    var t = WaymarkEvidenceTracker()
+    let l = label(1, .obstacle, at(20))
+    let v = walk(&t, labels: [l], path: metres(0, 14) + metres(13, 0)) { _ in [frame(), frame()] }
+    #expect(!v.contains { $0.outcome == .contradicted })
+    #expect(!t.routeEnded().contains { $0.outcome == .contradicted })
+}
+
+@Test func aPassThatStartedInsideTheWindowIsNotJudged() {
+    // Review B1: the feature came on (or the bundle loaded) with the label already 5 m ahead.
+    var t = WaymarkEvidenceTracker()
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: metres(15, 40)) { _ in [frame(), frame()] }
+    #expect(v.isEmpty)
+}
+
+@Test func aGPSJumpIsNeverAContradiction() {
+    var t = WaymarkEvidenceTracker()
+    let v = walk(&t, labels: [label(1, .obstacle, at(20))], path: metres(0, 14) + [45, 46]) { _ in [frame(), frame()] }
+    #expect(!v.contains { $0.outcome == .contradicted })
+}
+
+@Test func aLabelToTheSideIsNotJudged() {
+    // Review B2: LiDAR lanes see about ±1.5 m; a label 10 m to the side is neither confirmed nor contradicted.
+    var t = WaymarkEvidenceTracker()
+    let v = walk(&t, labels: [label(1, .obstacle, at(20, east: 10))], path: fullPass) { n in [frame(torso: 1.0)] }
+    #expect(v.isEmpty)
+}
+
 @Test func onlyObstaclesGetLidarVerdicts() {
     var t = WaymarkEvidenceTracker()
-    let v = walk(&t, labels: [label(1, .surfaceProblem, at(10)), label(2, .noSidewalk, at(12))], to: 30) { _ in [frame()] }
+    let v = walk(&t, labels: [label(1, .surfaceProblem, at(10)), label(2, .noSidewalk, at(12))], path: fullPass) { _ in [frame()] }
     #expect(v.isEmpty)
 }
 
 @Test func oneVerdictPerLabelPerRoute() {
     var t = WaymarkEvidenceTracker()
     let l = label(1, .obstacle, at(20))
-    _ = walk(&t, labels: [l], to: 30) { n in [frame(torso: 20 - n)] }
-    #expect(walk(&t, labels: [l], to: 30) { n in [frame(torso: 20 - n)] }.isEmpty)
+    _ = walk(&t, labels: [l], path: fullPass) { n in [frame(torso: max(0.4, 20 - n))] }
+    #expect(walk(&t, labels: [l], path: fullPass) { n in [frame(torso: max(0.4, 20 - n))] }.isEmpty)
     t.routeStarted()
-    #expect(walk(&t, labels: [l], to: 30) { n in [frame(torso: 20 - n)] }.count == 1)
+    #expect(walk(&t, labels: [l], path: fullPass) { n in [frame(torso: max(0.4, 20 - n))] }.count == 1)
 }
 
 @Test func routeEndFlushesAnOpenPass() {
     var t = WaymarkEvidenceTracker()
-    let l = label(1, .obstacle, at(20))
-    _ = walk(&t, labels: [l], to: 15) { _ in [frame()] }     // inside the window, not past it
+    _ = walk(&t, labels: [label(1, .obstacle, at(20))], path: metres(0, 15)) { _ in [frame()] }
     let v = t.routeEnded()
-    #expect(v.count == 1 && v.first?.outcome == .unverifiable)
+    #expect(v.count == 1 && v.first?.outcome == .unverifiable && v.first?.reason == "route_end")
 }
 
-@Test func aCurbEventConfirmsTheNearestRampLabel() {
-    let labels = [label(1, .missingCurbRamp, at(6)), label(2, .curbRamp, at(30)), label(3, .obstacle, at(5))]
+@Test func resetForgetsEverything() {
+    // Review H2: the feature switched off mid-pass leaves nothing to judge later.
     var t = WaymarkEvidenceTracker()
-    let v = t.groundEvent(labels: labels, at: at(0), headingDeg: 0, legs: nil, speedMps: 1.3)
+    _ = walk(&t, labels: [label(1, .obstacle, at(20))], path: metres(0, 15)) { _ in [frame()] }
+    t.reset()
+    #expect(t.routeEnded().isEmpty)
+}
+
+@Test func aCurbEventConfirmsOnlyAMissingRampAhead() {
+    // Review H4: a drop or step at a curb_ramp label is not evidence the ramp is there.
+    let labels = [label(1, .missingCurbRamp, at(6)), label(3, .obstacle, at(5))]
+    var t = WaymarkEvidenceTracker()
+    let v = t.groundEvent(labels: labels, at: at(0), headingDeg: 0, legs: nil, gates: gates())
     #expect(v?.labelID == "ps:1" && v?.outcome == .confirmed && v?.sensor == .ground)
-    #expect(t.groundEvent(labels: [label(2, .curbRamp, at(30))], at: at(0), headingDeg: 0, legs: nil, speedMps: 1.3) == nil)
+    var u = WaymarkEvidenceTracker()
+    #expect(u.groundEvent(labels: [label(2, .curbRamp, at(6))], at: at(0), headingDeg: 0, legs: nil, gates: gates()) == nil)
+    #expect(u.groundEvent(labels: [label(4, .missingCurbRamp, at(6))], at: at(0), headingDeg: 0, legs: nil, gates: gates(false)) == nil)
+    #expect(u.groundEvent(labels: [label(5, .missingCurbRamp, at(6, east: 9))], at: at(0), headingDeg: 0, legs: nil, gates: gates()) == nil)
 }
 
 @Test func theSpotterTargetsTheNearestSpeakableLabelWithin15m() {

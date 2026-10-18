@@ -12,6 +12,7 @@
 //
 
 import Foundation
+import UIKit
 import CaneKitLogic
 
 extension AppModel {
@@ -39,6 +40,10 @@ extension AppModel {
         }
         waymark.onLog = { [weak self] kind, fields in
             self?.logger.event(kind, fields)
+        }
+        // E1: spotter feedback ("No sidewalk report within 15 m.") is spoken to VoiceOver users.
+        waymark.onAnnounce = { message in
+            UIAccessibility.post(notification: .announcement, argument: message)
         }
         // The first line must come out in the natural voice and on time (A1 review M3).
         waymark.onLoaded = { [weak self] in

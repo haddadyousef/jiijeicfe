@@ -46,6 +46,8 @@ RECORD_KINDS = {"waymark_load", "waymark_cue", "waymark_evidence", "waymark_spot
 COORD_KEY = re.compile(r"^(lat|lng|lon|long|latitude|longitude|coord|coords|coordinate|coordinates|"
                        r"location|position|point|geometry|gps_(?!acc_m$).*)$", re.IGNORECASE)
 LABEL_ID = re.compile(r"^ps:[0-9]+$")
+EVIDENCE_KEYS = {"schema", "label_id", "outcome", "sensor", "dist_m", "along_m", "gps_acc_m", "speed_mps",
+                 "tilt_deg", "torso_cover", "head_cover", "build", "ts"}
 
 
 def coord_keys(obj, prefix: str = "") -> list[str]:
@@ -86,6 +88,12 @@ def valid_evidence(obj) -> str | None:
         return "bad sensor"
     if coord_keys(obj):
         return "has a coordinate"
+    for key in ("dist_m", "gps_acc_m", "speed_mps"):   # schema minimum 0 (E1 review B3)
+        v = obj.get(key)
+        if v is not None and (not isinstance(v, (int, float)) or v < 0):
+            return f"bad {key}"
+    if set(obj) - EVIDENCE_KEYS:                         # schema additionalProperties: false
+        return "unknown field"
     return None
 
 

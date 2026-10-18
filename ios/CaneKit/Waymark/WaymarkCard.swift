@@ -53,7 +53,8 @@ struct WaymarkCard: View {
                     }
                 }
                 .fixedSize(horizontal: false, vertical: true)
-                if let tap = model.waymark.pendingTap { toast(tap) }
+                // `.id`: a replacing tap is a new view, so it is announced again (review M6).
+                if let tap = model.waymark.pendingTap { toast(tap).id(tap.token) }
                 if let message = model.waymark.spotterMessage {
                     CKErrorText(text: message, systemImage: "exclamationmark.circle")
                 }
@@ -80,10 +81,14 @@ struct WaymarkCard: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityLabel("\(words). Undo within 10 seconds.")
             Spacer(minLength: 0)
-            Button("Undo") { model.waymark.undoSpotter() }
-                .font(CKFont.body.weight(.bold))
-                .frame(minWidth: 76, minHeight: CKMetrics.touchTarget)
+            // The frame is inside the label so the styled background and the hit area are 60 pt (review M6).
+            Button { model.waymark.undoSpotter() } label: {
+                Text("Undo")
+                    .font(CKFont.body.weight(.bold))
+                    .frame(minWidth: 76, minHeight: CKMetrics.touchTarget)
+            }
                 .buttonStyle(CKBigButtonStyle(role: .secondary))
+                .accessibilityLabel("Undo")
                 .accessibilityHint("Takes back the last tap")
         }
         .padding(CKSpacing.md)

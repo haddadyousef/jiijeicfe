@@ -20,8 +20,22 @@ Build log for the hackathon. One entry per step; each ends with what to test on 
 - Details: new **Sidewalk memory** card (the switch moved here) with **Confirm** / **Not there** for a
   walking helper, a 10 s Undo toast and a saved-checks line.
 
-Test on the phone: turn on Sidewalk memory, walk past a report, tap Confirm, see the toast, Undo works;
-after 10 s Files → Waymark → waymark/evidence.jsonl has a line.
+- **Review of the first cut (adversarial, every finding checked; 9 new tests):** B1 contradictions now
+  need a finished pass (approached from the front, out behind a ±(8 m + GPS) window, ≥ 14.4 m walked,
+  no reversal or GPS jump, ≥ 15 gated frames); B2 only labels ≤ 3 m to the side are judged; B3
+  negative / non-finite numbers are null and readings rounded in every evidence line; H1 confirmations
+  need the §9.2 gates; H2 switching off resets passes and drops a pending tap; H3 nothing from a
+  simulated walk; H4 a curb event confirms only a *missing* curb ramp (gated, ≤ 4 m sideways; W to
+  confirm the reading of §9.1); H5 a second tap on the same label replaces the first; M1 `along_m` of
+  the deciding reading; M2 tilt / cover on ground and spotter lines; M3 `reason` on unverifiable
+  `waymark_evidence` records; M4 spotter needs a fresh fix and speaks why a tap did nothing; M5 beliefs
+  of other bundles are kept; M6 Undo is a real 60 pt target and each tap is announced; error strings
+  carry no container path. Rejected: moving the 30 Hz depth hook below the safety work — it is a few
+  comparisons on three-element arrays, no allocation (kept at the top, where it cannot be skipped by
+  an early return).
+
+Test on the phone: turn on Sidewalk memory, walk past a report, tap Confirm, see the toast; either
+tap Undo (nothing is saved) or wait 10 s (Files → Waymark → waymark/evidence.jsonl gains a line).
 ## Waymark UI v2 + Seattle default route (Sat Oct 17)
 
 Owner (Akash, 16:10): "not just the colours — button format and the whole app format simpler and

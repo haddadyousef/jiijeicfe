@@ -49,8 +49,15 @@ struct WaymarkStore {
             }
             return nil
         } catch {
-            return String(describing: error)
+            return Self.brief(error)
         }
+    }
+
+    /// An error as "domain code" only: `String(describing:)` includes the app container path (the
+    /// install UUID), which must not reach the trip log or the E2 export (E1 review).
+    static func brief(_ error: Error) -> String {
+        let e = error as NSError
+        return "\(e.domain) \(e.code)"
     }
 
     /// Writes the beliefs atomically.
@@ -64,7 +71,7 @@ struct WaymarkStore {
             try encoder.encode(beliefs).write(to: url, options: .atomic)
             return nil
         } catch {
-            return String(describing: error)
+            return Self.brief(error)
         }
     }
 
@@ -73,12 +80,6 @@ struct WaymarkStore {
         guard let url = beliefsURL, let data = try? Data(contentsOf: url),
               let beliefs = try? JSONDecoder().decode([String: WaymarkBelief].self, from: data) else { return [:] }
         return beliefs
-    }
-
-    /// Number of evidence lines on disk (for the card).
-    func evidenceLineCount() -> Int {
-        guard let url = evidenceURL, let text = try? String(contentsOf: url, encoding: .utf8) else { return 0 }
-        return text.split(separator: "\n").count
     }
 
     /// Creates `Documents/waymark/` if needed.

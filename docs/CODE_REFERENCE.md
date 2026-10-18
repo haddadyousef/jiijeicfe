@@ -3499,10 +3499,12 @@ marked `// waymark:`.
 - Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
 
 - `WaymarkEvidence.swift` (E1) — `WaymarkDepthSample`, `WaymarkEvidenceGates` (`hold`),
-  `WaymarkEvidenceVerdict`, `WaymarkEvidenceTracker` (`add(_:)` per LaneReport, `step(labels:at:headingDeg:legs:gates:)`
-  per fix: obstacle passes through the 8 m window, confirm < 2.0 m trusted, contradict on a clean ≥ 5-frame
-  pass with nothing < 2.5 m, else unverifiable; `groundEvent(...)` confirms the nearest ramp label within
-  11.5 m; `routeStarted()` / `routeEnded()`), `WaymarkSpotter.target(labels:at:headingDeg:)` (nearest
+  `WaymarkEvidenceVerdict` (+ `reason`), `WaymarkEvidenceTracker` (`add(_:)` per LaneReport,
+  `step(labels:at:headingDeg:legs:gates:)` per fix: signed along / cross, labels ≤ 3 m sideways, window
+  ±(8 m + GPS ≤ 12 m), passes opened from the front; gated confirm < 2.0 m; contradict only on a finished
+  clean pass (≥ 14.4 m walked, no reversal / jump, ≥ 15 frames, nothing < 2.5 m); else unverifiable with a
+  reason; `groundEvent(...gates:)` confirms the nearest *missing* curb ramp −8…+11.5 m, ≤ 4 m sideways;
+  `routeStarted()`, `routeEnded()`, `reset()`, `lastSample`), `WaymarkSpotter.target(labels:at:headingDeg:)` (nearest
   speakable label within 15 m). `WaymarkSession.restore(_:)` puts back saved beliefs (known ids only).
 
 ### App — `ios/CaneKit/Waymark/`
@@ -3519,7 +3521,10 @@ marked `// waymark:`.
   `coord_keys` / `strip_coords`, `verify_no_coordinates`, `selftest()`; outputs the eval harness's
   `evidence.jsonl` + `waymark_records.jsonl`; never a coordinate (exit 2 if one survives).
 - `WaymarkStore.swift` (E1) — `Documents/waymark/evidence.jsonl` (append) and `beliefs.json` (atomic);
-  `appendEvidence`, `saveBeliefs`, `loadBeliefs`, `evidenceLineCount`; errors returned as text.
+  `appendEvidence`, `saveBeliefs`, `loadBeliefs`; errors returned as "domain code" (no paths).
+- `WaymarkEngine.simulating` (mirrors `AppModel.isSimulatingWalk`): no evidence while true; `enabled = false`
+  resets the tracker and drops a pending tap; `onAnnounce` for spotter feedback; beliefs of ids not in
+  the bundle are kept in `beliefs.json`.
 - `WaymarkCard.swift` (A2 / E1) — Details card: the "Sidewalk memory" switch (moved from HazardsCard),
   status line, "Confirm" / "Not there" tiles with the undo toast, saved-checks line.
 - `AppModel+Waymark.swift` — `ingestWaymarkDepth(_:)` (every `handle(_ report:)`), `wireWaymark()` (init: `speech.nonResumable`, `onSpeak` →
