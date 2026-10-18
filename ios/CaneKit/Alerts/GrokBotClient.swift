@@ -2,8 +2,9 @@
 //  GrokBotClient.swift
 //  CaneKit
 //
-//  Transport for the Grok Bot routine "OpenCane cane events" (folder opencane-cane-events):
-//  one POST of one `OpenCaneEvent` as JSON, with the routine's key as a bearer token. The event
+//  Transport for the Grok Bot routine "OpenCane cane events" (folder opencane-cane-events; that
+//  routine name is an external contract set in Grok Bot, not ours to rename):
+//  one POST of one `WaymarkEvent` as JSON, with the routine's key as a bearer token. The event
 //  shape and every "should this be sent" decision live in CaneKitLogic (`GrokBotEvent`,
 //  `FamilyAlertPolicy`, both unit-tested); this file is only transport and key plumbing, the same
 //  split as `VLMClient`.
@@ -81,7 +82,8 @@ nonisolated struct GrokBotClient: Sendable {
     ///
     /// Environment first so `CANEKIT_UITEST` / e2e runs and a `swift`-launched build can point at
     /// a throwaway endpoint without editing the plist; `Secrets.plist` (git-ignored) otherwise.
-    /// Both are the same two names: `OPENCANE_GROKBOT_WEBHOOK_URL`, `OPENCANE_GROKBOT_WEBHOOK_KEY`.
+    /// Both are the same two names: `OPENCANE_GROKBOT_WEBHOOK_URL`, `OPENCANE_GROKBOT_WEBHOOK_KEY`
+    /// (legacy key names, kept because every teammate's git-ignored Secrets.plist already uses them).
     static func fromSecrets() -> GrokBotClient? {
         let env = ProcessInfo.processInfo.environment
         func value(_ name: String) -> String? {
@@ -98,7 +100,7 @@ nonisolated struct GrokBotClient: Sendable {
     /// POSTs one event. Stamps `timestamp` when the caller left it empty (contract: ISO-8601 UTC).
     /// Retries once on a transport failure, never on a non-2xx status — a 401 will be a 401 again,
     /// and re-POSTing a `fall` the bot already accepted would double-text the family.
-    func send(_ event: OpenCaneEvent, now: Date = Date()) async -> GrokBotResult {
+    func send(_ event: WaymarkEvent, now: Date = Date()) async -> GrokBotResult {
         let body: Data
         do {
             body = try event.stamped(at: now).jsonBody()

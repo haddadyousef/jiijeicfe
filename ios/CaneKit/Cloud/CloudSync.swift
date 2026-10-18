@@ -14,7 +14,7 @@
 //    | `MedicalProfileStore`'s profile blob           | `medical_profiles`           |
 //    | one completed guided walk                      | `trips`                      |
 //    | `Documents/hazards/*.geojson` + JPEGs          | `hazards` + `hazard-photos`  |
-//    | `OpenCaneEvent`s sent to the alert bot         | `family_alerts`              |
+//    | `WaymarkEvent`s sent to the alert bot         | `family_alerts`              |
 //
 //  ⚠ **The phone is still the source of truth.** Every local writer writes exactly what it wrote
 //  before; this class is fed from the same call sites and never stands between a detection and a
@@ -88,7 +88,7 @@ final class CloudSync {
     /// The per-install UUID that survives relaunches (and is what `register_cane` upserts on), so
     /// a walker's history is one history. ⚠ A `UserDefaults` key, not a file: losing it after a
     /// reinstall is acceptable (a new walker row appears), losing the app is not.
-    private static let installKey = "opencane_install_id"
+    private static let installKey = "opencane_install_id"   // legacy key, kept for stored data
     private let installID: String = {
         if let existing = UserDefaults.standard.string(forKey: installKey), !existing.isEmpty {
             return existing
@@ -210,7 +210,7 @@ final class CloudSync {
                    logFileName: String?, start: GeoFix?) {
         guard client != nil, sharingEnabled else { return }
         let pending = PendingTrip(destination: destination,
-                                  startedAt: OpenCaneEvent.iso8601(Date()),
+                                  startedAt: WaymarkEvent.iso8601(Date()),
                                   cueLevel: cueLevel, cuePlace: cuePlace,
                                   batteryStartPct: batteryPct >= 0 ? batteryPct : nil,
                                   logFileName: logFileName,
@@ -288,7 +288,7 @@ final class CloudSync {
                  stepSource: String?, waypointsReached: Int, batteryPct: Int,
                  spokenSummary: String?, end: GeoFix?) {
         guard client != nil, sharingEnabled else { return }
-        let patch = TripClosePatch(endedAt: OpenCaneEvent.iso8601(Date()),
+        let patch = TripClosePatch(endedAt: WaymarkEvent.iso8601(Date()),
                                    durationS: elapsed, distanceM: distanceM, steps: steps,
                                    stepSource: stepSource, outcome: outcome,
                                    waypointsReached: waypointsReached,
@@ -382,7 +382,7 @@ final class CloudSync {
     ///   - status: `posted` when the webhook returned 2xx (which means the bot STARTED a run, not
     ///     that anyone was emailed), `failed` otherwise.
     /// Caller: `FamilyAlerts.send`, after the POST settles.
-    func recordAlert(_ event: OpenCaneEvent, status: String, httpStatus: Int?, error: String?) {
+    func recordAlert(_ event: WaymarkEvent, status: String, httpStatus: Int?, error: String?) {
         guard let client, sharingEnabled, let walkerID else { return }
         guard let row = FamilyAlertRow(event: event, walkerID: walkerID, tripID: tripID,
                                        now: Date(), deliveryStatus: status,
@@ -421,7 +421,8 @@ final class CloudSync {
     ///
     /// ⚠ This is the ONLY path by which a family email address reaches the cloud. Addresses
     /// removed here stop being alerted; survivors keep their id and their alert history
-    /// (`save_family_contacts`, migration `opencane_06`).
+    /// (`save_family_contacts`, migration `opencane_06` — the name it was applied under in the
+    /// Supabase project; external contract).
     /// - Parameters:
     ///   - emails: already normalised by `FamilyContacts.normalize` — the caller stores what it sends.
     ///   - registered: true once the alert bot has accepted the list.
@@ -609,7 +610,7 @@ final class CloudSync {
             let ended_at: String
             let outcome = "abandoned"
         }
-        let cutoff = OpenCaneEvent.iso8601(Self.processStart)
+        let cutoff = WaymarkEvent.iso8601(Self.processStart)
         Task { [weak self] in
             guard await MainActor.run(body: { [weak self] in self?.isCurrent(generation) ?? false }) else { return }
             do {

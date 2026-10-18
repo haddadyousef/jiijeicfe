@@ -1,4 +1,4 @@
-# UX.md — why OpenCane's interface is a conversation, not a screen
+# UX.md — why Waymark's interface is a conversation, not a screen
 
 Status: **design spec, written 2026-09-13.** It is the argument and the rules for the voice-first
 UX; `CHANGELOG.md` Step 61 and the `ux/voice-first` branch are the first implementation of §4.
@@ -47,7 +47,7 @@ rest of that idea, applied to the whole app rather than the launch screen.
 
 ## 2. The thesis, and its limits
 
-**Every function of OpenCane must be reachable by one spoken utterance. The screen becomes a
+**Every function of Waymark must be reachable by one spoken utterance. The screen becomes a
 spotter's dashboard and a safety net, never the only way to do something.**
 
 That is the thesis. The rest of this section is what is wrong with it, because a spec that only

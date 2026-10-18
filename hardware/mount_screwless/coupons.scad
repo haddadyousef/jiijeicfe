@@ -1,5 +1,5 @@
 // =====================================================================
-// OpenCane screwless mount - FIT COUPONS
+// Waymark screwless mount - FIT COUPONS
 // =====================================================================
 // Print this FIRST. It decides three numbers that every other part
 // depends on. Printing the real parts before these is how you burn three

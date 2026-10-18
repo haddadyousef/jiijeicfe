@@ -61,7 +61,7 @@ public struct FamilyAlertPolicy {
     public var limits: FamilyAlertLimits
 
     /// `now` of the last sent event of each rate-limited type. Absent = never sent.
-    private var lastSent: [OpenCaneEventType: TimeInterval] = [:]
+    private var lastSent: [WaymarkEventType: TimeInterval] = [:]
     /// False once a low-battery alert has fired; true again after a recharge past the re-arm
     /// percent. Starts true so the first low reading is reported.
     private var batteryArmed = true
@@ -77,7 +77,7 @@ public struct FamilyAlertPolicy {
     }
 
     /// True when `type` has not been sent inside `interval`. Records the send when it returns true.
-    private mutating func allow(_ type: OpenCaneEventType, interval: TimeInterval,
+    private mutating func allow(_ type: WaymarkEventType, interval: TimeInterval,
                                 now: TimeInterval) -> Bool {
         if let last = lastSent[type], now - last < interval { return false }
         lastSent[type] = now
@@ -90,13 +90,13 @@ public struct FamilyAlertPolicy {
     /// nil means "too soon, say nothing".
     public mutating func location(lat: Double, lng: Double, accuracyM: Double?,
                                   headingDegrees: Double?, speedMps: Double?,
-                                  now: TimeInterval) -> OpenCaneEvent? {
+                                  now: TimeInterval) -> WaymarkEvent? {
         guard allow(.location, interval: limits.locationInterval, now: now) else { return nil }
-        return OpenCaneEvent(type: .location, severity: .info,
-                             lat: lat, lng: lng,
-                             accuracyM: accuracyM.flatMap { $0 >= 0 ? $0 : nil },
-                             heading: headingDegrees,
-                             speedMps: speedMps.flatMap { $0 >= 0 ? $0 : nil })
+        return WaymarkEvent(type: .location, severity: .info,
+                            lat: lat, lng: lng,
+                            accuracyM: accuracyM.flatMap { $0 >= 0 ? $0 : nil },
+                            heading: headingDegrees,
+                            speedMps: speedMps.flatMap { $0 >= 0 ? $0 : nil })
     }
 
     /// A close obstacle the cane cannot find. nil when it is further than
@@ -105,34 +105,34 @@ public struct FamilyAlertPolicy {
     /// - Parameter direction: "left" / "center" / "right" / "head".
     public mutating func obstacle(kind: String?, distanceM: Double?, direction: String?,
                                   lat: Double?, lng: Double?, note: String?,
-                                  now: TimeInterval) -> OpenCaneEvent? {
+                                  now: TimeInterval) -> WaymarkEvent? {
         // Unknown distance is not assumed dangerous: the haptics already fired, and a warn texts
         // family. Only a measured, close obstacle qualifies.
         guard let distanceM, distanceM.isFinite, distanceM <= limits.obstacleMaxDistanceM else { return nil }
         guard allow(.obstacle, interval: limits.obstacleInterval, now: now) else { return nil }
-        return OpenCaneEvent(type: .obstacle, severity: .warn,
-                             lat: lat, lng: lng, note: note,
-                             obstacle: OpenCaneObstacle(kind: kind, distanceM: distanceM,
-                                                        direction: direction))
+        return WaymarkEvent(type: .obstacle, severity: .warn,
+                            lat: lat, lng: lng, note: note,
+                            obstacle: WaymarkObstacle(kind: kind, distanceM: distanceM,
+                                                      direction: direction))
     }
 
     /// Low phone battery. Fires once per discharge: nil while already fired, until the battery
     /// climbs back above `lowBatteryRearmPct`.
     /// - Parameter pct: 0–100, or negative when unknown (the simulator reports −1).
-    public mutating func lowBattery(pct: Int) -> OpenCaneEvent? {
+    public mutating func lowBattery(pct: Int) -> WaymarkEvent? {
         guard pct >= 0 else { return nil }                      // unknown: never alert
         if pct >= limits.lowBatteryRearmPct { batteryArmed = true }
         guard pct <= limits.lowBatteryPct, batteryArmed else { return nil }
         batteryArmed = false
-        return OpenCaneEvent(type: .lowBattery, severity: .warn,
-                             note: "Phone battery at \(pct) percent. Waymark guidance stops when it dies.",
-                             batteryPct: pct)
+        return WaymarkEvent(type: .lowBattery, severity: .warn,
+                            note: "Phone battery at \(pct) percent. Waymark guidance stops when it dies.",
+                            batteryPct: pct)
     }
 
     /// The vision model described a weapon or an attacker. `critical`, rate-limited to
     /// `threatInterval` — the same gun stays in frame for many scans.
     public mutating func threat(_ sighting: ThreatSighting, lat: Double?, lng: Double?,
-                                now: TimeInterval) -> OpenCaneEvent? {
+                                now: TimeInterval) -> WaymarkEvent? {
         guard allow(.threat, interval: limits.threatInterval, now: now) else { return nil }
         return ThreatWatch.event(sighting, lat: lat, lng: lng)
     }
@@ -141,15 +141,15 @@ public struct FamilyAlertPolicy {
     /// first is still being handled is information, not noise.
     /// - Note: **Waymark has no fall detector yet.** This builds the event; nothing in the app
     ///   calls it except the debug test-send. See docs/todo.md.
-    public static func fall(lat: Double?, lng: Double?, note: String?) -> OpenCaneEvent {
-        OpenCaneEvent(type: .fall, severity: .critical, lat: lat, lng: lng,
-                      note: note ?? "Possible fall detected")
+    public static func fall(lat: Double?, lng: Double?, note: String?) -> WaymarkEvent {
+        WaymarkEvent(type: .fall, severity: .critical, lat: lat, lng: lng,
+                     note: note ?? "Possible fall detected")
     }
 
     /// Walker asked for help. Never rate-limited, always `critical`.
-    public static func sos(lat: Double?, lng: Double?, note: String?) -> OpenCaneEvent {
-        OpenCaneEvent(type: .sos, severity: .critical, lat: lat, lng: lng,
-                      note: note ?? "SOS from the cane")
+    public static func sos(lat: Double?, lng: Double?, note: String?) -> WaymarkEvent {
+        WaymarkEvent(type: .sos, severity: .critical, lat: lat, lng: lng,
+                     note: note ?? "SOS from the cane")
     }
 
     /// A walk began. Never rate-limited: it happens once per route, and it is the event that tells
@@ -158,25 +158,25 @@ public struct FamilyAlertPolicy {
     /// ⚠ `warn`, not `info`, and that is a deliberate product choice rather than a severity
     /// mistake: the bot only emails family for warn/critical, and the owner asked for an email at
     /// the start and end of every trip. `info` would be chat-only and nobody would hear about it.
-    public static func tripStarted(destination: String?, lat: Double?, lng: Double?) -> OpenCaneEvent {
+    public static func tripStarted(destination: String?, lat: Double?, lng: Double?) -> WaymarkEvent {
         let where_ = destination.map { " to \($0)" } ?? ""
-        return OpenCaneEvent(type: .tripStart, severity: .warn, lat: lat, lng: lng,
-                             note: "Walk started\(where_).")
+        return WaymarkEvent(type: .tripStart, severity: .warn, lat: lat, lng: lng,
+                            note: "Walk started\(where_).")
     }
 
     /// A walk ended — by arriving, or by the walker stopping it. `warn` for the same reason as
     /// `tripStarted`; `arrived` distinguishes the two in the payload so the bot can word the email.
     public static func tripEnded(destination: String?, arrived: Bool,
-                                 lat: Double?, lng: Double?) -> OpenCaneEvent {
+                                 lat: Double?, lng: Double?) -> WaymarkEvent {
         let where_ = destination.map { " at \($0)" } ?? ""
-        var event = OpenCaneEvent(type: .tripEnd, severity: .warn, lat: lat, lng: lng,
-                                  note: arrived ? "Arrived\(where_)." : "Walk stopped before arriving\(where_ ).")
+        var event = WaymarkEvent(type: .tripEnd, severity: .warn, lat: lat, lng: lng,
+                                 note: arrived ? "Arrived\(where_)." : "Walk stopped before arriving\(where_ ).")
         event.extra = ["arrived": .bool(arrived)]
         return event
     }
 
     /// Quiet state change (route started, arrived). `info`: chat-only, no SMS.
-    public static func status(_ note: String, lat: Double? = nil, lng: Double? = nil) -> OpenCaneEvent {
-        OpenCaneEvent(type: .status, severity: .info, lat: lat, lng: lng, note: note)
+    public static func status(_ note: String, lat: Double? = nil, lng: Double? = nil) -> WaymarkEvent {
+        WaymarkEvent(type: .status, severity: .info, lat: lat, lng: lng, note: note)
     }
 }

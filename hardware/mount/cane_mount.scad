@@ -1,4 +1,4 @@
-// cane_mount.scad - OpenCane / CaneKit: iPhone 17 Pro Max on a 28.75 mm non-metal cane.
+// cane_mount.scad - Waymark / CaneKit: iPhone 17 Pro Max on a 28.75 mm non-metal cane.
 //
 // STATUS: NOT RENDERED. Written 2026-09-11 on a machine without OpenSCAD, so nobody has pressed
 // F5 on this file yet. Before printing anything:

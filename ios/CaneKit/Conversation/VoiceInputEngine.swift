@@ -31,7 +31,7 @@
 //
 //  Owner: `AppModel.voiceInput`, built in `AppModel.init` with the app's `SpeechQueue` and
 //  `BeaconEngine`. Callers: `AppModel.toggleVoiceInput(source:)` (GuideCard "Talk to Waymark",
-//  the Action Button's empty `TalkToOpenCaneIntent`) and `AppModel.startVoiceInput()` (AirPods
+//  the Action Button's empty `TalkToWaymarkIntent`) and `AppModel.startVoiceInput()` (AirPods
 //  double nod — start only, never a toggle). AppModel installs `onTranscriptionFinalized` (→
 //  `ConversationCoordinator.handleQuery`, then `finishProcessing()`), `shouldRestorePlaybackSession`
 //  (false while `SoundWatcher` owns the microphone) and `onEvent` (→ trip log), and forwards every

@@ -1,7 +1,7 @@
-# Auditory load: what the research says, what OpenCane does
+# Auditory load: what the research says, what Waymark does
 
 Why this file exists: a blind walker navigates by ear — traffic, echolocation, voices —
-and every sound OpenCane makes competes with that. Collected 2026-09-12 after a device
+and every sound Waymark makes competes with that. Collected 2026-09-12 after a device
 report ("it keeps giving me instructions as I'm talking"). Read it before adding any new
 automatic (unprompted) sound.
 
@@ -34,9 +34,9 @@ automatic (unprompted) sound.
 - **Calibrate frequency, not just content.** Cue frequency and spatial encoding directly
   affect navigation performance (ibid.).
 
-## What OpenCane already does about each point
+## What Waymark already does about each point
 
-| Research point | OpenCane answer |
+| Research point | Waymark answer |
 |---|---|
 | Discontinuous, critical-only | Speech is event-driven (waypoints, new obstacle class, new sign phrase, safety). Nothing speaks on a timer except the arrival hint. |
 | Protect ambient hearing | Beacon + haptics carry continuous guidance; speech is the exception. Every narration channel has an off switch (obstacle names, people, signs, beacon, siren watch). |

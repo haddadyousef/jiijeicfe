@@ -41,10 +41,11 @@
 //      `settingsColumnsCoverEveryPersistedKey` asserts the exact key set and is what catches it
 //      (it caught `autoTorchInDark`). Since Step 60 no settings snapshot is uploaded at all.
 //    · Column names are the contract (`t_seconds`, `text_spoken`, `walker_id`); for the seven live
-//      tables they match migrations `opencane_01`…`opencane_07` as narrowed by
+//      tables they match migrations `opencane_01`…`opencane_07` (their names in the
+//      Supabase project, an external contract) as narrowed by
 //      `reduce_to_mvp_cloud_schema`. Renaming one here without a migration drops that field on the
 //      floor with a 400.
-//    · Timestamps are ISO-8601 UTC via `OpenCaneEvent.iso8601` — the format Postgres `timestamptz`
+//    · Timestamps are ISO-8601 UTC via `WaymarkEvent.iso8601` — the format Postgres `timestamptz`
 //      accepts and the same one the alert bot already receives.
 //    · `CloudBatchPolicy` holds every number (batch size, flush interval, queue ceiling, backoff).
 //      A rule with a number in it belongs here with a test (AGENTS.md hard rule 3).
@@ -146,7 +147,7 @@ public struct TripEventRow: Sendable, Equatable, Encodable {
     /// The record kind: `gps`, `speech`, `cue`, `lanes`, `route`, `hazard`, `session`, …
     public var kind: String
     /// The rest of the line, verbatim. Kind-specific by design.
-    public var payload: [String: OpenCaneJSON]
+    public var payload: [String: WaymarkJSON]
     /// Lifted from the payload when the line had a position.
     public var lat: Double?
     /// Lifted from the payload when the line had a position.
@@ -179,7 +180,7 @@ public struct TripEventRow: Sendable, Equatable, Encodable {
     }
 
     public init(walkerID: String, tripID: String?, tSeconds: Double, kind: String,
-                payload: [String: OpenCaneJSON] = [:], lat: Double? = nil, lon: Double? = nil,
+                payload: [String: WaymarkJSON] = [:], lat: Double? = nil, lon: Double? = nil,
                 textSpoken: String? = nil, walkToken: Int? = nil) {
         self.walkerID = walkerID
         self.tripID = tripID
@@ -214,7 +215,7 @@ public struct TripEventRow: Sendable, Equatable, Encodable {
     /// `hazard` and `marker_dropped` records, and `text` on `speech` records. They stay in the
     /// payload as well — the cloud copy of a line is the whole line.
     public static func from(walkerID: String, tripID: String?, tSeconds: Double, kind: String,
-                            fields: [String: OpenCaneJSON]) -> TripEventRow {
+                            fields: [String: WaymarkJSON]) -> TripEventRow {
         func number(_ key: String) -> Double? {
             if case .number(let v)? = fields[key], v.isFinite { return v }
             return nil
@@ -385,7 +386,7 @@ public struct HazardRow: Sendable, Equatable, Encodable {
         self.routeName = record.routeName
         self.instruction = record.instruction
         self.photoPath = photoPath
-        self.detectedAt = OpenCaneEvent.iso8601(Date(timeIntervalSince1970: record.time))
+        self.detectedAt = WaymarkEvent.iso8601(Date(timeIntervalSince1970: record.time))
     }
 }
 
@@ -418,11 +419,11 @@ public struct PostRow: Sendable, Equatable, Encodable {
         self.name = marker.name
         self.lat = marker.coordinate.latitude
         self.lon = marker.coordinate.longitude
-        self.droppedAt = OpenCaneEvent.iso8601(Date(timeIntervalSince1970: marker.timestamp))
+        self.droppedAt = WaymarkEvent.iso8601(Date(timeIntervalSince1970: marker.timestamp))
     }
 }
 
-/// One family alert, mirrored from the `OpenCaneEvent` the phone POSTed to the bot.
+/// One family alert, mirrored from the `WaymarkEvent` the phone POSTed to the bot.
 ///
 /// ⚠ `emails` and `send_test` are deliberately NOT carried over. A `family_contacts` registration
 /// is not an alert, and a family's addresses belong in `family_contacts` (written by
@@ -443,10 +444,10 @@ public struct FamilyAlertRow: Sendable, Equatable, Encodable {
     public var label: String?
     public var caneID: String?
     public var batteryPct: Int?
-    public var obstacle: OpenCaneObstacle?
+    public var obstacle: WaymarkObstacle?
     /// The one family-facing sentence a cheap model wrote, lifted out of `extra.ai_context`.
     public var aiContext: String?
-    public var extra: [String: OpenCaneJSON]
+    public var extra: [String: WaymarkJSON]
     /// `pending` | `posted` | `failed` — the `family_alerts_delivery` check constraint.
     public var deliveryStatus: String
     public var webhookStatusCode: Int?
@@ -477,7 +478,7 @@ public struct FamilyAlertRow: Sendable, Equatable, Encodable {
 
     /// Build the row for an event the phone is about to send (or just sent).
     /// - Returns: nil for `family_contacts`, which is a registration and not an alert.
-    public init?(event: OpenCaneEvent, walkerID: String, tripID: String?, now: Date,
+    public init?(event: WaymarkEvent, walkerID: String, tripID: String?, now: Date,
                  deliveryStatus: String = "pending", webhookStatusCode: Int? = nil,
                  errorMessage: String? = nil) {
         guard event.type != .familyContacts else { return nil }
@@ -485,7 +486,7 @@ public struct FamilyAlertRow: Sendable, Equatable, Encodable {
         self.tripID = tripID
         self.eventType = event.type.rawValue
         self.severity = event.severity?.rawValue
-        self.occurredAt = event.timestamp ?? OpenCaneEvent.iso8601(now)
+        self.occurredAt = event.timestamp ?? WaymarkEvent.iso8601(now)
         self.lat = event.lat ?? event.location?.lat
         self.lng = event.lng ?? event.location?.lng
         self.accuracyM = event.accuracyM
@@ -506,7 +507,7 @@ public struct FamilyAlertRow: Sendable, Equatable, Encodable {
         self.extra = bag
         self.deliveryStatus = deliveryStatus
         self.webhookStatusCode = webhookStatusCode
-        self.postedAt = deliveryStatus == "posted" ? OpenCaneEvent.iso8601(now) : nil
+        self.postedAt = deliveryStatus == "posted" ? WaymarkEvent.iso8601(now) : nil
         self.errorMessage = errorMessage
     }
 }
@@ -563,7 +564,7 @@ public struct DeviceSettingsRow: Sendable, Equatable, Encodable {
     public var familyContactsRegistered: Bool
     public var loggingEnabled: Bool
     /// Keys the phone persists that this table has no column for yet.
-    public var extraSettings: [String: OpenCaneJSON]
+    public var extraSettings: [String: WaymarkJSON]
 
     public enum CodingKeys: String, CodingKey {
         case portraitMode = "portrait_mode"
@@ -595,7 +596,7 @@ public struct DeviceSettingsRow: Sendable, Equatable, Encodable {
                 autoTorchInDark: Bool,
                 familyAlertsEnabled: Bool, familyAlertsAIContext: Bool, fallDetectionEnabled: Bool,
                 familyContactsRegistered: Bool, loggingEnabled: Bool,
-                extraSettings: [String: OpenCaneJSON] = [:]) {
+                extraSettings: [String: WaymarkJSON] = [:]) {
         self.portraitMode = portraitMode
         self.mirrorLeftRight = mirrorLeftRight
         self.cueLevel = cueLevel

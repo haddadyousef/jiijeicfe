@@ -4,7 +4,7 @@
 //
 //  The Waymark contour-ring drawing, shared: the ring path math the voice tile animates
 //  (`ContourRings` in ios/CaneKit/UI/VoiceTile.swift, Step 58) and a static few-ring brand mark
-//  (`OpenCaneMark`) that the Dynamic Island, lock-screen card, accessory widget and Control Center
+//  (`WaymarkMark`) that the Dynamic Island, lock-screen card, accessory widget and Control Center
 //  control draw (Step 64).
 //
 //  Why `Shared/`: the widget extension does not link the app, so the geometry both targets draw
@@ -17,7 +17,7 @@
 //  Key invariants:
 //    · `SeededNoise` and the per-ring parameters are the Step 58 values bit for bit: the voice
 //      tile must look the same after the move (compare `make tour` Guide pictures).
-//    · No animation here: widgets do not animate, `OpenCaneMark` is `t = 0`.
+//    · No animation here: widgets do not animate, `WaymarkMark` is `t = 0`.
 //  Tests: none automated for pixels (SwiftUI shapes are not in CaneKitLogic); `make island` and
 //  `make tour` pictures.
 //
@@ -91,7 +91,7 @@ nonisolated enum ContourRingGeometry {
 /// ring math. A `Shape`, so callers `.stroke` it in any tint (the island tints it by alert level).
 /// Used by `NavLiveActivity` (compact leading, minimal, expanded, lock screen) and the Step 64
 /// accessory widget / control.
-nonisolated struct OpenCaneMark: Shape {
+nonisolated struct WaymarkMark: Shape {
     /// Rings drawn. 4 reads as "rings" at 14 pt; the tile's 40 would be a grey disc.
     var ringCount: Int = 4
 

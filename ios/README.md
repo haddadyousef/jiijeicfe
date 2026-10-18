@@ -1,9 +1,9 @@
-# OpenCane: the iOS app for the phone-only smart cane
+# Waymark: the iOS app for the phone-only smart cane
 
-> **The name split.** The product a person sees, hears and says to Siri is **OpenCane** (that is
+> **The name split.** The product a person sees, hears and says to Siri is **Waymark** (that is
 > `CFBundleDisplayName` in `project.yml`). Everything in the build is still called **CaneKit**: the
 > Xcode project, the targets and scheme, `PRODUCT_NAME`, the `CaneKitLogic` module, the
-> `ios/CaneKit/…` paths, the Makefile and the frozen bundle ids `com.aritro.canekit*`. That is
+> `ios/CaneKit/…` paths, and the Makefile. The bundle ids are `<BUNDLE_PREFIX>.waymark*`, set per teammate in `ios/local.mk`. That is
 > deliberate (AGENTS.md → "The name split"), so every command and path in this file still matches
 > the files on disk. Do not rename the code.
 
@@ -14,12 +14,12 @@ non-metal stick (27.65 mm, measured by the bore rings on 2026-09-12; a broom han
 cane), plus AirPods Pro and an Apple Watch. For the demo everything runs
 **untethered on the phone**. The Mac only signs and installs.
 
-| Target / package | What it is | Bundle ID (frozen) |
+| Target / package | What it is | Bundle ID (`BUNDLE_PREFIX` from `local.mk`) |
 |---|---|---|
-| **CaneKit** (shown as **OpenCane**) | The iPhone app, and the only computer in the kit | `com.aritro.canekit` |
-| **CaneKitWatch** | watchOS companion: wrist taps, Repeat / Next / Describe / Recenter | `com.aritro.canekit.watchkitapp` |
-| **CaneKitWidget** | Live Activity (Dynamic Island + lock screen) | `com.aritro.canekit.widget` |
-| **CaneKitUITests** | XCUITests + the screenshot tour | `com.aritro.canekit.uitests` |
+| **CaneKit** (shown as **Waymark**) | The iPhone app, and the only computer in the kit | `<prefix>.waymark` |
+| **CaneKitWatch** | watchOS companion: wrist taps, Repeat / Next / Describe / Recenter | `<prefix>.waymark.watchkitapp` |
+| **CaneKitWidget** | Live Activity (Dynamic Island + lock screen) | `<prefix>.waymark.widget` |
+| **CaneKitUITests** | XCUITests + the screenshot tour | `<prefix>.waymark.uitests` |
 | **CaneKitLogic** (`Logic/`) | SwiftPM package with every pure decision that has a number in it, plus its Swift Testing tests. Runs without Xcode. | — |
 
 Start with [`AGENTS.md`](../AGENTS.md) (hard rules; it wins every conflict), then
@@ -100,7 +100,7 @@ on the phone with `make run` (CHANGELOG Steps 35 and 37). A second Mac or phone 
    ```
 6. First install (`make run`), then on the phone: Settings → General → VPN & Device Management →
    trust the developer app.
-7. Phone Settings → Action Button → Shortcut → OpenCane → **Talk to OpenCane** (the target
+7. Phone Settings → Action Button → Shortcut → Waymark → **Talk to Waymark** (the target
    `docs/handsfree.md` §3 recommends; one press listens, and "What is in front of me?" covers the
    scene) or **Where am I** (scene only). The shortcuts appear after the first launch.
 8. Settings → Bluetooth → (i) next to the AirPods → **Spatial Audio: Off** and **Head Tracking: Off**.
@@ -136,7 +136,7 @@ Everything runs from `ios/` on the command line. You don't need the Xcode GUI af
 | `make test` | `scripts/test.sh`: the 654 `CaneKitLogic` tests (Swift Testing). Works with the Swift 6 toolchain / Command Line Tools; never touches the simulator or xcodebuild. Extra arguments pass through to `swift test` only when you call `scripts/test.sh` directly (e.g. `scripts/test.sh --filter SpeechResume`). |
 | `make build` | Device build, automatic signing, personal team (needs `TEAM` + `DEVICE`) |
 | `make install` | `xcrun devicectl device install app` onto the phone |
-| `make launch` | `xcrun devicectl device process launch com.aritro.canekit` |
+| `make launch` | `xcrun devicectl device process launch --device $(DEVICE) $(BUNDLE)` (`$(BUNDLE)` is `<prefix>.waymark`) |
 | `make run` | `gen` + `build` + `install` + `launch`. Use this for the phone. |
 | `make sim` | Build for the iOS simulator (no LiDAR, haptics or watch there) |
 | `make sim17` | Create the **iPhone 17 Pro Max / iOS 27** simulator (`xcrun simctl create`). Run it once: Xcode 27 does not create that device by default. |
@@ -167,7 +167,7 @@ xcrun simctl location <udid> set 40.1140,-88.2249
 scenario.
 
 The watch app rides inside the phone app and installs through the Watch app on the phone
-(Automatic App Install on, or Available Apps → **OpenCane** → Install — the Watch app lists the
+(Automatic App Install on, or Available Apps → **Waymark** → Install — the Watch app lists the
 display name, not the target name).
 
 ## 4. Secrets and permissions
@@ -182,7 +182,7 @@ display name, not the target name).
 | `CUSTOM_BASE_URL` / `CUSTOM_API_KEY` / `CUSTOM_MODEL` | Any OpenAI-compatible chat endpoint (Muse 1.3). The base URL goes without `/chat/completions`. |
 | `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL`, `GEMINI_API_KEY` / `GEMINI_MODEL`, `OPENAI_API_KEY` / `OPENAI_MODEL` | The other "Where am I" providers |
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `ELEVENLABS_MODEL` | Natural voice. The defaults are a warm premade voice and `eleven_flash_v2_5`. |
-| *(permission, not a key)* Location **Always** | Asked at the first route start (Step 47). Answer **Always**: with When In Use only, iOS puts its blue location pill in the Dynamic Island during a locked-screen route and demotes OpenCane's Live Activity to the minimal bubble; with Always, OpenCane's own route card owns the island, as Apple / Google Maps do. Declining keeps guidance working (a background session is armed instead). |
+| *(permission, not a key)* Location **Always** | Asked at the first route start (Step 47). Answer **Always**: with When In Use only, iOS puts its blue location pill in the Dynamic Island during a locked-screen route and demotes Waymark's Live Activity to the minimal bubble; with Always, Waymark's own route card owns the island, as Apple / Google Maps do. Declining keeps guidance working (a background session is armed instead). |
 | `OPENCANE_GROKBOT_WEBHOOK_URL`, `OPENCANE_GROKBOT_WEBHOOK_KEY` | Family alerts (§4.1). Copied from the Grok Bot routine's webhook-trigger panel. Empty = the feature is off and says so in Settings. |
 | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | Cloud sync (Step 60 MVP): walkers, Medical ID, family contacts, trip summaries, hazards, the family-alert feed. Mobility, settings and the JSONL trip log stay on the phone. Read from the process environment first, then this file (`Cloud/SupabaseClient.swift`). Publishable key only — never the secret key in a client. |
 | `CUSTOM_REASONING_EFFORT` | Optional, not in the example plist: the `reasoning_effort` sent to the custom (Muse) endpoint; empty = `low`. |
@@ -200,6 +200,11 @@ after the event.
 Cane detections are POSTed as one JSON event to the Grok Bot routine **"OpenCane cane events"**
 (folder `opencane-cane-events`), which decides whether to text family. Copy the **Webhook URL** and
 **key** from that routine's panel in Grok Bot into `Secrets.plist`:
+
+> **Kept names.** The routine name `OpenCane cane events`, the key names
+> `OPENCANE_GROKBOT_WEBHOOK_URL` / `OPENCANE_GROKBOT_WEBHOOK_KEY` and the `cane_id` value
+> `opencane-01` predate the Waymark name and stay as they are: the routine lives in Grok Bot,
+> the keys are already in every teammate's `Secrets.plist`, and the cloud rows carry that id.
 
 ```xml
 <key>OPENCANE_GROKBOT_WEBHOOK_URL</key>
@@ -264,7 +269,7 @@ Saving POSTs one event to the same webhook:
 ```
 
 `send_test` is sent **only on the first list the bot accepts**, so each address gets one "you are on
-the OpenCane alert list" email rather than one per edit. Cane events (`fall`, `sos`, `obstacle`, …)
+the Waymark alert list" email rather than one per edit. Cane events (`fall`, `sos`, `obstacle`, …)
 are posted separately and unchanged afterwards — they never carry `emails`, because the bot already
 has the list and every copy is one more place it could leak.
 
@@ -332,11 +337,11 @@ Permissions are declared in `project.yml` and prompted on first use:
 - **Health** is requested again on the watch.
 - **Camera + LiDAR** are used for obstacles.
 - **Speech recognition + microphone** are requested the first time voice input is used
-  (`VoiceInputEngine`: Action button / "Talk to OpenCane"); the **microphone** alone is also
+  (`VoiceInputEngine`: Action button / "Talk to Waymark"); the **microphone** alone is also
   requested when "Listen for sirens and horns" is turned on (`SoundWatcher`).
 
-Every purpose string names the app **OpenCane**, because that is the name the system shows next to
-it in the prompt and in Settings ("Turn on Camera for OpenCane"). They live in `project.yml`; edit
+Every purpose string names the app **Waymark**, because that is the name the system shows next to
+it in the prompt and in Settings ("Turn on Camera for Waymark"). They live in `project.yml`; edit
 them there and re-run `make gen`.
 
 Background modes are `audio` and `location` on the phone and `workout-processing` and `mindfulness`
@@ -385,10 +390,10 @@ run the Muse review of the diff.
   `xcrun simctl location`. The app auto-starts the route under `CANEKIT_DEMO_ROUTE=1`. Assertions
   run on the trip log: waypoint order, wrist cues, veer cues, "Passed …" lines and arrival. The
   four scenarios are a clean walk, a missed fence, ±6 m GPS jitter and a wrong turn at Goodwin.
-  Manual replay: `SIMCTL_CHILD_CANEKIT_DEMO_ROUTE=1 xcrun simctl launch booted com.aritro.canekit`,
+  Manual replay: `SIMCTL_CHILD_CANEKIT_DEMO_ROUTE=1 xcrun simctl launch booted <prefix>.waymark`,
   then `xcrun simctl location booted start --speed=4 --interval=1 <lat,lon> …` with the waypoints
   from `CaneKit/Resources/route_isr_cif.json`. The log is `Documents/canekit-*.jsonl` under
-  `xcrun simctl get_app_container booted com.aritro.canekit data`.
+  `xcrun simctl get_app_container booted <prefix>.waymark data`.
 - **CI (`.github/workflows/ci.yml`) is manual-trigger only** (Actions → CI → Run workflow). GitHub
   Actions billing on the account is exhausted, so pushes don't run it. When run, it does logic tests
   on Linux and an informational phone-only simulator build on macOS. **The local gate above is
@@ -400,18 +405,18 @@ run the Muse review of the diff.
   app's Documents folder (lanes with `tilt`, cues, GPS, heading, thermal, battery, speech dispatches
   and ends, `cue_profile`, hazards). The hazard map is `Documents/hazards/hazards-<session>.geojson`.
   Film every outdoor test with a second phone. Get the log off the phone in any of three ways:
-  - Files app → On My iPhone → OpenCane (`UIFileSharingEnabled`), then AirDrop.
+  - Files app → On My iPhone → Waymark (`UIFileSharingEnabled`), then AirDrop.
   - `make audit` pulls the newest log and measures it (it prints where it saved the copy).
   - By hand, with the phone plugged in, unlocked and trusted (`DEVICE` from `make devices`):
     ```sh
     xcrun devicectl device info files --device <DEVICE> \
-      --domain-type appDataContainer --domain-identifier com.aritro.canekit --subdirectory Documents
+      --domain-type appDataContainer --domain-identifier <prefix>.waymark --subdirectory Documents
     xcrun devicectl device copy from --device <DEVICE> \
-      --domain-type appDataContainer --domain-identifier com.aritro.canekit \
+      --domain-type appDataContainer --domain-identifier <prefix>.waymark \
       --source Documents/canekit-<stamp>.jsonl --destination ./canekit-<stamp>.jsonl
     ```
   In the simulator the same files are under
-  `$(xcrun simctl get_app_container booted com.aritro.canekit data)/Documents/`.
+  `$(xcrun simctl get_app_container booted <prefix>.waymark data)/Documents/`.
 - **Go / no-go before a blindfolded ISR → CIF walk.** Any miss means a sighted demo only.
   - GPS accuracy ≤ 20 m for 30 s at the ISR door. Fences and veer cues pause above 20 m, and the
     app says so.
@@ -430,7 +435,7 @@ run the Muse review of the diff.
 
 The app reads these at launch (`ProcessInfo.processInfo.environment`). In the simulator pass them
 with the `SIMCTL_CHILD_` prefix (`SIMCTL_CHILD_CANEKIT_MUTE=1 xcrun simctl launch booted
-com.aritro.canekit`); for XCUITests set them in `app.launchEnvironment`, or as `TEST_RUNNER_…` in
+<prefix>.waymark`); for XCUITests set them in `app.launchEnvironment`, or as `TEST_RUNNER_…` in
 xcodebuild's environment (the Makefile does this). None of them is set on a normal launch.
 
 | Variable | Effect | Set by |

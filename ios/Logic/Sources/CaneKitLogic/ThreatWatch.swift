@@ -124,9 +124,9 @@ public enum ThreatWatch {
     ///
     /// The note quotes the model rather than asserting a fact, because that is all Waymark knows:
     /// "Waymark's camera described: …". A family member reading it can judge for themselves.
-    public static func event(_ sighting: ThreatSighting, lat: Double?, lng: Double?) -> OpenCaneEvent {
-        var event = OpenCaneEvent(type: .threat, severity: .critical, lat: lat, lng: lng,
-                                  note: "Possible \(sighting.term) seen. Waymark's camera described: \(sighting.text)")
+    public static func event(_ sighting: ThreatSighting, lat: Double?, lng: Double?) -> WaymarkEvent {
+        var event = WaymarkEvent(type: .threat, severity: .critical, lat: lat, lng: lng,
+                                 note: "Possible \(sighting.term) seen. Waymark's camera described: \(sighting.text)")
         event.extra = ["threat_term": .string(sighting.term),
                        "camera_description": .string(sighting.text)]
         return event

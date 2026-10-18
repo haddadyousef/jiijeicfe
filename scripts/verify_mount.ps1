@@ -59,7 +59,7 @@ $srcDir = Join-Path $repo 'hardware\mount_screwless'
 $harn   = Join-Path $srcDir 'verify.scad'
 $tools  = Join-Path $PSScriptRoot 'stl_tools.js'
 # Scratch dir for the intersection STLs; old ones are deleted at start.
-$work   = Join-Path ([IO.Path]::GetTempPath()) 'opencane_verify'
+$work   = Join-Path ([IO.Path]::GetTempPath()) 'waymark_verify'
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 Get-ChildItem "$work\*.stl" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Item $_.FullName -Force }
 

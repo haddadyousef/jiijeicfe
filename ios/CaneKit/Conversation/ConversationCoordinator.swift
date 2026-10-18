@@ -44,7 +44,7 @@
 //
 //  Owner: `AppModel.conversation`, built in `AppModel.init` with the same `VLMClient` as the
 //  describer. Callers: `AppModel`'s `voiceInput.onTranscriptionFinalized` (push-to-talk, head nod)
-//  and `AppModel.handleSpokenQuery` (`TalkToOpenCaneIntent` with a filled query). `VoiceTile` shows
+//  and `AppModel.handleSpokenQuery` (`TalkToWaymarkIntent` with a filled query). `VoiceTile` shows
 //  `isProcessing` ("Thinking…") and `lastResponse`; the voice shell reads `awaitingEmergencyAnswer`
 //  to give the emergency prompt its answer window.
 //

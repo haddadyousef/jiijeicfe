@@ -87,7 +87,7 @@ mass is well under half.
 
 **Sliced, per part, 2026-09-12 (evening)** - see the table in [`PRINTING.md`](PRINTING.md).
 Every plate is a separate file written by `slice_gcode.ps1`, which is also the only thing that
-knows to turn support on for the cradle. The old `opencane_mount_plate.3mf` (six parts, 4 h 31)
+knows to turn support on for the cradle. The old six-part mount-plate `.3mf` (4 h 31)
 predates the redesign below and must not be printed.
 
 **Support: none, except the cradle.** The cradle stands on its dovetail block, so its

@@ -84,7 +84,8 @@ private func wireArray<T: Encodable>(_ rows: [T]) throws -> [[String: Any]] {
 
 // MARK: - Column names
 
-/// The trip-event column names are the contract with migration `opencane_03`.
+/// The trip-event column names are the contract with migration `opencane_03` (its name in the
+/// Supabase project; external).
 @Test func tripEventColumnsAreSnakeCase() throws {
     let json = try wire(TripEventRow(walkerID: "w", tripID: "t", tSeconds: 1.5, kind: "speech",
                                      payload: ["band": .string("nav")],
@@ -169,9 +170,9 @@ private func wireArray<T: Encodable>(_ rows: [T]) throws -> [[String: Any]] {
 /// The model-written sentence gets its own column and is removed from `extra`, so it is stored
 /// once and a demo can select it without digging through JSON.
 @Test func aiContextIsPromotedOutOfExtra() throws {
-    var event = OpenCaneEvent(type: .fall, severity: .critical,
-                              timestamp: "2026-09-13T01:05:00Z", lat: 40.1134, lng: -88.2242,
-                              note: "Cane went over.", caneID: "opencane-01", batteryPct: 12)
+    var event = WaymarkEvent(type: .fall, severity: .critical,
+                             timestamp: "2026-09-13T01:05:00Z", lat: 40.1134, lng: -88.2242,
+                             note: "Cane went over.", caneID: "opencane-01", batteryPct: 12)
     event.extra = ["ai_context": .string("Stopped 40 m from CIF with 12% battery."),
                    "cue_level": .string("standard")]
 
@@ -192,7 +193,7 @@ private func wireArray<T: Encodable>(_ rows: [T]) throws -> [[String: Any]] {
 
 /// A pending alert has not been posted, so it carries no `posted_at`.
 @Test func pendingAlertsHaveNoPostedTime() throws {
-    let event = OpenCaneEvent(type: .sos, severity: .critical)
+    let event = WaymarkEvent(type: .sos, severity: .critical)
     let row = try #require(FamilyAlertRow(event: event, walkerID: "w", tripID: nil,
                                           now: Date(timeIntervalSince1970: 1_789_000_000)))
     #expect(row.deliveryStatus == "pending")
@@ -204,8 +205,8 @@ private func wireArray<T: Encodable>(_ rows: [T]) throws -> [[String: Any]] {
 /// The nested `{lat, lng}` form is accepted as well as the flat pair — the bot contract allows
 /// either and a replayed event must not lose its position.
 @Test func nestedLocationIsAcceptedAsAPosition() throws {
-    var event = OpenCaneEvent(type: .location, severity: .info)
-    event.location = OpenCaneGeo(lat: 40.1, lng: -88.2)
+    var event = WaymarkEvent(type: .location, severity: .info)
+    event.location = WaymarkGeo(lat: 40.1, lng: -88.2)
     let row = try #require(FamilyAlertRow(event: event, walkerID: "w", tripID: nil, now: Date()))
     #expect(row.lat == 40.1)
     #expect(row.lng == -88.2)

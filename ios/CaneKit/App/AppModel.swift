@@ -150,7 +150,8 @@ final class AppModel {
     let fallWatcher = FallWatcher()
     /// Spam guard for the two buttons that POST to the webhook (CaneKitLogic; 10 s apart).
     @ObservationIgnored private var actionLimit = ActionRateLimit()
-    /// Family alerts: cane detections → the Grok Bot routine "OpenCane cane events" (step 39).
+    /// Family alerts: cane detections → the Grok Bot routine "OpenCane cane events" (step 39;
+    /// the routine name is an external contract in Grok Bot).
     /// Off unless `familyAlertsEnabled`; unconfigured (no webhook key) is a no-op that says so.
     let family = FamilyAlerts()
     /// The optional cloud mirror (Steps 45 / 60): after `cloudSharingEnabled`, only Medical ID,
@@ -1163,7 +1164,7 @@ final class AppModel {
     /// `ConversationCoordinator.handleQuery` (fast-path commands first, then the model; answers at
     /// `.scene`). A query still in flight is superseded (latest wins, `ConversationBudget`, Step 57).
     /// - Parameter text: the query, already trimmed and non-empty.
-    /// Callers: `TalkToOpenCaneIntent` (a query carried by the intent).
+    /// Callers: `TalkToWaymarkIntent` (a query carried by the intent).
     func handleSpokenQuery(_ text: String) async {
         await conversation.handleQuery(text)
     }
@@ -4194,7 +4195,7 @@ final class AppModel {
         }
         cloud.start(CloudSync.RegistrationFacts(
             displayName: medicalProfile.profile.name,
-            caneID: family.caneID ?? "opencane-01",
+            caneID: family.caneID ?? "opencane-01",   // external contract (`FamilyAlerts.caneID`)
             hasLiDAR: DepthEngine.supportsMesh,
             watchPaired: watch.isPaired,
             airPodsPaired: audioRoute.headphonesConnected))
@@ -4229,7 +4230,7 @@ final class AppModel {
     private func recordDeviceCapabilities() {
         cloud.updateDeviceFacts(CloudSync.RegistrationFacts(
             displayName: medicalProfile.profile.name,
-            caneID: family.caneID ?? "opencane-01",
+            caneID: family.caneID ?? "opencane-01",   // external contract (`FamilyAlerts.caneID`)
             hasLiDAR: DepthEngine.supportsMesh,
             watchPaired: watch.isPaired,
             airPodsPaired: audioRoute.headphonesConnected))

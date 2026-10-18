@@ -1,6 +1,6 @@
 <!-- Research workflow output, 2026-09-12. 4 researchers + 4 source fact-checkers (74 findings kept, 10 dropped as unsupported) + synthesis. Numbers marked [H] are hypotheses, not measurements. -->
 
-# OpenCane cue design v2: what blind travellers need, and how to make the cane calmer
+# Waymark cue design v2: what blind travellers need, and how to make the cane calmer
 
 *Grounded in the repo at `d636232`. I read AGENTS.md, docs/design.md §5 and §7, hardware/mount/DESIGN.md, LaneMath.swift, CueDecider.swift, NavSupport.swift (`CueSpeechPolicy`), SpeechLoadPolicy.swift, ObstacleNamer.swift, AppModel.swift (`handle`, `speakCueIfNeeded`) and the tests that pin them. Every number marked **[H]** is a hypothesis to tune on the real cane. None of them has been measured.*
 
@@ -71,7 +71,7 @@
 
 ---
 
-## 2. Where OpenCane violates them today
+## 2. Where Waymark violates them today
 
 | # | Violation | Code or design | Field symptom | Principles |
 |---|---|---|---|---|
@@ -178,7 +178,7 @@ Defaults: **Quiet** for daily travel; **Standard** for the demo if the founder w
 **Kept:** overhangs, advance notice (≥ 1.5 m) of drop-offs and stairs down, route decision points, safety signs.
 
 **Success metrics for every field test:**
-- Walking speed with OpenCane compared with cane alone (Pittet 2026).
+- Walking speed with Waymark compared with cane alone (Pittet 2026).
 - Unsolicited lines per minute.
 - `replays > 0` count in `speech_dispatch`.
 - Whether the user can hold a conversation while walking.
@@ -218,7 +218,7 @@ Defaults: **Quiet** for daily travel; **Standard** for the demo if the founder w
 7. Beacon: only when off course, or continuous? Does it bother you in Transparency mode?
 8. What should the hush gesture be, given one hand is on the cane?
 9. Does wearing a phone that talks draw unwanted attention? Would haptic-only be preferable in public?
-10. Walking speed and confidence with OpenCane compared with cane alone, over the same route. Discount the first minutes, when testers explore the device instead of walking.
+10. Walking speed and confidence with Waymark compared with cane alone, over the same route. Discount the first minutes, when testers explore the device instead of walking.
 
 **Finding testers quickly (Champaign-Urbana).** I did not check any of these contacts during this research. Confirm each before reaching out.
 - **UIUC Disability Resources & Educational Services (DRES):** ask its accessibility staff to circulate a paid 45-minute session to students who are blind or low vision.
@@ -296,19 +296,19 @@ Pay testers. Have a sighted spotter present. Always run a cane-only baseline fir
 - Apple HIG, Playing haptics: https://developer.apple.com/design/human-interface-guidelines/playing-haptics
 
 **Repo files cited** (read-only, nothing edited):
-- /Users/aritro/Downloads/54FoundersHack/AGENTS.md
-- /Users/aritro/Downloads/54FoundersHack/docs/design.md
-- /Users/aritro/Downloads/54FoundersHack/hardware/mount/DESIGN.md
-- /Users/aritro/Downloads/54FoundersHack/ios/Logic/Sources/CaneKitLogic/LaneMath.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/Logic/Sources/CaneKitLogic/CueDecider.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/Logic/Sources/CaneKitLogic/NavSupport.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/Logic/Sources/CaneKitLogic/SpeechLoadPolicy.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/CaneKit/Speech/ObstacleNamer.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/CaneKit/Speech/SpeechQueue.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/CaneKit/App/AppModel.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/Logic/Tests/CaneKitLogicTests/CueDeciderTests.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/Logic/Tests/CaneKitLogicTests/NavSupportTests.swift
-- /Users/aritro/Downloads/54FoundersHack/ios/Logic/Tests/CaneKitLogicTests/SpeechLoadPolicyTests.swift
+- `AGENTS.md`
+- `docs/design.md`
+- `hardware/mount/DESIGN.md`
+- `ios/Logic/Sources/CaneKitLogic/LaneMath.swift`
+- `ios/Logic/Sources/CaneKitLogic/CueDecider.swift`
+- `ios/Logic/Sources/CaneKitLogic/NavSupport.swift`
+- `ios/Logic/Sources/CaneKitLogic/SpeechLoadPolicy.swift`
+- `ios/CaneKit/Speech/ObstacleNamer.swift`
+- `ios/CaneKit/Speech/SpeechQueue.swift`
+- `ios/CaneKit/App/AppModel.swift`
+- `ios/Logic/Tests/CaneKitLogicTests/CueDeciderTests.swift`
+- `ios/Logic/Tests/CaneKitLogicTests/NavSupportTests.swift`
+- `ios/Logic/Tests/CaneKitLogicTests/SpeechLoadPolicyTests.swift`
 ## Addendum: measured on the field log (trip log canekit-2026-09-12T20-57-17Z)
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="OpenCane build_routes.py" xmlns="http://www.topografix.com/GPX/1/1">
+<gpx version="1.1" creator="Waymark build_routes.py" xmlns="http://www.topografix.com/GPX/1/1">
   <trk><name>isr_union_wrong_turn</name><trkseg>
       <trkpt lat="40.10949" lon="-88.221355"/>
       <trkpt lat="40.109352" lon="-88.221354"/>

@@ -50,11 +50,11 @@ public enum VoiceShellPolicy {
 
     /// The whole launch announcement on a phone with LiDAR (Step 67: nothing follows it but the
     /// listening tone). ⚠ Byte-identical to the entry in `AppModel.commonLines`, which references
-    /// this constant so the natural-voice cache hits. Pinned by `launchSaysOnlyOpenCaneReady`.
+    /// this constant so the natural-voice cache hits. Pinned by `launchSaysOnlyWaymarkReady`.
     public static let readyLine = "Waymark ready."
 
     /// The launch announcement on a phone without LiDAR: obstacle warnings cannot work, and the
-    /// walker must know at once. Pinned by `launchSaysOnlyOpenCaneReady`.
+    /// walker must know at once. Pinned by `launchSaysOnlyWaymarkReady`.
     public static let noLidarLine = "Waymark. This phone has no LiDAR."
 
     /// What launch says before the listening tone — one line, never a menu.

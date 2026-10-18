@@ -1,4 +1,4 @@
-# AGENTS.md — rules for anyone (human or AI) editing OpenCane / CaneKit
+# AGENTS.md — rules for anyone (human or AI) editing Waymark / CaneKit
 
 Read this before touching the repo. `docs/CODE_REFERENCE.md` is the map of every file, type and
 function; `CHANGELOG.md` is the build log; `docs/todo.md` is the strict checklist;
@@ -9,22 +9,23 @@ shipped code disagree, the code is the truth: fix this file (and say so in `CHAN
 
 ## What this is
 
-OpenCane is a native iOS 26 app (Swift 6, SwiftUI, no third-party packages) that guides a blind cane
+Waymark is a native iOS 26 app (Swift 6, SwiftUI, no third-party packages) that guides a blind cane
 user along GPS waypoints and warns about waist-to-head obstacles. The **phone is the only computer**:
 an iPhone 17 Pro Max (iOS 27) clamped to a non-metal cane shaft — for the prototype a 27.65 mm broom
 handle, measured by the bore-ring coupons (CHANGELOG hardware "Step 21 — The bore rings were printed"; the old 28.75 figure is retired) —
 plus AirPods Pro (beacon + speech + head yaw) and an Apple Watch (wrist taps, Repeat / Next / Describe / Recenter). No ESP32, no
-external sensors. The demo route is ISR Townsend Hall → CIF on the UIUC campus
-(`ios/CaneKit/Resources/route_isr_cif.json`), but any destination works via MapKit walking directions.
+external sensors. The default demo route is the Ave in Seattle's U District (`RouteSource.bundled()`,
+`ios/CaneKit/Resources/route_ave_seattle.json`); the first campus test route, ISR Townsend Hall → CIF at UIUC
+(`route_isr_cif.json`), is opt-in with `WAYMARK_DEMO_ROUTE=isr_cif`. Any destination works via MapKit walking directions.
 For the demo everything runs **untethered on the phone**; the Mac only signs and installs.
 
-## The name split — OpenCane to a human, CaneKit in the code (deliberate, do not "fix")
+## The name split — Waymark to a human, CaneKit in the code (deliberate, do not "fix")
 
 Added 2026-09-11. The two names are **not** a half-finished rename; keeping them apart is the point.
 
 | | Name | Where it is set |
 |---|---|---|
-| What a person **sees and hears** | **OpenCane** | `CFBundleDisplayName` on all three targets (`ios/project.yml` → `make gen`); the nav title on the Guide tab in `ContentView` (Sense / Settings / Profile carry their own titles "Details" / "Settings" / "Profile"); the watch nav title; every spoken line (`AppModel`, `SoundWatcher`, `AppIntents`); the `NS*UsageDescription` purpose strings; the Siri App Shortcut phrases, which interpolate `\(.applicationName)` and therefore follow the display name with no edit |
+| What a person **sees and hears** | **Waymark** | `CFBundleDisplayName` on all three targets (`ios/project.yml` → `make gen`); the nav title on the Guide tab in `ContentView` (Sense / Settings / Profile carry their own titles "Details" / "Settings" / "Profile"); the watch nav title; every spoken line (`AppModel`, `SoundWatcher`, `AppIntents`); the `NS*UsageDescription` purpose strings; the Siri App Shortcut phrases, which interpolate `\(.applicationName)` and therefore follow the display name with no edit |
 | What the **code** is called | **CaneKit** | Xcode project and `CaneKit.xcodeproj`, target names, scheme, `PRODUCT_NAME` (so the build product is `CaneKit.app`), the `CaneKitLogic` SwiftPM module, every `ios/CaneKit…/` path and file name, `Makefile` targets, the `CANEKIT_*` environment variables, the `canekit-*.jsonl` trip-log filenames |
 | Frozen either way | `com.aritro.canekit`, `.watchkitapp`, `.widget` | hard rule 6 |
 
@@ -40,15 +41,15 @@ Why the code keeps the old name:
   hundreds of files, `docs/CODE_REFERENCE.md` and every XCUITest, for a rename with no user-visible
   effect.
 
-So: when you add a **spoken or visible** string, say OpenCane. When you touch a type, file, module,
+So: when you add a **spoken or visible** string, say Waymark. When you touch a type, file, module,
 target, path, scheme or bundle id, it is CaneKit. Two traps worth knowing:
 
 1. ⚠ `AppModel.commonLines` prefetches the ElevenLabs audio for fixed spoken lines and matches them
-   **by bytes**. "OpenCane ready." is `VoiceShellPolicy.readyLine`, referenced by both `commonLines`
+   **by bytes**. "Waymark ready." is `VoiceShellPolicy.readyLine`, referenced by both `commonLines`
    and the `speech.say` in `AppModel.start()` (Step 67); retype it as a literal in either place and a
    one-byte drift silently falls back to Apple's system voice.
 2. ⚠ Changing `CFBundleDisplayName` changes **what the walker must say to Siri**: the phrase is
-   "… in OpenCane" now, not "… in CaneKit". `docs/design.md` §6.3 and `docs/handsfree.md` list the current phrases.
+   "… in Waymark" now, not "… in CaneKit". `docs/design.md` §6.3 and `docs/handsfree.md` list the current phrases.
 
 ## Layout
 
@@ -71,7 +72,7 @@ target, path, scheme or bundle id, it is CaneKit. Two traps worth knowing:
 | `scripts/` (repo root) | Windows mount pipeline: `verify_mount.ps1` (model checks), `build_stl.ps1` (renders), `slice_gcode.ps1` (slices headlessly), `stl_tools.js` (volume / shells / overhang measurements) |
 | `cad/`, `firmware/` | Legacy ESP32-era grip drafts and BLE grip firmware. Not part of the phone-only build; do not print or flash for the demo |
 | `.github/workflows/ci.yml` | CI, **manual trigger only** (Actions billing exhausted); the local `make` gate is authoritative |
-| `graphify-out/` | Knowledge graph of the repo: `graphify query "<question>"`, `GRAPH_REPORT.md`, `graph.html` |
+| `archive/graphify-out/` | Archived, stale knowledge-graph snapshot (Step 47, before the Waymark changes): `GRAPH_REPORT.md`, `graph.html`. The `graphify` commands read `./graphify-out/`, not this copy |
 
 ## Hard rules
 
@@ -99,7 +100,7 @@ target, path, scheme or bundle id, it is CaneKit. Two traps worth knowing:
    (HFP drops AirPods to phone-call quality). `CHHapticEngine(audioSession: nil)`. `.HRTF`, mono click.
    Do not "fix" the deviations listed in `ios/README.md §2` back to the original spec.
    One exception exists: an audio *input*, for "Listen for sirens and horns" (off by default, owner
-   `.soundRecognition`) or push-to-talk "Talk to OpenCane" (one utterance, owner `.voiceInput`).
+   `.soundRecognition`) or push-to-talk "Talk to Waymark" (one utterance, owner `.voiceInput`).
    `SpeechQueue.setMicrophoneEnabled(_:owner:)` moves the session to `.playAndRecord` with
    `[.duckOthers, .allowBluetoothA2DP, .defaultToSpeaker]` — never `.allowBluetoothHFP` — and reverts to
    `.playback` the moment the **output** route changes at all, refusing the feature instead. No other
@@ -407,7 +408,7 @@ bench has *disproved* must never sit in the file as though it were settled — m
   MKLocalSearch result within 3 km (a name containing every typed word preferred), never MapKit's
   first answer; "Walking to <place>, N meters." is said before guidance so a wrong pick can be
   stopped, and Stop also abandons a search still in flight. Siri: every place goes through
-  "Take me somewhere in OpenCane" and Siri asks where (waymark: the campus-place phrases and their
+  "Take me somewhere in Waymark" and Siri asks where (waymark: the campus-place phrases and their
   `AppEnum` were removed so no UIUC name ships in Siri / Shortcuts). Gazetteer
   entrances other than CIF / ISR are OSM entrance nodes, not yet walked.
 - "Directions from here" (was "Navigate to CIF from here") routes with Apple Maps to the demo route
@@ -590,7 +591,7 @@ bench has *disproved* must never sit in the file as though it were settled — m
   `LaneConfig` centimetre geometry, `MountTilt.aim`): move them together. Not part of
   `make test`.
 - **Trip-log evidence:** trip logs are not in git. The app writes `canekit-<ISO time>.jsonl` to its
-  Documents folder ("Write trip log", on by default; Files → On My iPhone → OpenCane); `make audit`
+  Documents folder ("Write trip log", on by default; Files → On My iPhone → Waymark); `make audit`
   pulls the newest, and `make e2e` keeps simulator logs in `ios/build/e2e/`. Cite a log by its
   timestamp name and `t` in code comments and `CHANGELOG.md`. The logs behind Steps 34–37:
   `2026-09-12T20-57-17Z` (torch, both-cameras, face tracking, first *handheld* cue baseline),

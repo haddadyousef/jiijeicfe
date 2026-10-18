@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="OpenCane build_routes.py" xmlns="http://www.topografix.com/GPX/1/1">
+<gpx version="1.1" creator="Waymark build_routes.py" xmlns="http://www.topografix.com/GPX/1/1">
   <trk><name>cif_isr</name><trkseg>
       <trkpt lat="40.112424" lon="-88.22788"/>
       <trkpt lat="40.112425" lon="-88.22783"/>

@@ -269,7 +269,7 @@ struct CaneKitShortcuts: AppShortcutsProvider {
                               "Take me somewhere with \(.applicationName)"],
                     shortTitle: "Take me to…",
                     systemImageName: "mappin.and.ellipse")
-        AppShortcut(intent: TalkToOpenCaneIntent(),
+        AppShortcut(intent: TalkToWaymarkIntent(),
                     phrases: ["Talk to \(.applicationName)",
                               "Speak to \(.applicationName)",
                               "\(.applicationName) start listening"],

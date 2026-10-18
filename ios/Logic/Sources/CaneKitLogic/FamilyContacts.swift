@@ -97,8 +97,8 @@ public enum FamilyContacts {
     /// The registration event. `send_test` asks the bot to email each address a short confirmation
     /// — the app itself sends nothing.
     /// - Parameter emails: raw entries; normalised here, so a caller cannot post a malformed list.
-    public static func registration(emails: [String], sendTest: Bool) -> OpenCaneEvent {
-        var event = OpenCaneEvent(type: .familyContacts, severity: .info)
+    public static func registration(emails: [String], sendTest: Bool) -> WaymarkEvent {
+        var event = WaymarkEvent(type: .familyContacts, severity: .info)
         event.emails = normalize(emails)
         // Omitted rather than `false`: absent means "do not test", and the contract only gives
         // meaning to the true case.

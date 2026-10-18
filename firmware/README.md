@@ -1,7 +1,7 @@
 # CaneKit grip module firmware
 
 > **Stretch / history only — not used by the app.** The ESP32 grip was cut on 2026-09-10 when
-> OpenCane went phone-only (`AGENTS.md`: no ESP32, no external sensors). Nothing in the iOS targets
+> Waymark went phone-only (`AGENTS.md`: no ESP32, no external sensors). Nothing in the iOS targets
 > talks to it; the only client ever written is `ios/stretch/CaneBLE.swift` (in no target), which
 > speaks the protocol below. The housings are the legacy drafts in [`cad/`](../cad/README.md).
 > Never built in CI, no automated tests; the local fail-safe thresholds were never tuned on a cane.
