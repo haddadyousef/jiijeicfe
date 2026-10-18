@@ -4,6 +4,26 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
+## repo: cd3e1a8 (`main`: E1 + E2 + X-e2e merged, #6) | wall: Sat 17:20 PT
+
+**Merged #6.** Mac evidence on e997615 (= the merged tree), iPhone 18 Pro:
+- `make gen` exit 0.
+- `make test` 1044 passed, exit 0.
+- `make sim` BUILD SUCCEEDED, 0 warnings.
+- `make uitest` 12 passed, 1 skipped, exit 0.
+- **`make e2e-waymark` PASS (exit 0, 376 s)** — the X-e2e result, D-35 item 3:
+  - The 6-label SYNTHETIC bundle loaded in 280 ms.
+  - All 6 planted labels were spoken at `.scene`: rough surface, obstacle, missing curb ramp, curb ramp, no sidewalk, obstacle.
+  - Silences: `speech_busy` 6, `crossing` 1, `already_announced` 6.
+  - Arrival 14.6 m from the last waypoint; 1.48 route lines/min.
+  - No evidence records, as expected (the simulator has no LiDAR, so no pass gathers frames and none is contradicted).
+
+**D-35 is done (items 1–3).** E1 and E2 are on `main`.
+
+**Phone install did not run.** `make build install launch` found the iPhone 17 Pro "connected (no DDI)", which usually means the phone was locked. It needs Akash: unlock the phone, then `make build install launch`.
+
+**Open @W:** the curb-ramp reading of §9.1 row 2 (previous entry). F1 can go once the app is on the phone.
+
 ## repo: 7e7fdcd (`main` has UI v2, #5 = 24d2209) | wall: Sat 17:15 PT
 
 **Merged #5 UI v2 + the Ave default route.** Evidence on `waymark/next` b2a8de7 (= this tree + E1), Mac, iPhone 18 Pro, UIUC location: `make gen` exit 0; `make test` 1036 passed, exit 0; `make sim` BUILD SUCCEEDED, exit 0; `make uitest` 12 passed, 1 skipped, TEST SUCCEEDED, exit 0. That includes the new `testDefaultRouteIsTheAveWalk`, which runs without the UIUC pin. `make tour` produced 16 shots. D-35 items 1 and 2 are on `main`. ⚠ `make gen` is needed after pulling (new resource).
