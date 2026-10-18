@@ -1,6 +1,6 @@
 # Waymark board (single writer: Windows session / leader)
 
-Last checked: Sun 2026-10-18 00:20 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
+Last checked: Sun 2026-10-18 00:15 PT. **Repo: `github.com/haddadyousef/jiijeicfe`** (old `Waymark` repo is frozen, see PROVENANCE.md).
 Windows confirmed `d2898e0` + this commit on `main`. Mac last status entry: 14:30 (old repo, `5b9227f`).
 If this is more than an hour old, it is stale. Say "check mac" to the Windows chat.
 
@@ -27,7 +27,7 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 | A2, A3, F1, T1 | Mac | Card and map, field walk, tuning | phone install done (Akash's phone); F1 waits for a spotter, daylight and a clean `make test` / `make uitest` on `main` | 17:30 |
 | UI rework | Mac (Akash request) | Palette, simpler pages, UI v3 Graphite | passes 1, 2 and v3 merged (#4, #5, #7) | 00:20 |
 | Judge demo T1 to T4 | Mac | Guide chip and ahead card, map of reports, learning shown and saved, UIUC gate, neutral profile | merged (#8, 29b4ccb), `make test` 1128 exit 0; `make uitest` exit 2 (island tour, since UI v3) | 00:20 |
-| README, disclosure | W | Waymark README, OpenCane README kept in docs/ | done (D-38) | 00:20 |
+| README, disclosure | W, Yousef | Waymark README | done; Yousef then removed the OpenCane section (D-39), disclosure decision with him | 00:15 |
 | P1 to P4, P6 | W | Pipeline and real bundle | done: 3,405 labels in `ios/CaneKit/Resources/waymark_priors.json` (e1d466e) | 15:12 |
 | V1 | W | Eval harness (metrics 1, 2, 7) | done (c583e5f), 20 tests | 15:35 |
 | V2 | W | Calibration, sweep, staleness, positional error | built on synthetic data (8ab798b); real numbers need F1 | 16:05 |

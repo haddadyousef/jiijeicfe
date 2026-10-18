@@ -2,7 +2,7 @@
 
 > **Waymark docs are in [`waymark/docs/`](../waymark/docs/)** (plan, design, decisions, status, provenance); start at the root
 > [`README.md`](../README.md). **The documents in this folder are inherited from the base project, OpenCane**
-> (pre-existing, see [`OPENCANE_README.md`](OPENCANE_README.md)). They still describe how the base app is built
+> (pre-existing; github.com/aritroBh/OpenCane at `fe86e10`, see [`../waymark/docs/PROVENANCE.md`](../waymark/docs/PROVENANCE.md)). They still describe how the base app is built
 > and tested, and the engineering rules in `AGENTS.md` apply to all of it. Where they mention the UIUC demo route,
 > ISR or CIF, that is the base project's demo; Waymark's demo is the Ave route in Seattle.
 
@@ -37,7 +37,6 @@ themselves in their headers (AGENTS.md "How we engineer" 7).
 | Doc | Read it when |
 |---|---|
 | [`README.md`](../README.md) | You want what Waymark is, the demo, how it works, honest status, the OpenCane disclosure, the repo map and the quick start. |
-| [`OPENCANE_README.md`](OPENCANE_README.md) | You want the base project's own README: the kit, its hardware list, the UIUC demo and its full quick start. |
 | [`AGENTS.md`](../AGENTS.md) | **Before your first edit, human or AI.** It has the hard rules (concurrency, iOS 26 APIs only, logic lives in `ios/Logic`, secrets, frozen bundle IDs, audio session, speech priorities (rule 8), accessibility-label contract (rule 9), per-commit gate (rule 10)), "How we engineer", the commands, the two false-green traps, the OpenSCAD traps and the "looks wrong but is deliberate" list. It wins every conflict. |
 | [`CLAUDE.md`](../CLAUDE.md) | You are Claude Code. It is the short version of `AGENTS.md`, loaded automatically. |
 | [`CHANGELOG.md`](../CHANGELOG.md) | You need to know what landed in each build step, why, how it was reviewed and verified, and its "test on device" list. Newest first. Step numbers 15, 16, 17, 21, 22 and 25 each appear twice, on purpose (see the note under Step 27). Steps 38–46 also share their digits with the cue-v2 *plan* items in `docs/todo.md`, which are written "cue-v2 #38" … "#45" for that reason — a CHANGELOG "Step 41" is hazard telemetry, "cue-v2 #41" is torso haptics (shipped in Step 47). |

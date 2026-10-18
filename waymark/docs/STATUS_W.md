@@ -1,5 +1,11 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: ac277ef | wall: Sun 2026-10-18 00:15 PT
+
+**Scheduled check-in 00:04: checked Mac at `ac277ef` (`main`).** No new Mac commits or `STATUS_M` entry since 23:40 (judge demo, merged as #8). The only changes are Yousef's two README commits (see D-39). Open @M, unchanged: diagnose `testDynamicIsland` (`make uitest` exit 2) before the live walk.
+**D-39:** Yousef removed the OpenCane disclosure and credit from the README and deleted `docs/OPENCANE_README.md`. Not reverted (his repo, his call), flagged to him in chat. Fixed the dangling links in `docs/README.md`. No Walk 1 results received.
+
+---
 ## repo: 29b4ccb + this commit | wall: Sun 2026-10-18 00:20 PT
 
 **Seen since 22:34: Mac "judge demo" tasks T1 to T4 merged to `main` (PR #8, 29b4ccb).** R1, accepted with one open item:
