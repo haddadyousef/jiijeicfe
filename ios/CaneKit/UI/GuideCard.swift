@@ -80,7 +80,12 @@ struct GuideCard: View {
             }
             // One microphone outside the branches, so it keeps its identity (and VoiceOver focus)
             // when a spoken "route" / "stop" or the arrival flips `walking` (review C).
-            VoiceTile(heightFraction: walking ? 0.26 : 0.30)
+            // waymark: idle 0.30 → 0.18 with a capped disc (judge demo task 4, `WaymarkMicLayout`) so
+            // the whole Where am I tile sits above the floating tab dock on a Pro Max at the default
+            // text size and the rings still show; walking is unchanged (0.26, no cap). Both idle
+            // numbers grow with Dynamic Type up to 0.30 (review fix), inside `VoiceTile`.
+            // waymark: was `VoiceTile(heightFraction: walking ? 0.26 : 0.30)`.
+            VoiceTile(walking: walking)
             if walking {
                 describerLines
                 routeStatusCard

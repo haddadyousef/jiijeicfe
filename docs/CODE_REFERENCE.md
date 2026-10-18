@@ -3529,6 +3529,13 @@ marked `// waymark:`.
   `name(subdir:uiTest:)`, `testPrefix` ("wm-ui-"), `staleTestFolders(_:active:uiTest:)` (never "waymark").
 - `ios/Logic/Sources/CaneKitLogic/StoredBool.swift` (task 3 review) — `StoredBool.parse(_:) -> Bool?` (Bool, or the
   yes/no/true/false/1/0 strings a launch argument arrives as); caller `Settings.bool(_:default:)` in AppModel.swift.
+- `WaymarkMicLayout.swift` (judge demo task 4) — `idleHeightFraction` 0.18, `walkingHeightFraction` 0.26,
+  `idleDiscShare` 0.62, `defaultDiscDiameter` 116, `idleHeightFractionCeiling` 0.30; `discDiameter(preferred:side:maxShare:)`,
+  `textScale(preferredDisc:)`, `Square`, `square(walking:textScale:)`. Caller `VoiceTile` (now `VoiceTile(walking:)`, a
+  `GeometryReader` inside the ring square computes the disc cap in the same pass). Tests `WaymarkMicLayoutTests`.
+- `WaymarkProfileName.swift` (task 4) — `placeholder` "Waymark walker", `spokenUnset` "Name not set",
+  `isUnset(_:defaultName:)`, `display(_:defaultName:)`, `spoken(_:defaultName:)`. Callers `ProfilePage.isUnset` /
+  `displayName` / `spokenName` (with `CKMedicalProfile.standardDefault.name`). Tests `WaymarkProfileNameTests`.
 - `ios/Logic/Sources/CaneKitLogic/CampusGate.swift` (judge demo, UIUC gate) — `enum CampusGate`, the pure switch
   between the default (Seattle) build and the UIUC demo: `enabled(environment:)` (`WAYMARK_DEMO_ROUTE=isr_cif`),
   `indoorEnabled(environment:)` (or `CANEKIT_INDOOR_ROUTE=1`), `allows(_:campusEnabled:)` and
@@ -3588,6 +3595,9 @@ marked `// waymark:`.
   on appear / check / route start-stop / every 5 s; `WaymarkPinMark` (band shape + colour — amber / lemon /
   sky blue — + type glyph; `fill(_:)`, `glyph(_:)`). Callers: `WaymarkCard` ("Map of reports"),
   `WaymarkAheadCard` (pin as its badge). `WaymarkEngine.MapPin` / `mapPins(route:walker:)`.
+- `ProfilePage.medicalIDCard` header (task 4): `signpost.right.and.left.fill` mark (no photo path), `displayName`,
+  "Emergency ID · add yours" while unset; Announce Medical ID starts with `spokenName`. `GuideCard`: `VoiceTile(walking:)`.
+  `CaneKitVisualTour.testTour` ends with the Profile tab (`snap("profile")`, gated by "Edit Medical ID").
 - `HazardsCard` pill "N logged" (was "N on map"): `hazardLog` records only, not Waymark reports.
 - `CaneKitUITests/CaneKitWaymarkTour.swift` (judge demo) — `testWaymarkTour`: off chip → sheet → switch on
   → Simulate walk → ahead card; PNGs `wm-NN-*` via `make tour-waymark` (`WM_SHOTS`, default

@@ -2,6 +2,33 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark judge demo 4b — Where am I tile above the dock, neutral Profile (Sat Oct 17)
+
+- Guide (idle): the "Where am I / Describe what's ahead" tile was cut in half by the floating tab dock on a Pro Max
+  (UI v3 shot 02). The idle microphone square is now 0.18 of the page (was 0.30) with the disc capped at 0.62 of the
+  square at the default text size (`WaymarkMicLayout`, CaneKitLogic, tests first); the whole tile sits above the
+  dock on the iPhone 18 Pro Max simulator (same 440 × 956 pt as the 17 Pro Max). At larger Dynamic Type the square
+  and cap grow with the scaled disc back to the UI v3 size. Walking layout unchanged (0.26, full disc): Repeat / Next
+  / Recenter / Stop stay on the first screen. 0.20 was tried first and still left the tile ~4 pt under the dock.
+- Profile: a neutral Waymark signpost mark replaces the `AritroProfile` photo branch, and the header shows "Waymark
+  walker" while the stored name is blank or the "Not set" default (`WaymarkProfileName`; the sentinel itself is
+  unchanged because `EmergencyContactSeed` relies on it). "Announce Medical ID" says "Name not set." instead of "Not
+  set." and never speaks the placeholder to a responder. Labels "Edit Medical ID" / "Announce Medical ID" unchanged.
+  The original author's name no longer appears anywhere under `ios/` code: comments neutralised and two test fixtures
+  renamed to "Alex" (same assertions). `ios/README.md` still names the base project's bundle id `com.aritro.canekit`
+  (a technical identifier, left as history).
+- `CaneKitVisualTour` adds a "profile" shot at the end, gated by "Edit Medical ID" existing.
+- Written by a workflow agent in its own worktree (red runs `j4-test-red.log`, `j4-test-red2.log`, `j4f-test-red.log`).
+  Independent review (separate agent), all 7 fixed: M1 the idle cap ignored Dynamic Type (the AX disc stayed ~87 pt) →
+  `textScale` / `square`; L the profile shot was ungated; L / L test and uitest counts misreported (corrected: Logic
+  1074 → 1087 on that branch; uitest 12 / 1 skipped / 1 failed); L the disc popped 116 → 87 pt after a layout pass →
+  computed in the same pass; L "Announce Medical ID" spoke "Not set."; L stale doc comment.
+- Known, not caused here (reproduced on the base GuideCard / VoiceTile): `CaneKitIslandTour.testDynamicIsland` fails at
+  line 104 on the 18 Pro Max simulator (after Simulate walk and two Stop taps, "Start route" never appears), so `make
+  uitest` exits 2 (12 passed, 1 skipped, 1 failed of 14). Investigated in task 5.
+- test on device: idle Guide on the 17 Pro Max shows the whole Where am I tile above the tab dock; Profile shows the
+  signpost mark and "Waymark walker"; Announce Medical ID says "Name not set".
+
 ## Waymark judge demo 3 — learning made visible (Sat Oct 17)
 
 - Sidewalk memory shows what it learned. After a confirmed / not-there / couldn't-check outcome (LiDAR or the spotter's

@@ -66,7 +66,7 @@ nonisolated struct ElevenLabsVoice: Sendable {
 
     /// nil when no key is configured.
     /// Reads `ELEVENLABS_API_KEY` (required), `ELEVENLABS_VOICE_ID` (default
-    /// "EXAVITQu4vr4xnSDxMaL", Bella — the voice Aritro chose for the demo) and
+    /// "EXAVITQu4vr4xnSDxMaL", Bella — the voice the original OpenCane team chose for its demo) and
     /// `ELEVENLABS_MODEL` (default "eleven_flash_v2_5", the low-latency model). Empty values
     /// count as missing (`Secrets`), so the defaults here are what a fresh clone gets.
     static func fromSecrets() -> ElevenLabsVoice? {
@@ -214,7 +214,7 @@ nonisolated struct ElevenLabsVoice: Sendable {
         let body: [String: Any] = [
             "text": text,
             "model_id": model,
-            // Exactly the two settings Aritro's reference payload for this voice and model sends.
+            // Exactly the two settings the original OpenCane reference payload for this voice and model sends.
             // `style` and `use_speaker_boost` were here before and are now deliberately absent:
             // `style` is a v2-only setting and `eleven_flash_v2_5` can reject the request with a
             // 422 for it, which on the first run with a real key looks identical to a bad key.

@@ -2,7 +2,9 @@
 //  ProfilePage.swift
 //  CaneKit
 //
-//  Profile, Apple Health-style Medical ID card, and mobility fitness tracking.
+//  Profile, Apple Health-style Medical ID card, and mobility fitness tracking. waymark: judge demo
+//  task 4 — a neutral Waymark header (signpost mark, "Waymark walker" until a name is entered,
+//  `WaymarkProfileName`); no person's photo or name ships in the app.
 //  Provides emergency medical identification for first responders (white cane user status,
 //  blood type, allergies, medications, emergency contacts, residence) and daily mobility
 //  metrics (steps, distance walked, active time, trips completed).
@@ -74,43 +76,35 @@ struct ProfilePage: View {
         // shown and dialled, never saved — the editor below still edits only the stored profile.
         let contact = model.medicalProfile.effectiveEmergencyContact
         return CKCard(title: "EMERGENCY MEDICAL ID") {
-            // Profile Header
+            // waymark: Profile Header (judge demo task 4): a neutral Waymark mark, never a person's photo,
+            // and the stored name or, while it is blank / the "Not set" default, "Waymark walker"
+            // (`WaymarkProfileName`, CaneKitLogic). The stored value is not changed ("Not set" is
+            // EmergencyContactSeed's sentinel).
             HStack(spacing: CKSpacing.md) {
-                #if canImport(UIKit)
-                if let uiImage = UIImage(named: "AritroProfile") {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 56, height: 56)
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(CKColor.accent, lineWidth: 2))
-                        .accessibilityLabel("Profile photo of \(p.name)")
-                } else {
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 52))
-                        .foregroundStyle(CKColor.accent)
-                        .accessibilityHidden(true)
-                }
-                #else
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 52))
-                    .foregroundStyle(CKColor.accent)
+                Image(systemName: "signpost.right.and.left.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(CKColor.onAccent)
+                    .frame(width: 56, height: 56)
+                    .background(CKColor.accent, in: Circle())
                     .accessibilityHidden(true)
-                #endif
 
                 VStack(alignment: .leading, spacing: CKSpacing.xs) {
-                    Text(p.name)
+                    Text(Self.displayName(p.name))
                         .font(CKFont.instruction)
                         .foregroundStyle(CKColor.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     HStack(spacing: CKSpacing.xs) {
                         Image(systemName: "staroflife.fill")
                             .font(.subheadline)
                             .foregroundStyle(CKColor.danger)
                             .accessibilityHidden(true)
-                        Text("Emergency ID")
+                        // waymark: short enough to stay on one line beside Edit on a Pro Max at the
+                        // default text size; wraps (never truncates) at large Dynamic Type.
+                        Text(Self.isUnset(p.name) ? "Emergency ID · add yours" : "Emergency ID")
                             .font(CKFont.secondary.weight(.semibold))
                             .foregroundStyle(CKColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
 
@@ -220,7 +214,8 @@ struct ProfilePage: View {
                 role: .secondary,
                 hint: "Reads emergency medical identification aloud"
             ) {
-                let summary = "\(p.name). White cane user, legally blind. Blood type \(p.bloodType). Allergies: \(p.allergies). Emergency contact: \(contact.name), \(contact.phone)."
+                // waymark: was `\(p.name)`, which spoke "Not set." as if it were a name (review fix).
+                let summary = "\(Self.spokenName(p.name)). White cane user, legally blind. Blood type \(p.bloodType). Allergies: \(p.allergies). Emergency contact: \(contact.name), \(contact.phone)."
                 // `.scene`, not `.obstacle` (Step 47 audit): this is a user-requested paragraph,
                 // and `.obstacle` is the hazard band of AGENTS.md hard rule 8 / design.md §5.1 —
                 // an obstacle name or a route line must be able to cut it, never the reverse.
@@ -311,6 +306,25 @@ struct ProfilePage: View {
     }
 
     // MARK: - Helpers
+
+    /// waymark: true while the stored name is blank or the first-run default ("Not set"). The rule is
+    /// `WaymarkProfileName.isUnset` (CaneKitLogic, tested); this binds it to the app's default.
+    static func isUnset(_ name: String) -> Bool {
+        WaymarkProfileName.isUnset(name, defaultName: CKMedicalProfile.standardDefault.name)
+    }
+
+    /// waymark: the header name, the stored one or "Waymark walker" while it is unset
+    /// (`WaymarkProfileName.display`).
+    static func displayName(_ name: String) -> String {
+        WaymarkProfileName.display(name, defaultName: CKMedicalProfile.standardDefault.name)
+    }
+
+    /// waymark: the name "Announce Medical ID" speaks, the stored one or "Name not set" while it is
+    /// unset — never the raw "Not set" sentinel or the header's "Waymark walker"
+    /// (`WaymarkProfileName.spoken`, review fix).
+    static func spokenName(_ name: String) -> String {
+        WaymarkProfileName.spoken(name, defaultName: CKMedicalProfile.standardDefault.name)
+    }
 
     private func infoRow(label: String, value: String, icon: String) -> some View {
         HStack(spacing: CKSpacing.md) {
