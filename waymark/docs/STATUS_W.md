@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 988ffd6 | wall: Sun 2026-10-18 09:20 PT
+
+**Scheduled check-in 09:17: checked Mac at `988ffd6` (`main`).** No change since 08:50: no new commits on `main` besides mine, `waymark/rebrand` still f8ecbc7 (07:25), `waymark/island-fix` e53ef65, no `STATUS_M` entry or handoff. Still open: Mac green rerun (`make test sim uitest e2e-waymark`) on the rebrand merge before it lands; D-39 (README disclosure) and D-40 (README real-walk claim, no data in repo) await Yousef; no Walk 1 results. Quiet; next check in 120 minutes (about 11:20).
+
+---
 ## repo: 4d4ec08 + this commit | wall: Sun 2026-10-18 08:50 PT
 
 **Scheduled check-in 08:45: checked Mac at `4d4ec08` (`main`).** New since 06:44:
