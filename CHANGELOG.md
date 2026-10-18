@@ -14,6 +14,9 @@ Build log for the hackathon. One entry per step; each ends with what to test on 
 - Details: "What's ahead" summary sentence and signal-bar tiles (STOP fills the tile). Floating tab
   dock and new symbols on tabs and cards.
 - Every ⚠ test-contract label, action and VoiceOver sentence kept (no new files, no `gen.sh`).
+- Review fixes: after arrival the route card names the route just walked; the Simulate walk link
+  is tappable across its whole row; one microphone across idle / walking keeps VoiceOver focus;
+  the compass arrow turns the short way; "What's ahead" says "Cane swinging" on an untrusted frame.
 - test on device: idle route card shows the sketch and "731 m · 9 stops"; Start route → compass
   arrow turns as you veer; Repeat / Next / Recenter; Stop route twice; Details tiles show bars.
 

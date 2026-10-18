@@ -66,10 +66,13 @@ struct LaneGridView: View {
         }
     }
 
-    /// "Closest: 1.2 m, center, body height." / "All clear ahead." / "No depth yet." — the nearest
+    /// "Closest: 1.2 m, center, body height." / "All clear ahead." / "No depth yet." / "Cane swinging —
+    /// warnings paused." (untrusted frame, matches the pill) — the nearest
     /// covered cell under the same 4.5 m display cutoff as the tiles.
     private var summary: String {
         guard report.depthAvailable else { return "No depth yet." }
+        // While the cane swings the gate distrusts the frame (warnings paused): say so, not a number.
+        guard report.isTrusted else { return "Cane swinging — warnings paused." }
         var best: (d: Float, lane: Int, band: String)? = nil
         let bands: [(String, [Float], [Bool])] = [("head height", report.head, report.grid.headCoverage),
                                                   ("body height", report.torso, report.grid.torsoCoverage)]

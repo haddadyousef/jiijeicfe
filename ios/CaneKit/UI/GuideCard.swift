@@ -69,14 +69,18 @@ struct GuideCard: View {
             if walking {
                 compassCard
                 controlDeck
-                VoiceTile(heightFraction: 0.26)
+            } else {
+                routeCard
+                statusChips
+            }
+            // One microphone outside the branches, so it keeps its identity (and VoiceOver focus)
+            // when a spoken "route" / "stop" or the arrival flips `walking` (review C).
+            VoiceTile(heightFraction: walking ? 0.26 : 0.30)
+            if walking {
                 describerLines
                 routeStatusCard
                 errorLine
             } else {
-                routeCard
-                statusChips
-                VoiceTile(heightFraction: 0.30)
                 whereAmIButton
                 describerLines
                 whereToCard
@@ -97,7 +101,7 @@ struct GuideCard: View {
     private var routeCard: some View {
         CKCard {
             HStack(alignment: .center, spacing: CKSpacing.lg) {
-                RouteSketch(points: AppModel.demoRoute?.waypoints.map(\.coordinate) ?? [])
+                RouteSketch(points: shownRoute?.waypoints.map(\.coordinate) ?? [])
                     .frame(width: 88, height: 88)
                     .background(CKColor.surfaceRaised, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                     .accessibilityHidden(true)
@@ -157,6 +161,7 @@ struct GuideCard: View {
                     .font(CKFont.body.weight(.semibold))
                     .foregroundStyle(CKColor.textPrimary)
                     .frame(maxWidth: .infinity, minHeight: CKMetrics.touchTarget)
+                    .contentShape(Rectangle())   // the whole row is the target (review B)
             }
             .buttonStyle(CKPressStyle(reduceMotion: reduceMotion))
             .disabled(model.routeStartWaiting || model.isBuildingRoute)
@@ -400,16 +405,26 @@ struct GuideCard: View {
     /// True while a route or the indoor leg guides.
     private var walking: Bool { model.nav.isNavigating || model.indoor.isActive }
 
-    /// "To The Ave and NE 50th" (the demo route's destination).
-    private var routeTitle: String {
-        AppModel.demoRouteDestination.isEmpty ? "Demo route" : "To \(AppModel.demoRouteDestination)"
+    /// The route the card describes: after arrival the route just walked (a typed or Directions
+    /// route too, review A), otherwise the demo route that Start route will run.
+    private var shownRoute: Route? {
+        model.nav.arrived ? (model.nav.route ?? AppModel.demoRoute) : AppModel.demoRoute
     }
 
-    /// "731 m · 9 stops".
+    /// "To The Ave and NE 50th" (the demo route's destination); after arrival the walked route's name.
+    private var routeTitle: String {
+        if model.nav.arrived, let name = model.nav.route?.name, !name.isEmpty { return name }
+        return AppModel.demoRouteDestination.isEmpty ? "Demo route" : "To \(AppModel.demoRouteDestination)"
+    }
+
+    /// "731 m · 9 stops" for `shownRoute` (polyline length, display only).
     private var routeFacts: String {
-        let stops = AppModel.demoRoute?.waypoints.count ?? 0
-        let m = Int(AppModel.demoRouteLengthM.rounded())
-        return m > 0 ? "\(m) m · \(stops) stops" : "\(stops) stops"
+        let w = shownRoute?.waypoints ?? []
+        let length = model.nav.arrived
+            ? zip(w, w.dropFirst()).map { GeoMath.distanceMeters($0.coordinate, $1.coordinate) }.reduce(0, +)
+            : AppModel.demoRouteLengthM
+        let m = Int(length.rounded())
+        return m > 0 ? "\(m) m · \(w.count) stops" : "\(w.count) stops"
     }
 
     /// The compass card's heading word.
@@ -520,6 +535,8 @@ private struct CompassRing: View {
     var symbol: String? = nil
     /// Reduce Motion: no turning animation.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The drawn angle, unwrapped so the arrow always turns the short way (+179° → −179° is 2°).
+    @State private var shown: Double = 0
 
     /// Ring, 12 ticks (quarters longer), then the arrow (turned by the bearing error) or the symbol.
     var body: some View {
@@ -542,8 +559,15 @@ private struct CompassRing: View {
                     .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(CKColor.textPrimary.opacity(bearingError == nil ? 0.3 : 1))
                     .offset(y: -70)
-                    .rotationEffect(.degrees(bearingError ?? 0))
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: bearingError ?? 0)
+                    .rotationEffect(.degrees(shown))
+                    .onAppear { shown = bearingError ?? 0 }
+                    .onChange(of: bearingError ?? 0) { _, target in
+                        let step = (target - shown).truncatingRemainder(dividingBy: 360)
+                        let short = step > 180 ? step - 360 : (step < -180 ? step + 360 : step)
+                        if reduceMotion { shown += short } else {
+                            withAnimation(.easeOut(duration: 0.4)) { shown += short }
+                        }
+                    }
             }
         }
     }

@@ -3052,7 +3052,7 @@ Purpose: root screen — a `NavigationStack` titled with dynamic centered title 
 Purpose: the Guide (UI v3 "Graphite", 2026-10-17). Two layouts, chosen by `walking` (`nav.isNavigating || indoor.isActive`). Everything the XCUITests drive lives here; the tests `scrollTo` buttons below the fold.
 
 - `struct GuideCard: View` — `@Environment(AppModel.self) model`; `@ScaledMetric(relativeTo: .largeTitle) private var hero = 56` (clamped at 72 in the compass); `@State stopConfirmation: StopRouteConfirmation`; `reduceMotion` (the plain Simulate walk link); `var scroller`.
-- **Idle:** `routeCard` → `statusChips` → `VoiceTile(heightFraction: 0.30)` → `whereAmIButton` → `describerLines` → `whereToCard`.
+- **Idle:** `routeCard` → `statusChips` → `VoiceTile(heightFraction: 0.30)` (one shared instance, see below) → `whereAmIButton` → `describerLines` → `whereToCard`.
   - `routeCard` (untitled `CKCard`): `RouteSketch` of `AppModel.demoRoute` waypoints (88 pt, hidden), "YOUR ROUTE" / "ARRIVED", `routeTitle` ("To The Ave and NE 50th", header), `routeFacts` ("731 m · 9 stops" from `AppModel.demoRouteLengthM`); after arrival the arrival `Text(nav.instruction)` + **"Repeat"** (secondary → `repeatInstruction()`; gone after a mid-route Stop since `arrived` is false); **"Cancel route start"** while `routeStartWaiting`; **"Start route"** (primary, disabled while waiting → `startDemoRoute()`); **"Directions from here"** (secondary, value "finding a route", disabled while building / waiting → `navigateToCIFFromHere()`); a plain **"Simulate walk"** link (`CKPressStyle`) → `startSimulatedWalk()`; `routeStartStatus` text.
   - `statusChips`: `CKChip` GPS (`gpsWord`, `gpsDot`, spoken "GPS: …") and "Dark" while `lightState == .dark`.
   - `whereAmIButton`: "Where am I" / "Describing…" (`viewfinder`, value "in progress") → `describeScene()`.
@@ -3074,7 +3074,7 @@ Purpose: the Guide (UI v3 "Graphite", 2026-10-17). Two layouts, chosen by `walki
 - `private func bearingWord(_ err: Double) -> String` — `"On course"` if `abs(err) <= 25`, else `"Veer right N°"` (err > 0) / `"Veer left N°"`. **25° on-course threshold** (matches design.md §5 "Off-bearing > 25°").
 - `private var gpsWord: String` — no fix: "Denied" / "Searching" (`isRunning`) / "Off"; `accuracy < 0` → "No accuracy"; else `"±N m"`.
 - `private var gpsDot: Color?` — nil without a valid fix; `CKColor.trusted` if `accuracy <= 15` m else `CKColor.warning` (the words always say it).
-- `routeTitle`, `routeFacts`, `headerWord`, `progressWord`, `walking` — the words above.
+- `shownRoute` (after arrival `nav.route`, else `AppModel.demoRoute`), `routeTitle` (after arrival the walked route's `name`), `routeFacts`, `headerWord`, `progressWord`, `walking` — the words above. `VoiceTile` sits outside the idle / walking branches so it keeps its identity and VoiceOver focus when `walking` flips. `CompassRing` keeps an unwrapped `@State shown` angle so the arrow turns the short way.
 
 ---
 
