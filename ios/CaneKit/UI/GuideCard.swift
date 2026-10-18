@@ -62,6 +62,8 @@ struct GuideCard: View {
     /// The root scroll view's proxy, handed on to `DestinationField` so that focusing the search
     /// box scrolls it above the keyboard. nil in previews.
     var scroller: ScrollViewProxy? = nil
+    /// waymark: the Sidewalk memory sheet (`WaymarkSheet`), opened from the chip or the ahead card.
+    @State private var showWaymark = false
 
     /// Idle or walking layout (see the file header), plus the Stop-gate resets.
     var body: some View {
@@ -69,6 +71,9 @@ struct GuideCard: View {
             if walking {
                 compassCard
                 controlDeck
+                // waymark: nearest report ahead, under Stop so the deck never moves (judge demo task 1);
+                // not during the indoor leg, where street reports do not apply (review 3).
+                if model.waymarkEnabled && !model.indoor.isActive { WaymarkAheadCard { showWaymark = true } }
             } else {
                 routeCard
                 statusChips
@@ -92,6 +97,7 @@ struct GuideCard: View {
         .onChange(of: model.indoor.isActive) { _, active in
             if !active { stopConfirmation.reset() }
         }
+        .sheet(isPresented: $showWaymark) { WaymarkSheet() }   // waymark:
     }
 
     // MARK: - Idle
@@ -178,14 +184,21 @@ struct GuideCard: View {
         }
     }
 
-    /// Quiet facts for the idle page: GPS and, in the dark, the light.
+    /// Quiet facts for the idle page: GPS, sidewalk memory and, in the dark, the light. One row when it
+    /// fits, else stacked (waymark review 5: the chip never truncates on a narrow phone or large text).
     private var statusChips: some View {
-        HStack(spacing: CKSpacing.sm) {
-            CKChip(text: gpsWord, systemImage: "location.fill", dot: gpsDot, spoken: "GPS: \(gpsWord)")
-            if model.lightState == .dark {
-                CKChip(text: "Dark", systemImage: "moon.fill", spoken: "Low light; obstacle detection still works")
-            }
-            Spacer(minLength: 0)
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: CKSpacing.sm) { chips; Spacer(minLength: 0) }
+            VStack(alignment: .leading, spacing: CKSpacing.xs) { chips }
+        }
+    }
+
+    /// The idle chips themselves.
+    @ViewBuilder private var chips: some View {
+        CKChip(text: gpsWord, systemImage: "location.fill", dot: gpsDot, spoken: "GPS: \(gpsWord)")
+        WaymarkGuideChip { showWaymark = true }   // waymark: off → Turn on; on → reports loaded
+        if model.lightState == .dark {
+            CKChip(text: "Dark", systemImage: "moon.fill", spoken: "Low light; obstacle detection still works")
         }
     }
 
@@ -286,6 +299,8 @@ struct GuideCard: View {
                                      spoken: "Heading: \(bearingWord(err))", updatesFrequently: true)
                     }
                     CKChip(text: gpsWord, systemImage: "location.fill", dot: gpsDot, spoken: "GPS: \(gpsWord)")
+                    // waymark: off → the chip offers it (on, the ahead card under Stop says it all).
+                    if !model.waymarkEnabled { WaymarkGuideChip { showWaymark = true } }
                     if model.nav.gpsWeak {
                         CKStatusPill(text: "GPS weak", tone: .warning, systemImage: "exclamationmark.triangle")
                     }

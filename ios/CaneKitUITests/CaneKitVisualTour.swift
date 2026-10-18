@@ -42,6 +42,9 @@ final class CaneKitVisualTour: XCTestCase {
         allowLocationPrompts()
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
+        // Waymark judge demo (review 4): sidewalk memory at its shipped default (off) for this launch,
+        // whatever an earlier test left in the simulator's UserDefaults.
+        app.launchArguments += ["-waymarkEnabled", "NO"]
         // Waymark: the demo route defaults to the Seattle Ave walk; these tests assert on the UIUC
         // route's lines ("Townsend", "Illinois Street"), so pin it (the Mac gate also parks the
         // simulator at UIUC: SIM_LAT=40.1140 SIM_LON=-88.2249; the Makefile default is the Ave start).

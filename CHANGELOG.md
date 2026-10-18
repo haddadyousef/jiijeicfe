@@ -2,6 +2,46 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark judge demo 1 — sidewalk memory on the Guide (Sat Oct 17)
+
+- Off (the shipped default, unchanged): a chip on the Guide, "Sidewalk memory off · Turn on", opens the
+  existing Sidewalk memory card (same switch, binding, spotter buttons) in a sheet. On: the chip says
+  "Sidewalk memory on · 3,405 reports".
+- On, while walking: one card under Stop route names the nearest report ahead — the first
+  `WaymarkAhead` hit in the session's own order (`WaymarkSession.Step.nearest`, set before the speech
+  gate), with metres and belief p ("Reported curb ramp" / "1 m · 92 % likely"). Repeat / Next / Recenter /
+  Stop do not move (shot `wm-05-walking-ahead`, iPhone 18 Pro Max simulator — the 17 Pro Max cannot be
+  created on Xcode 27.1, STATUS_M 15:47).
+- Words in `WaymarkGlance` (CaneKitLogic, 12 tests, red first: `j1-red.log`, `j1b-red.log`); views only
+  read `AppModel`. Nothing new is spoken; no speech priority touched. No existing accessibility label
+  changed. New labels: "Sidewalk memory off. Turn on" / "Sidewalk memory on. N reports" (chip),
+  "Sidewalk memory. Reported …" (card), "Done" (sheet).
+- `make tour-waymark` + `CaneKitWaymarkTour` (judge screenshots on the Ave route).
+- Wording change in existing text: the spotter toast and "Last:" line now use `WaymarkGlance.words`
+  ("rough surface" for surface_problem, "sidewalk issue" for other; were "surface problem" / "report").
+  No XCUITest queries those strings.
+- Independent review (1 agent, did not write the diff), each finding checked in the code:
+  - Fixed H1: standing still blanked the card ("Nothing reported" with an obstacle 8 m ahead) because
+    `WaymarkAhead` selects nothing below 0.5 m/s or without a direction → the session keeps the last
+    walking report and re-reads its p (a spotter tap while standing shows at once). Tests
+    `standingStillKeepsTheLastReportWithItsCurrentBelief`, `aRouteBoundaryForgetsTheKeptReport` (red first, `j1c-red.log`).
+  - Fixed M2: a stale fix froze the card → `nearestFixTimestamp` + `NavigationHealth.isFresh` (tested
+    base rule), re-checked every 2 s: "Waiting for a fresh GPS fix".
+  - Fixed M3: the card showed street reports during the indoor leg → hidden while `indoor.isActive`.
+  - Fixed M4: the tour's cleanup was in the test body (a failed Stop left the switch on for later UI
+    tests) → `tearDown` relaunches and turns it off; every UI test class launches with `-waymarkEnabled NO`.
+  - Fixed M5: chip hit area 32 pt → padded to 44 pt; the idle chip row stacks when it does not fit.
+  - Fixed M6: a failed load showed "loading" forever → "Sidewalk memory unavailable" (tested).
+  - Found by my own tour run after the fixes: the 2 s `TimelineView` passed its scheduled entry date,
+    earlier than a just-arrived fix, so `isFresh` (which rejects a future fix) said "Waiting for a fresh
+    GPS fix" while walking → the card reads `Date()` at render time. The tour's tearDown relaunch raced
+    ("No such process") with a second `XCUIApplication` → it relaunches the same app object.
+  - Rejected L7 (re-render at 1 Hz): only the ahead card observes `nearest`; one small view, no layout churn.
+  - Fixed L9 / L10: doc wording (nearest "between routes", Makefile, test header claim), `docs/todo.md`
+    tracker, `grouped` edge tests, card status lines moved into `WaymarkGlance` with a test.
+- test on device: Guide shows "Sidewalk memory off · Turn on"; tap → sheet → switch on → Done; chip shows
+  the report count; Simulate walk → the card under Stop names a report with metres and "% likely".
+
 ## Waymark UI v3 "Graphite" — the app reimagined (Sat Oct 17)
 
 - Owner: "completely rework the UI … how the buttons are placed … different icons … cooler, not

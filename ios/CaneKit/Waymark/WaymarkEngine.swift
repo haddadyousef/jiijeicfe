@@ -63,6 +63,13 @@ final class WaymarkEngine {
     private(set) var evidenceCount = 0
     /// E1: why the last spotter tap did nothing ("No sidewalk report within 15 m."), cleared by the next.
     private(set) var spotterMessage: String?
+    /// Judge demo: the nearest report ahead at the last fix (`WaymarkSession.Step.nearest`, the
+    /// same order the spoken line uses), for the Guide's Sidewalk memory card. Nil when nothing is
+    /// ahead or the feature is off; cleared at a route boundary (idle fixes may fill it again).
+    private(set) var nearest: WaymarkSession.Nearest?
+    /// `GeoFix.timestamp` of the fix behind `nearest` (reference-date seconds), so the card can say
+    /// "Waiting for a fresh GPS fix" once it is older than `NavigationHealth.maxFixAge` (review 2).
+    private(set) var nearestFixTimestamp: TimeInterval?
 
     /// A spotter tap held for `undoSeconds` before it counts (design doc §9.3).
     struct SpotterTap: Equatable {
@@ -203,6 +210,8 @@ final class WaymarkEngine {
         lastHeading = heading
         lastLegs = legs
         let step = session!.step(fix: fix, context: context)
+        if nearest != step.nearest { nearest = step.nearest }
+        nearestFixTimestamp = fix.timestamp
         let lookupMs = Self.round1((ProcessInfo.processInfo.systemUptime - t0) * 1000)
         if let line = step.spoken, onSpeak?(line.text) == true {
             lastLine = line.text
@@ -297,6 +306,7 @@ final class WaymarkEngine {
         if let tap = pendingTap { onLog?("waymark_spotter", ["action": "dropped_feature_off", "label_id": tap.labelID]) }
         pendingTap = nil
         spotterMessage = nil
+        nearest = nil
     }
 
     /// E1: cancels the pending spotter tap (the toast's Undo).
@@ -339,18 +349,8 @@ final class WaymarkEngine {
         lastEvidence = "\(verb): \(type)" + (v.distM.map { ", \(Int($0.rounded())) m" } ?? "")
     }
 
-    /// A label type in everyday words.
-    static func words(_ type: WaymarkLabelType) -> String {
-        switch type {
-        case .obstacle: "obstacle"
-        case .missingCurbRamp: "missing curb ramp"
-        case .curbRamp: "curb ramp"
-        case .surfaceProblem: "surface problem"
-        case .noSidewalk: "no sidewalk"
-        case .crosswalk: "crosswalk"
-        case .other: "report"
-        }
-    }
+    /// A label type in everyday words (`WaymarkGlance.words`, one definition for every screen).
+    static func words(_ type: WaymarkLabelType) -> String { WaymarkGlance.words(type) }
 
     /// A one-shot LiDAR line (a ground hazard, "Close.") was spoken: restart the 5 s quiet window
     /// (A1 review H2 — those lines do not move `activeCue`).
@@ -377,6 +377,7 @@ final class WaymarkEngine {
     /// A route ended (Stop, arrival or a replacement route). Open LiDAR passes close (E1).
     func routeEnded() {
         session?.routeEnded()
+        nearest = nil
         guard enabled else { tracker.reset(); return }
         for verdict in tracker.routeEnded() { commit(verdict) }
     }

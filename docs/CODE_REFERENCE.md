@@ -3501,6 +3501,15 @@ marked `// waymark:`.
   nothing decided unless `speechIdle` (`speech_busy`), silences logged once per (label, reason) per
   route and only inside the trigger distance, `not_yet` never logged; `record(...)` adds
   field evidence; `routeStarted()` / `routeEnded()`.
+- `WaymarkGlance.swift` (judge demo) — screen words, one definition: `words(_:)` (type in plain words,
+  "rough surface" / "sidewalk issue"), `reported(_:)` ("Reported obstacle"), `percent(_:)`, `metres(_:)`,
+  `aheadLine(type:alongM:p:)` ("Reported obstacle · 40 m · 72 % likely"), `aheadFacts(alongM:p:)`,
+  `aheadSpoken(...)` (VoiceOver), `chip(enabled:loadedLabels:)`, `grouped(_:)` (locale-free "3,405").
+- `WaymarkSession.Step.nearest` / `WaymarkSession.Nearest` (judge demo) — the first `WaymarkAhead` hit in
+  decision order with its belief p, set before the speech gate (the Guide card's report; the spoken
+  line is the first hit the policy allows, so the two can differ). Standing still / no direction keeps
+  the last walking value with p read again; `routeStarted()` / `routeEnded()` forget it.
+- `WaymarkGlance.noneAhead`, `.waitingForGPS`, `.loadingLine`, `.failedLine`; `chip(…, failed:)`.
 - Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
 
 - `WaymarkEvidence.swift` (E1) — `WaymarkDepthSample`, `WaymarkEvidenceGates` (`hold`),
@@ -3532,6 +3541,17 @@ marked `// waymark:`.
 - `WaymarkEngine.simulating` (mirrors `AppModel.isSimulatingWalk`): no evidence while true; `enabled = false`
   resets the tracker and drops a pending tap; `onAnnounce` for spotter feedback; beliefs of ids not in
   the bundle are kept in `beliefs.json`.
+- `WaymarkEngine.nearest` + `nearestFixTimestamp` (judge demo) — `Step.nearest` of the last fix and that
+  fix's time; nil when off or nothing is ahead, cleared at a route boundary (idle fixes may fill it
+  again). `WaymarkEngine.words(_:)` forwards to `WaymarkGlance.words(_:)`.
+- `WaymarkGuideViews.swift` (judge demo) — `WaymarkGuideChip` (Guide chip: "Sidewalk memory off · Turn on"
+  / "… on · N reports", opens the sheet), `WaymarkAheadCard` (walking, not indoors, under Stop route: nearest
+  report, "40 m · 72 % likely"; "Waiting for a fresh GPS fix" once the fix is older than
+  `NavigationHealth.maxFixAge`, re-checked every 2 s), `WaymarkSheet` (`WaymarkCard` in a sheet with Done). Caller: `GuideCard`.
+- `CaneKitUITests/CaneKitWaymarkTour.swift` (judge demo) — `testWaymarkTour`: off chip → sheet → switch on
+  → Simulate walk → ahead card; PNGs `wm-NN-*` via `make tour-waymark` (`WM_SHOTS`, default
+  `build/shots-waymark`). `tearDown` relaunches and flips the switch back off; every UI test class
+  launches with `-waymarkEnabled NO`.
 - `WaymarkCard.swift` (A2 / E1) — Details card: the "Sidewalk memory" switch (moved from HazardsCard),
   status line, "Confirm" / "Not there" tiles with the undo toast, saved-checks line.
 - `AppModel+Waymark.swift` — `ingestWaymarkDepth(_:)` (every `handle(_ report:)`), `wireWaymark()` (init: `speech.nonResumable`, `onSpeak` →
