@@ -1,9 +1,12 @@
 # Waymark: a sidewalk memory for a smart cane
 
-**Waymark gives a smart cane a memory of the sidewalk, so a blind walker hears "pole ahead" or "no curb
-ramp at this corner" before the phone's sensors can see it. It starts with 3,405 community-mapped
-hazards in Seattle's U District and gets sharper with every walk, because it learns which reports are
-still true today.**
+**A white cane knows what's under its tip. Waymark knows what's 30 metres up the block.**
+
+Waymark clips an iPhone to a white cane and gives it a memory of the sidewalk. Walk down The Ave and it
+quietly tells you "Reported obstacle ahead" or "Reported missing curb ramp ahead" before the cane — or
+the phone's LiDAR — could possibly reach it. It starts out knowing 3,405 hazards that volunteers mapped
+across Seattle's U District, and it gets sharper every time someone walks the route, because it keeps
+score of which reports turned out to be true.
 
 Built at DubHacks '26 by **Yousef Haddad** (UW CS; data, evaluation, plan) and **Akash Tadikonda**
 (iOS app). 
@@ -17,8 +20,10 @@ label curb ramps, missing ramps, obstacles, surface problems and missing sidewal
 imagery. Waymark turns that public map into spoken warnings that arrive early, and then checks the map
 against what the walker actually meets.
 
-## What it does
+## The cool parts
 
+- **Sidewalk memory, offline.** 3,405 Project Sidewalk reports ship inside the app. No signal under the
+  trees on The Ave? Doesn't matter.
 - **Warns ahead.** Walking the demo route, the app says things like "Reported obstacle ahead" or
   "Reported curb ramp" before you get there. It always says "reported": it is a report, not a
   measurement.
@@ -30,6 +35,14 @@ against what the walker actually meets.
   contradicts it. A sighted spotter walking alongside can tap **Confirm** or **Not there**. The
   confidence moves and is remembered on the phone ("Not there · 50 % → 43 % · spotter"). A report that
   can no longer be trusted stops being announced. If the phone cannot tell, it changes nothing.
+- **Sees the whole block.** A map of reports draws every hazard along the route: amber circles for "almost
+  certainly there", lemon diamonds for "maybe", sky-blue rings for "probably gone". Tap one for when the
+  street imagery was taken and how many volunteers agreed.
+- **Stays out of the way on the Guide.** One chip turns it on. While you walk, one card under Stop says
+  what's next: "Reported curb ramp · 1 m · 92 % likely". The cane's own controls never move.
+- **Lives on the cane.** LiDAR obstacle lanes, ground drop-off detection, haptic taps on the handle, a
+  spatial audio beacon in AirPods, Siri and the Action button, a Live Activity on the lock screen, and a
+  "Where am I" scene description — all still there, with Waymark layered on top.
 - **Is measured.** An evaluation tool turns the recorded walks into hit rates with error bars, how well
   the stated likelihoods match what happens, how sensor and spotter agree, and how old imagery affects
   accuracy.
@@ -68,15 +81,21 @@ walker's position ─► labels ahead ─► belief (Beta, ages with time) ─�
 
 ## Status
 
-- **Built and tested:** the data pipeline (44 tests), the evaluation tool (36 tests), the app logic and
-  UI (1,128 tests passing on the Mac, exit 0), a full simulated replay of the Ave route through the real
-  app (passes), the confidence map, and persistence of what the phone has learned.
+- **Built and tested:** the data pipeline (44 tests), the evaluation tool (36 tests), the app logic
+  (1,128 tests passing on the Mac), the full UI test suite on the simulator (14 run, 0 failures, 1
+  skipped by design, with the island-tour fix), a replay of the whole Ave route through the real app in
+  which every one of the 6 planted reports was spoken at the right moment and never over a safety cue,
+  the confidence map, and memory that survives quitting the app (a "Not there" stays at 43 % after a
+  relaunch).
+- **On the phone:** installed and running on an iPhone 17 Pro.
+- **Field walk:** _results go here — reports confirmed, reports contradicted, obstacles flagged out of
+  obstacles met, and how many the phone could not judge, each with its count._
 - **Not yet measured on real sidewalks:** no recorded walk exists yet. Every number in the evaluation
   report on this repo comes from generated test data and is marked **SYNTHETIC**. The first real numbers
   come from a paper checking walk of the route and a live walk with the app and a spotter.
 - **Known limits.** Street geometry is the street centreline, not the sidewalk. Crossings are inferred
   from labels. 88 % of the labels use imagery from 2019 or earlier, which is exactly why the app checks
-  them. One UI test (the Dynamic Island tour) fails and also failed before Waymark's latest changes.
+  them.
 
 ## Data and credits
 
@@ -95,8 +114,9 @@ walker's position ─► labels ahead ─► belief (Beta, ages with time) ─�
 | [`waymark/demo/`](waymark/demo/) | The Ave route in the app's format, replay trace, GPX, synthetic test labels |
 | [`waymark/field/`](waymark/field/) | Checklist for the paper checking walk |
 | [`ios/CaneKit/Waymark/`](ios/CaneKit/Waymark/), [`ios/Logic/Sources/CaneKitLogic/Waymark/`](ios/Logic/Sources/CaneKitLogic/Waymark/) | Waymark's app code and its tested logic |
-| [`ios/`](ios/) . See [`ios/README.md`](ios/README.md) |
-| [`docs/`](docs/), [`AGENTS.md`](AGENTS.md), [`hardware/`](hardware/)
+| [`ios/`](ios/) | The iPhone app, watch app and widget. See [`ios/README.md`](ios/README.md) |
+| [`docs/`](docs/), [`hardware/`](hardware/) | App design notes, cue research, the cane mount |
+| [`archive/`](archive/) | Old leftovers kept for the record; not part of the walkthrough |
 
 ## Quick start
 

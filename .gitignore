@@ -55,3 +55,7 @@ ios/scripts/gen-local.sh
 ios/.project.yml.orig
 ios/scripts/run-local.sh
 ios/scripts/restore-ids.sh
+
+# Local build output and agent worktrees
+ios/build2/
+.claude/worktrees/
