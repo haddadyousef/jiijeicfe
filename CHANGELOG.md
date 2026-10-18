@@ -27,17 +27,6 @@ Build log for the hackathon. One entry per step; each ends with what to test on 
   12 passed / 1 skipped / 1 failed (the Dynamic Island test, fixed separately in PR #9).
 - test on device: after installing this build, re-pick the Action button shortcut as "Talk to Waymark" (the intent
   was renamed); Siri "How is Waymark doing" still answers.
-## Waymark: Dynamic Island UI test green again (Sun Oct 18)
-
-- `CaneKitIslandTour.testDynamicIsland` had failed since UI v3 (also at 0d9dca1): after the swipe that brings
-  "Simulate walk" into view, "Stop route" sat at y 50–126 under the translucent navigation bar (62–116). XCUITest
-  still called it hittable, so both Stop taps landed on the bar, the route never stopped and "Start route" never came
-  back. The tour's `scrollTo` now treats an element under the navigation bar as not tappable (`isTappable`,
-  `isUnderNavigationBar`) and swipes it back down. Test-only change; no app code or accessibility label changed.
-- Mac (iPhone 18 Pro Max simulator, UIUC location): `make test` 1128 passed; `make island` passed (52 s); `make uitest`
-  TEST SUCCEEDED — 14 executed, 0 failures, 1 skipped (Street View, by design).
-- test on device: n/a (UI test only).
-
 ## Waymark judge demo 5b — island test green: Stop route was under the navigation bar (Sun Oct 18)
 
 - `CaneKitIslandTour.testDynamicIsland` failed at the "Start route reappears" assertion since UI v3. Cause, from a
