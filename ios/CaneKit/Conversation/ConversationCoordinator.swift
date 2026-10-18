@@ -9,7 +9,11 @@
 //  ask for things by voice — status, a destination, a post, a setting — without a screen. Every
 //  query takes exactly one of four paths, in this order:
 //    1. Fast path (`FastPathIntentClassifier.classify`): deterministic, offline, 0 tokens —
-//       settings, status, route start/stop, posts, trip metrics.
+//       settings, status, route start/stop, posts, trip metrics. waymark: unless
+//       `WAYMARK_DEMO_ROUTE=isr_cif`, a route to a campus place ("take me to the union") becomes a
+//       MapKit search in the walker's words ("Union"; `CampusGate.rewrite`, logged
+//       `conv_campus_gated`); if those words cannot be found the query takes paths 2–4 as if
+//       unclassified (the cloud model's `navigate_to` reaches MapKit, never the gazetteer).
 //    2. Scene question (`FastPathIntentClassifier.isSceneQuestion`): always the grounded camera
 //       path (`AppModel.askAboutScene` → `SceneDescriber.ask`, `CloudSceneGate`), never the chat
 //       model, even with a cloud key.
@@ -177,7 +181,17 @@ final class ConversationCoordinator {
         )
 
         // 1. Check Deterministic Fast-Path (<1 ms, 0 tokens); rule 0 is the voice menu.
-        if let immediateAction = FastPathIntentClassifier.classify(query: query) {
+        // waymark: in the default build a campus route becomes a MapKit search in the walker's own
+        // words ("Union", never "the Illini Union"), or nil when they cannot be found (`CampusGate.rewrite`).
+        // A `.routeFromTo` passes unchanged (its ends are already as said), so with
+        // CANEKIT_INDOOR_ROUTE=1 alone "take me from ISR to CIF" still starts the ISR indoor walk.
+        var fastPath = FastPathIntentClassifier.classify(query: query)  // waymark:
+        if let action = fastPath, !CampusGate.allows(action, campusEnabled: RouteSource.uiucDemo) {  // waymark:
+            fastPath = CampusGate.rewrite(action, query: query, campusEnabled: RouteSource.uiucDemo)  // waymark:
+            model.logger.event("conv_campus_gated", ["query": query,  // waymark:
+                                                     "rewritten": fastPath.map { "\($0)" } ?? ""])  // waymark:
+        }
+        if let immediateAction = fastPath {  // waymark:
             let (response, alreadySpoken) = executeAction(immediateAction)
             turn.agentResponse = response
             history.append(turn: turn)

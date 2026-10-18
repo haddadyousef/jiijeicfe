@@ -512,7 +512,7 @@ Apple Vision's classifier returns a taxonomy, not speech: on the Street View fra
 
 ### `CampusPlaces.swift` — where "take me to …" goes (Step 13; `center` added in Step 14)
 
-- **`public struct CampusPlace`** — `id` (⚠ also the raw value of the app's `CampusDestination` AppEnum), `name` (spoken), `coordinate` (the entrance), `aliases`.
+- **`public struct CampusPlace`** — `id` (the app's `CampusDestination` AppEnum that used these ids was removed by the waymark UIUC gate), `name` (spoken), `coordinate` (the entrance), `aliases`.
 - **`public enum CampusPlaces`** — `all`: CIF, ISR / Townsend, Grainger, Illini Union, Siebel, Main Library, ARC. ⚠ CIF and ISR are the last / first waypoint of `route_isr_cif.json`; the rest are OSM entrance nodes, not yet walked. `match(_:) -> CampusPlace?` is **whole-alias only** after `normalize` (a partial name must fall through to MapKit); `place(id:)`; `normalize(_:)` (case / accents / punctuation folded, "the" and "and" dropped); **`center`** (Step 14) — the mean of every entrance, used only to bias `MKLocalSearchCompleter`'s region when there is no fix, never as a distance origin.
 - **`public enum DestinationPicker`** — `maxDistanceM = 3000` (keep equal to `RouteSource.searchRadiusM`); `pick(_:near:query:maxDistanceM:)` returns the index of the nearest in-range candidate, preferring names that contain every typed word.
 - **`public enum WalkingIntro`** — `line(place:meters:)` "Walking to <place>, N meters."; `routeStarted(_ route:)` / `routeStarted(destination:firstLine:)` (Step 54; Step 68 wording "Route to <destination>. <first say>", `destinationName(_:)`: "To X" → X, "A to B" → B, else the last waypoint's `placeName`; `introNamesTheDestinationNotTheRoute`) — the one builder `NavigationEngine.start` speaks and `AppModel.routeStartLines` prefetches (`introLineIsWhatNavigationSpeaks`); `distancePhrase(_:)` (**public** since Step 14, also used by `DestinationSuggestion.voiceOverLabel`) rounds to 10 m below 1 km, tenths of a kilometre above.
@@ -1262,7 +1262,7 @@ Rules, in order:
 
 - **`startDemoRoute()`** — `RouteSource.bundled()` → `beginRoute`; on throw: `routeError`, says `"Route file missing."`.
 - **`startMapKitRoute()`** — trims `destinationQuery`; empty → `routeError = "Type a destination first"`; then `guard !announceLocationDenied()` (say so now, not after a 15 s wait for a fix that never comes). Else `location.start()`, `isBuildingRoute = true`, `routeError = nil`, says `"Finding a route to \(query)."`; `Task`: poll `location.fix` up to 30×500 ms; no fix → `routeError = "No GPS fix yet"` + `"No GPS fix yet. Try again outside."`; else `RouteSource.mapKit(to: query, from: origin)` → `beginRoute`; on error `routeError` + `"Could not build a route. …"`. `defer` clears `isBuildingRoute`.
-- **`navigate(to query: String)`** / **`navigate(to place: CampusPlace)`** — the two entry points Siri and the destination field share: trimmed free text (gazetteer → nearest MKLocalSearch result) or a gazetteer entrance (no search). Both set `destinationQuery` and call the private `buildRoute(to:searchLine:)`. ⚠ There is no third route-start path: a tapped suggestion in `DestinationField` calls one of these.
+- **`navigate(to query: String)`** / **`navigate(to place: CampusPlace)`** — the two entry points Siri and the destination field share (waymark: the `CampusPlace` path is reached only from a campus suggestion row, which exists only under `WAYMARK_DEMO_ROUTE=isr_cif`; Siri sends free text): trimmed free text (gazetteer → nearest MKLocalSearch result) or a gazetteer entrance (no search). Both set `destinationQuery` and call the private `buildRoute(to:searchLine:)`. ⚠ There is no third route-start path: a tapped suggestion in `DestinationField` calls one of these.
 - **`beginRoute(_ route: Route)`** (private) — ends a currently running route as before, refuses denied Location, turns off two-camera mode (serialized), then on a LiDAR phone with camera access queues the route in `pendingRouteStart` and says/sets `routeStartStatus` while `DepthReadiness` waits. `DepthEngine` reports same-frame `.normal` tracking + valid scene depth + sweep trust; after 3 consecutive reports the queued route enters `startRouteNow`. A 7 s request deadline (including a two-camera transition that never drains) clears the request, logs `route_readiness {state: timed_out_fallback_gps}`, speaks `"Obstacle detection warming up. Guiding with GPS."` (.safety, 15 s TTL), sends watch status `"Guiding with GPS"` and immediately starts GPS guidance via `startRouteNow` (AGENTS.md Rule 6: never trade guidance away for a stricter check). Stop or a newer destination cancels the queue. `startRouteNow` then performs the existing prefetch → location → `nav.start` → beacon/head → recenter → ticker/trip/Live Activity → log/watch/channel sequence.
 - **`startSimulatedWalk(speedMps:)`** / **`stopSimulatedWalk()`** — on-device walk simulation for in-room testing. Stepping iterates through route waypoints at 1 Hz with linear coordinate interpolation and bearing calculation, resumes from `nav.waypointIndex` if invoked mid-route, and injects synthetic `GeoFix` and heading updates into `location.ingest`. Protected by `simulatedWalkGeneration` against task cancellation races.
 - **`stopRoute()`** — `stopSimulatedWalk()` → `nav.stop()` → `location.stop()` → `beacon.stop()` → `head.stop()` → `stopTicker()` → `Task { await trip.stop() }` → `liveActivity.end()` → `speech.stopAll()` (**queued waypoint lines must not play after Stop**) → `speech.say("Route stopped.", .nav)` → log `route {action: stop}` → `pushStatusToWatch()`.
@@ -1288,13 +1288,13 @@ Other triggers into the same paths: `describeScene(trigger: DescribeTrigger = .b
 
 ### `AppIntents.swift` — Action button / Siri entry points
 
-**Purpose.** Exactly seven `AppIntent`s — `WhereAmIIntent`, `StartDemoRouteIntent`, `NavigateToCIFIntent`, `TakeMeToIntent`, `RepeatInstructionIntent`, `NextWaypointIntent`, `StopRouteIntent` (plus the `CampusDestination` `AppEnum`; there is no "Take me somewhere" intent) — that open the app (ARKit needs the foreground) and call into `AppModel.shared`, plus the `AppShortcutsProvider`. Spoken name is OpenCane via `\(.applicationName)` (display name — no edit needed on rename); code names stay CaneKit.
+**Purpose.** Exactly seven `AppIntent`s — `WhereAmIIntent`, `StartDemoRouteIntent`, `NavigateToCIFIntent`, `TakeMeToIntent`, `RepeatInstructionIntent`, `NextWaypointIntent`, `StopRouteIntent` (waymark: the `CampusDestination` `AppEnum` and its three "Take me to <campus place>" phrases were removed — UIUC gate; "Take me somewhere" is a phrase of `TakeMeToIntent`) — that open the app (ARKit needs the foreground) and call into `AppModel.shared`, plus the `AppShortcutsProvider`. Spoken name is OpenCane via `\(.applicationName)` (display name — no edit needed on rename); code names stay CaneKit.
 
 | Type | Kind | Role |
 |---|---|---|
 | `WhereAmIIntent` | `struct: AppIntent` | title "Where am I"; `perform()` → `model.describeScene(trigger: .actionButton)` (the intent cannot tell the Action button from Siri; the card says "from the Action button or Siri"). |
-| `TakeMeToIntent` | `struct: AppIntent` | title "Take me to a place"; a `CampusDestination` (`AppEnum`, gazetteer) or the free-text `place: String?` parameter (Siri asks "Where do you want to go?" when neither is given) → `model.navigate(to:)`. |
-| `NavigateToCIFIntent` | `struct: AppIntent` (plain — **not** a shortcut since the Talk-to-OpenCane swap) | MKDirections to the route file's last waypoint as a bare coordinate. Guide card button unchanged; Siri phrase now "Take me to CIF in OpenCane" (same waypoint via the gazetteer). |
+| `TakeMeToIntent` | `struct: AppIntent` | title "Take me to a place"; the free-text `place: String?` parameter (Siri asks "Where do you want to go?" when it is missing) → `model.navigate(to:)`. (waymark: the campus `AppEnum` parameter was removed — UIUC gate.) |
+| `NavigateToCIFIntent` | `struct: AppIntent` (plain — **not** a shortcut since the Talk-to-OpenCane swap) | MKDirections to the route file's last waypoint as a bare coordinate. Guide card button unchanged ("Directions from here"); no Siri phrase (waymark: the campus phrase was removed by the UIUC gate). |
 | `StartDemoRouteIntent` | `struct: AppIntent` | title "Start route"; `perform()` → `model.startDemoRoute()`. |
 | `RepeatInstructionIntent` / `NextWaypointIntent` / `StopRouteIntent` | `struct: AppIntent` | Repeat / Next / Stop. |
 | `IntentSupport` | `enum` namespace | `struct NotReady: Error` ("OpenCane is still starting. Try again."); `@MainActor static func model() async throws -> AppModel` polls `AppModel.shared` up to 20 × 100 ms (2 s) on a cold lock-screen launch, then throws `NotReady`. |
@@ -3090,7 +3090,7 @@ Purpose: the destination search box on the idle Guide card — a real search fie
 - `private var suggestionList: some View` — `VStack(spacing: xs)` of one `Button { choose(s) } label: { row(s) }` per suggestion, `.buttonStyle(.plain)`, each `accessibilityElement(children: .ignore)` with label `s.voiceOverLabel`, hint `s.voiceOverHint`, trait `.isButton`.
 - `private func row(_ s: DestinationSuggestion) -> some View` — `building.columns.fill` (campus) / `mappin.circle.fill` (map) glyph, hidden from VO; title in `CKFont.body.weight(.semibold)` / `textPrimary`; `s.detailLine` ("On campus · 400 m" or the address) in `CKFont.secondary` / `textSecondary`; both wrap (`fixedSize(vertical:)`), never truncate; a `CKStatusPill(text: "Campus", tone: .accent)` badge on campus rows, **dropped at accessibility text sizes** (a pill is one line scaled to at most 80 %, so it would clip and steal width from the wrapping title; the row still says "On campus" in words). `frame(minHeight: touchTarget)`, `surfaceRaised` fill + `border` stroke, radius `CKRadius.button`.
 - Modifiers on the body: `.onChange(of: model.destinationQuery)` → ignore the change when `text == mirroredText` (the field's own write-back) and `guard !model.isBuildingRoute` (⚠ `AppModel.navigate(to:)` writes the chosen place back into `destinationQuery`; without the guard, choosing a suggestion re-opens the list, fires a completer query for the place just chosen and announces "1 result" over the spoken "Finding a route to …" — Antigravity review), then `model.clearRouteError()` + `search.update(text:fix: model.location.fix)`; `.onChange(of: search.revision)` → `announceResults()`, which posts `DestinationSuggestions.announcement(count:)` (or `search.lastError` when that is all there is) as **the app's one `AccessibilityNotification.Announcement`** — allowed because it is UI state, not a cue (design.md §5.5) — and only when the sentence differs from the last one posted (`lastAnnouncement`), so eight keystrokes do not read "6 results" eight times; `.onChange(of: focused)` → `scroller?.scrollTo(anchorID, anchor: .top)` (**unanimated**: the big-button press stays the only animation the app owns, design.md §4); `.toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("Done") { focused = false } } }` (a11y hint "Hides the keyboard").
-- Actions — **no second route-start path** (AGENTS.md): `submit()` (Go button, keyboard Go key) → `focused = false`, `search.clear()`, `model.startMapKitRoute()`; `choose(s)` → `focused = false`, `search.clear()`, then `model.navigate(to: place)` when `s.placeId` names a `CampusPlace` (the Siri gazetteer path, no search) else `model.navigate(to: s.searchQuery)` (the Siri free-text path, which still says "Walking to <place>, N meters." first); `clearText()` → empties `model.destinationQuery`, clears the error and the list, keeps the keyboard. All three reset `lastAnnouncement` (so a re-typed query with the same row count is still announced) and `submit()` / `choose(_:)` record `mirroredText`.
+- Actions — **no second route-start path** (AGENTS.md): `submit()` (Go button, keyboard Go key) → `focused = false`, `search.clear()`, `model.startMapKitRoute()`; `choose(s)` → `focused = false`, `search.clear()`, then `model.navigate(to: place)` when `s.placeId` names a `CampusPlace` (gazetteer path, no search; campus rows exist only under `WAYMARK_DEMO_ROUTE=isr_cif`) else `model.navigate(to: s.searchQuery)` (the Siri free-text path, which still says "Walking to <place>, N meters." first); `clearText()` → empties `model.destinationQuery`, clears the error and the list, keeps the keyboard. All three reset `lastAnnouncement` (so a re-typed query with the same row count is still announced) and `submit()` / `choose(_:)` record `mirroredText`.
 
 ---
 
@@ -3212,7 +3212,7 @@ Purpose: the "Hazards" card — the camera's second job made visible: switches f
   - `Toggle("Read signs", isOn: $model.signsEnabled)` — hint "Reads signs like sidewalk closed or detour, on the phone, offline" (default on).
   - `Toggle("Hazard watch", isOn: $model.hazardWatchEnabled)` — hint "While walking a route, checks the path for cones, barriers and scooters every 8 seconds" (default off).
   - `Toggle("Name people ahead", isOn: $model.namePeopleEnabled)` — hint "When you ask where am I, says how many people are ahead, which way and how far. Experimental — unverified on cane walks." (default off on a fresh install; persisted legacy opt-ins remain explicitly experimental; `PeopleAhead` plus `PeopleDetection`).
-  - Pill row: `CKStatusPill(text: model.hazards.watchProvider, .neutral, "eye", spoken: "Hazard watch uses …")` and `"\(model.hazardLog.records.count) mapped"` (`mappin.and.ellipse`, spoken "N hazards on the map"), then `Spacer`.
+  - Pill row: `CKStatusPill(text: model.hazards.watchProvider, .neutral, "eye", spoken: "Hazard watch uses …")` and `"\(model.hazardLog.records.count) logged"` (`mappin.and.ellipse`, spoken "N hazards logged on this walk, separate from sidewalk reports"), then `Spacer`.
   - Detection rows via `private func detection(_ source:, _ text:)` (caption `source.uppercased()` in `CKFont.pill` / `textSecondary` + the line in `CKFont.body`; one combined a11y element), each only when non-nil: `detection("LiDAR", model.lastGroundHazard)`, `detection("Sign", model.hazards.lastSign)`, `detection("Watch", model.hazards.lastCaution)`; further down `detection("Sound", model.sounds.lastAlert)` (in `soundStatus`, with `sounds.lastError` as `CKErrorText` and `sounds.labelReport` while running — all spoken rows) and `detection("Front camera", "detecting: \(model.faceHead.readout)")` (in `frontCameraReadout`, only while `faceHeadTrackingEnabled` and `DepthEngine.supportsFrontCameraWithLiDAR`, followed by "Head direction only — ARKit gives one camera picture at a time, and it is the back camera's." ⚠ never re-word this row into anything a reader could take for a selfie preview).
   - Error line `model.hazards.lastError ?? model.hazardLog.lastError` in `CKFont.secondary` / `laneUrgent`.
   - When `model.hazardLog.fileWritten`: `ShareLink(item: model.hazardLog.fileURL)` labelled "Share hazard map" (`square.and.arrow.up`), hint "Shares a GeoJSON map of every hazard found on this walk".
@@ -3501,7 +3501,51 @@ marked `// waymark:`.
   nothing decided unless `speechIdle` (`speech_busy`), silences logged once per (label, reason) per
   route and only inside the trigger distance, `not_yet` never logged; `record(...)` adds
   field evidence; `routeStarted()` / `routeEnded()`.
+- `WaymarkGlance.swift` (judge demo) — screen words, one definition: `words(_:)` (type in plain words,
+  "rough surface" / "sidewalk issue"), `reported(_:)` ("Reported obstacle"), `percent(_:)`, `metres(_:)`,
+  `aheadLine(type:alongM:p:)` ("Reported obstacle · 40 m · 72 % likely"), `aheadFacts(alongM:p:)`,
+  `aheadSpoken(...)` (VoiceOver), `chip(enabled:loadedLabels:)`, `grouped(_:)` (locale-free "3,405").
+- `WaymarkSession.Step.nearest` / `WaymarkSession.Nearest` (judge demo) — the first `WaymarkAhead` hit in
+  decision order with its belief p, set before the speech gate (the Guide card's report; the spoken
+  line is the first hit the policy allows, so the two can differ). Standing still / no direction keeps
+  the last walking value with p read again; `routeStarted()` / `routeEnded()` forget it.
+- `WaymarkGlance.noneAhead`, `.waitingForGPS`, `.loadingLine`, `.failedLine`; `chip(…, failed:)`.
+- `WaymarkMap.swift` (judge demo) — `WaymarkMapSelection.labels(index:route:walker:)` (25 m corridor along
+  every route segment; 250 m around the walker only without a route; de-duplicated, ≤ 400 nearest the
+  walker / route start, sorted by id; `distanceToSegment`), `WaymarkConfidenceBand` (`init(p:)` on the shown
+  whole percent: likely ≥ 70, uncertain ≥ 40, else doubtful; `word`, `shape`), `WaymarkGlance.isSpoken`, `.imagery`, `.votes`, `.confidence`, `.confidenceSpoken`,
+  `WaymarkSession.confidence(of:nowUTC:)`.
 - Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
+- `WaymarkLearning.swift` (judge demo task 3) — `struct WaymarkLearning` {labelID, type, outcome, sensor, pBefore,
+  pAfter, `changed`}; `WaymarkGlance.source(_:)`, `learningLine(_:)`, `learningSpoken(_:)`.
+  `WaymarkSession.record(_:sensor:labelID:nowUTC:) -> WaymarkLearning?` (@discardableResult; unverifiable = no-op,
+  before == after). Tests `WaymarkLearningTests` (incl. the beliefs JSON round trip WaymarkStore uses).
+- `WaymarkLearningShown.swift` (task 3) — `WaymarkLearning.round3(_:)`, `.tripLogFields` (p_before / p_after),
+  `.kept(_:over:)` (unverifiable never replaces a decisive learning); `WaymarkSession.isChecked(_:)`;
+  `WaymarkGlance.checkedBefore`, `pinSpoken(type:p:checked:)`, `pinLearningDetail(learning:checked:)`,
+  `learningDetailSpoken(learning:checked:)`, `learningSymbol(_:)`, `storedCaption(folder:savedLabels:)` (nil until
+  saved). Tests `WaymarkLearningShownTests`, `WaymarkReviewFixTests`.
+- `WaymarkStoreFolder.swift` (task 3) — `enum WaymarkStoreFolder`: `standard` ("waymark"), `maxLength`, `sanitized(_:)`,
+  `name(subdir:uiTest:)`, `testPrefix` ("wm-ui-"), `staleTestFolders(_:active:uiTest:)` (never "waymark").
+- `ios/Logic/Sources/CaneKitLogic/StoredBool.swift` (task 3 review) — `StoredBool.parse(_:) -> Bool?` (Bool, or the
+  yes/no/true/false/1/0 strings a launch argument arrives as); caller `Settings.bool(_:default:)` in AppModel.swift.
+- `WaymarkMicLayout.swift` (judge demo task 4) — `idleHeightFraction` 0.18, `walkingHeightFraction` 0.26,
+  `idleDiscShare` 0.62, `defaultDiscDiameter` 116, `idleHeightFractionCeiling` 0.30; `discDiameter(preferred:side:maxShare:)`,
+  `textScale(preferredDisc:)`, `Square`, `square(walking:textScale:)`. Caller `VoiceTile` (now `VoiceTile(walking:)`, a
+  `GeometryReader` inside the ring square computes the disc cap in the same pass). Tests `WaymarkMicLayoutTests`.
+- `WaymarkProfileName.swift` (task 4) — `placeholder` "Waymark walker", `spokenUnset` "Name not set",
+  `isUnset(_:defaultName:)`, `display(_:defaultName:)`, `spoken(_:defaultName:)`. Callers `ProfilePage.isUnset` /
+  `displayName` / `spokenName` (with `CKMedicalProfile.standardDefault.name`). Tests `WaymarkProfileNameTests`.
+- `ios/Logic/Sources/CaneKitLogic/CampusGate.swift` (judge demo, UIUC gate) — `enum CampusGate`, the pure switch
+  between the default (Seattle) build and the UIUC demo: `enabled(environment:)` (`WAYMARK_DEMO_ROUTE=isr_cif`),
+  `indoorEnabled(environment:)` (or `CANEKIT_INDOOR_ROUTE=1`), `allows(_:campusEnabled:)` and
+  `rewrite(_:query:campusEnabled:)` (a campus fast-path route becomes a MapKit search in the walker's own words,
+  helper `saidWords(for:in:)`), `match(_:campusEnabled:)`, `suggestions(query:completions:from:locality:campusEnabled:)`
+  (no campus rows when closed), `searchCentre(fix:campusEnabled:fallback:)`, `defaultRecordingID`,
+  `sanitizedRecordingID`, `routeNameHint`, `startIndoorHint`, `loadsRecorded(_:campusEnabled:)` (old ISR recordings
+  skipped), `recordingOutdoorPlaceID(campusEnabled:)`, `outdoorLeg(destination:campusEnabled:)`.
+  Tests `CampusGateTests` (red first). App: `RouteSource.uiucDemo` / `RouteSource.demoStart` (static lets),
+  `IndoorGuide.campusIndoor`; logs `conv_campus_gated {query, rewritten}`, `indoor {action: campus_skipped, id}`.
 
 - `WaymarkEvidence.swift` (E1) — `WaymarkDepthSample`, `WaymarkEvidenceGates` (`hold`),
   `WaymarkEvidenceVerdict` (+ `reason`), `WaymarkEvidenceTracker` (`add(_:)` per LaneReport,
@@ -3532,6 +3576,33 @@ marked `// waymark:`.
 - `WaymarkEngine.simulating` (mirrors `AppModel.isSimulatingWalk`): no evidence while true; `enabled = false`
   resets the tracker and drops a pending tap; `onAnnounce` for spotter feedback; beliefs of ids not in
   the bundle are kept in `beliefs.json`.
+- `WaymarkEngine.nearest` + `nearestFixTimestamp` (judge demo) — `Step.nearest` of the last fix and that
+  fix's time; nil when off or nothing is ahead, cleared at a route boundary (idle fixes may fill it
+  again). `WaymarkEngine.words(_:)` forwards to `WaymarkGlance.words(_:)`.
+- `WaymarkGuideViews.swift` (judge demo) — `WaymarkGuideChip` (Guide chip: "Sidewalk memory off · Turn on"
+  / "… on · N reports", opens the sheet), `WaymarkAheadCard` (walking, not indoors, under Stop route: nearest
+  report, "40 m · 72 % likely"; "Waiting for a fresh GPS fix" once the fix is older than
+  `NavigationHealth.maxFixAge`, re-checked every 2 s), `WaymarkSheet` (`WaymarkCard` in a sheet with Done). Caller: `GuideCard`.
+- Task 3 in the app: `WaymarkEngine.lastLearning`, `learned` (both via `WaymarkLearning.kept`), `storeFolderName`,
+  `isChecked(_:)`, `savedLabelCount`; `MapPin.checked` / `.learning`; `commit(_:)` logs p_before / p_after; `load()` calls
+  `store.removeStaleTestFolders()`. `WaymarkStore.folderName` (`WAYMARK_STORE_SUBDIR` under `CANEKIT_UITEST=1`),
+  `removeStaleTestFolders()` (UI tests only). `WaymarkCard.learningRow(_:)` (identifier `waymark-learning`) + storage
+  caption. `WaymarkAheadCard` third line (`pinLearningDetail`). `WaymarkPinMark.checked` (dot badge); map details line
+  (identifier `waymark-pin-learning`). `CaneKitWaymarkTour.learningShots()`, `selectHydrantPin()` (shots 08–10).
+- `WaymarkMapView.swift` (judge demo) — the map of reports in a sheet: `MapPolyline` route, `UserAnnotation`,
+  one 44 pt `Annotation` button per `WaymarkEngine.MapPin` (identifier `waymark-pin-<id>`, `.isSelected`),
+  legend, tapped-pin details (VoiceOver focus moves there), camera framed once on route + pins, pins reloaded
+  on appear / check / route start-stop / every 5 s; `WaymarkPinMark` (band shape + colour — amber / lemon /
+  sky blue — + type glyph; `fill(_:)`, `glyph(_:)`). Callers: `WaymarkCard` ("Map of reports"),
+  `WaymarkAheadCard` (pin as its badge). `WaymarkEngine.MapPin` / `mapPins(route:walker:)`.
+- `ProfilePage.medicalIDCard` header (task 4): `signpost.right.and.left.fill` mark (no photo path), `displayName`,
+  "Emergency ID · add yours" while unset; Announce Medical ID starts with `spokenName`. `GuideCard`: `VoiceTile(walking:)`.
+  `CaneKitVisualTour.testTour` ends with the Profile tab (`snap("profile")`, gated by "Edit Medical ID").
+- `HazardsCard` pill "N logged" (was "N on map"): `hazardLog` records only, not Waymark reports.
+- `CaneKitUITests/CaneKitWaymarkTour.swift` (judge demo) — `testWaymarkTour`: off chip → sheet → switch on
+  → Simulate walk → ahead card; PNGs `wm-NN-*` via `make tour-waymark` (`WM_SHOTS`, default
+  `build/shots-waymark`). `tearDown` relaunches and flips the switch back off; every UI test class
+  launches with `-waymarkEnabled NO`.
 - `WaymarkCard.swift` (A2 / E1) — Details card: the "Sidewalk memory" switch (moved from HazardsCard),
   status line, "Confirm" / "Not there" tiles with the undo toast, saved-checks line.
 - `AppModel+Waymark.swift` — `ingestWaymarkDepth(_:)` (every `handle(_ report:)`), `wireWaymark()` (init: `speech.nonResumable`, `onSpeak` →

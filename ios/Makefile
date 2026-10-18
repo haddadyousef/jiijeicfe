@@ -67,7 +67,7 @@ export WAYMARK_BUNDLE := $(BUNDLE)
 XCB     = xcodebuild -project CaneKit.xcodeproj -scheme $(SCHEME) -configuration $(CONFIG) -derivedDataPath $(DERIVED) \
           BUNDLE_ID_PREFIX=$(BUNDLE_PREFIX)
 
-.PHONY: gen test build install launch run sim devices clean check-env uitest tour island sim17 sim-grant e2e e2e-waymark uitest-streetview audit
+.PHONY: gen test build install launch run sim devices clean check-env uitest tour tour-waymark island sim17 sim-grant e2e e2e-waymark uitest-streetview audit
 
 # Regenerate the Xcode project from project.yml (see scripts/gen.sh for WATCH=0 / PATCH_WATCH_EMBED).
 gen:
@@ -152,6 +152,15 @@ tour: sim-grant
 	TEST_RUNNER_CANEKIT_SHOTS=$(abspath $(SHOTS)) \
 	  $(XCB) -destination "platform=iOS Simulator,name=$(SIM)" CODE_SIGNING_ALLOWED=NO \
 	  -only-testing:CaneKitUITests/CaneKitVisualTour test
+
+# Waymark judge demo: sidewalk memory screenshots (CaneKitWaymarkTour) on the default Ave route —
+# Guide chip off / on, the sheet, the map of reports, the ahead card while walking. PNGs in WM_SHOTS.
+WM_SHOTS ?= $(DERIVED)/shots-waymark
+tour-waymark: sim-grant
+	mkdir -p $(WM_SHOTS)
+	TEST_RUNNER_CANEKIT_SHOTS=$(abspath $(WM_SHOTS)) \
+	  $(XCB) -destination "platform=iOS Simulator,name=$(SIM)" CODE_SIGNING_ALLOWED=NO \
+	  -only-testing:CaneKitUITests/CaneKitWaymarkTour test
 
 # Dynamic Island pictures (CaneKitIslandTour, Step 47): route start → background → compact island,
 # long-press → expanded, a few seconds of simulated walk, then Stop and the island after it. PNGs

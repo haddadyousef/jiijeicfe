@@ -2,6 +2,179 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark judge demo 4b — Where am I tile above the dock, neutral Profile (Sat Oct 17)
+
+- Guide (idle): the "Where am I / Describe what's ahead" tile was cut in half by the floating tab dock on a Pro Max
+  (UI v3 shot 02). The idle microphone square is now 0.18 of the page (was 0.30) with the disc capped at 0.62 of the
+  square at the default text size (`WaymarkMicLayout`, CaneKitLogic, tests first); the whole tile sits above the
+  dock on the iPhone 18 Pro Max simulator (same 440 × 956 pt as the 17 Pro Max). At larger Dynamic Type the square
+  and cap grow with the scaled disc back to the UI v3 size. Walking layout unchanged (0.26, full disc): Repeat / Next
+  / Recenter / Stop stay on the first screen. 0.20 was tried first and still left the tile ~4 pt under the dock.
+- Profile: a neutral Waymark signpost mark replaces the `AritroProfile` photo branch, and the header shows "Waymark
+  walker" while the stored name is blank or the "Not set" default (`WaymarkProfileName`; the sentinel itself is
+  unchanged because `EmergencyContactSeed` relies on it). "Announce Medical ID" says "Name not set." instead of "Not
+  set." and never speaks the placeholder to a responder. Labels "Edit Medical ID" / "Announce Medical ID" unchanged.
+  The original author's name no longer appears anywhere under `ios/` code: comments neutralised and two test fixtures
+  renamed to "Alex" (same assertions). `ios/README.md` still names the base project's bundle id `com.aritro.canekit`
+  (a technical identifier, left as history).
+- `CaneKitVisualTour` adds a "profile" shot at the end, gated by "Edit Medical ID" existing.
+- Written by a workflow agent in its own worktree (red runs `j4-test-red.log`, `j4-test-red2.log`, `j4f-test-red.log`).
+  Independent review (separate agent), all 7 fixed: M1 the idle cap ignored Dynamic Type (the AX disc stayed ~87 pt) →
+  `textScale` / `square`; L the profile shot was ungated; L / L test and uitest counts misreported (corrected: Logic
+  1074 → 1087 on that branch; uitest 12 / 1 skipped / 1 failed); L the disc popped 116 → 87 pt after a layout pass →
+  computed in the same pass; L "Announce Medical ID" spoke "Not set."; L stale doc comment.
+- Known, not caused here (reproduced on the base GuideCard / VoiceTile): `CaneKitIslandTour.testDynamicIsland` fails at
+  line 104 on the 18 Pro Max simulator (after Simulate walk and two Stop taps, "Start route" never appears), so `make
+  uitest` exits 2 (12 passed, 1 skipped, 1 failed of 14). Investigated in task 5.
+- test on device: idle Guide on the 17 Pro Max shows the whole Where am I tile above the tab dock; Profile shows the
+  signpost mark and "Waymark walker"; Announce Medical ID says "Name not set".
+
+## Waymark judge demo 3 — learning made visible (Sat Oct 17)
+
+- Sidewalk memory shows what it learned. After a confirmed / not-there / couldn't-check outcome (LiDAR or the spotter's
+  Confirm / Not there), the Sidewalk memory card (Details page and the Guide's sheet) shows the report's pin in its new
+  confidence band, "Reported obstacle" and e.g. "Not there · 50 % → 43 % · spotter" (VoiceOver: "Spotter said not
+  there. Confidence went from 50 to 43 percent."). Unverifiable stays a no-op and says so: "Couldn't check ·
+  confidence unchanged at 50 % · LiDAR"; it never replaces an earlier decisive result (`WaymarkLearning.kept`).
+- Map of reports: a report this phone has checked carries a dot badge (shape cue) and ", checked on this phone" in
+  VoiceOver; its details show this launch's learning line, else "Checked on this phone before". Guide ahead card:
+  a third line whenever the shown report has been checked.
+- Where the belief lives (checked, task 3): `Documents/waymark/beliefs.json` (`WaymarkStore.saveBeliefs`, atomic write
+  after every confirmed or contradicted outcome; read on load by `WaymarkStore.loadBeliefs` → `WaymarkSession.restore`).
+  Every outcome, unverifiable too, appends one `waymark.evidence.v1` line to `Documents/waymark/evidence.jsonl` (the
+  E2 export input). The card says so once something is saved. Proof: `CaneKitWaymarkTour` taps "Not there" next to the
+  real fire-hydrant obstacle ps:13292406 (5 agree / 5 disagree, p 0.50 → 6/14 = 0.43, plan 5.3 spotter weight 2),
+  waits out the 10 s undo, then terminates and relaunches the app: the pin still reads 43 % and "Checked on this phone
+  before" (shots wm-08 learning-card, wm-09 learning-pin, wm-10 learning-relaunch). Simulator GPS, a scripted spotter
+  tap — interface evidence, not field evidence.
+- Trip log: `waymark_evidence` records gain `p_before` / `p_after` (3 dp). The evidence.jsonl line is unchanged
+  (schema `additionalProperties: false`).
+- UI tests only: `WAYMARK_STORE_SUBDIR` (sanitised; honoured only with `CANEKIT_UITEST=1`) moves the store to a
+  throwaway `Documents/wm-ui-<8>/`, so tours never touch the real beliefs.json; stale test folders are removed at load
+  (UI tests only, never `waymark`).
+- Base-app fix found on the way: `Settings.bool` read a launch argument ("-waymarkEnabled NO" arrives as the string
+  "NO") as unset, so the UI tests' off-mask silently did nothing. `StoredBool.parse` (tested) accepts Bool or
+  yes/no/true/false/1/0.
+- Written by a workflow agent in its own worktree (Logic layer test-first here: `WaymarkLearningTests`, red in
+  `j3-red.log`; agent red runs `j3-test-red.log`, `t3fix-test-red.log`). Independent review (separate agent):
+  fixed M1 (the -waymarkEnabled mask, above), L-ahead-card (uses the shown report's own learning), L-unverifiable
+  overwrote a decisive row (`kept`), L-caption shown before any save / too long, L-icon always a check seal
+  (`learningSymbol`), L-test folders piled up, L-GPS nudge order, L-doc wording; rejected: asserting the visible
+  "50 % → 43 %" string in XCUITest (the row's VoiceOver label is the spoken sentence; exposing both would read the
+  numbers twice; the string is pinned by Logic tests and visible in wm-08 / wm-09).
+- Agent checks: `make test` 1100 passed, `make gen`, `make sim`, `make tour-waymark` (iPhone 18 Pro Max) all exit 0.
+  Not verified: the ahead card's third line on screen (spotter taps are refused during a simulated walk); a real
+  device; p_before / p_after in a real trip log.
+- test on device: walk past a report with Sidewalk memory on, tap "Not there", wait 10 s → the card shows "Not there ·
+  N % → M % · spotter"; quit and reopen the app → Map of reports, that pin says "Checked on this phone before".
+
+## Waymark judge demo 4a — no University of Illinois in the default build (Sat Oct 17)
+
+- One switch, `CampusGate` (CaneKitLogic, tests first: `CampusGateTests`): the UIUC content — the campus gazetteer,
+  the ISR indoor script, the ISR → CIF route — stays in the code and its tests, reachable only under
+  `WAYMARK_DEMO_ROUTE=isr_cif` (the XCUITests and e2e.py set it; behaviour there is unchanged). The indoor half also
+  opens under `CANEKIT_INDOOR_ROUTE=1`. `FastPathIntentClassifier` and every existing Logic test are untouched.
+- Voice: a campus fast-path route ("take me to the Union", "go to the ARC") becomes a MapKit search in the walker's
+  own words ("Union", "ARC"), never the UIUC name; logged `conv_campus_gated {query, rewritten}`. "take me from A to
+  B" passes unchanged.
+- Destination box: no campus rows, "Campus" badge or "On campus"; with no fix the completer is centred on the demo
+  route's start, not Urbana. `RouteSource.mapKit` checks the gazetteer only under `isr_cif`.
+- Siri / Shortcuts: removed the `CampusDestination` AppEnum, `TakeMeToIntent.campusPlace` and the three "Take me to
+  <campus place>" phrases; "Take me somewhere in Waymark" stays; neutral description. Built app's App Intents
+  metadata searched: no UIUC word.
+- Indoor: the bundled `indoor_isr.json` is not loaded by default; recorded scripts still are, except old ones saved
+  under the ISR id / outdoorPlaceID "isr" (`indoor {action: campus_skipped}`); new recordings default to
+  `indoor_route` with outdoorPlaceID ""; after an indoor walk a named destination is a MapKit route to the words
+  said; neutral card hints. Preview text "Goodwin Avenue" → "NE 45th Street".
+- Written by a subagent in its own worktree (f02771d + 977ddcb), merged here. Independent review (another agent):
+  no blocker / high; fixed M1 (campus aliases were dropped to the cloud / "I need a network model" line → MapKit in
+  the walker's words), M2 (old ISR recordings still loaded), L3 (`CANEKIT_INDOOR_ROUTE=1` alone dropped "from ISR to
+  CIF"), L4 (stale `CampusDestination` comments / docs: CODE_REFERENCE, design.md §6, handsfree.md, AGENTS.md).
+  Accepted residual: the UIUC route / indoor JSON files still ship in the bundle (never read without the switch);
+  the App Intent type name `NavigateToCIFIntent` is an identifier only (title "Directions from here"); live MapKit
+  results are not filtered (3 km around the walker, so a UIUC name appears only if the walker is in Urbana).
+- Agent's checks: `make test` 1059 passed exit 0, `make gen` exit 0, `make sim` BUILD SUCCEEDED exit 0 (no
+  simulator runs there; the merged tree is re-verified here).
+- test on device: type "un" in Where to? → no campus rows; say "take me to the union" → "Walking to …" a Seattle
+  place or "Could not find"; Settings → Testing tools → Record an indoor route shows no ISR text.
+
+## Waymark judge demo 2 — map of reports, coloured and shaped by confidence (Sat Oct 17)
+
+- `WaymarkMapView` (Apple MapKit only): the bundled Project Sidewalk labels within 25 m of the route
+  (active route, else the demo route; 250 m around the walker only when there is no route), at most 400
+  (`WaymarkMapSelection`, CaneKitLogic). Each pin is coloured AND shaped by its belief band
+  (`WaymarkConfidenceBand`, decided on the whole percent shown): likely ≥ 70 % = filled circle (amber),
+  40–69 % = filled diamond (lemon), < 40 % = hollow ring (sky blue) — three steps of the existing
+  colour-blind-safe lane ladder (each ≥ 10:1 against ink), never STOP's rose — plus a type glyph;
+  crosswalk / other are faded (never spoken, plan 5.2). Band edges are display choices, not alert thresholds.
+- Tap a pin (44 pt target): "Reported obstacle", "50 % likely · Uncertain", "Street imagery from Oct 2018",
+  "Project Sidewalk votes: 5 agree · 5 disagree", tags, the report id and "a report, not something this
+  phone detected"; VoiceOver focus moves to the details. Each pin is a button labelled "Reported obstacle,
+  50 percent likely, uncertain"; the legend reads each band's range.
+- Linked from the Sidewalk memory card ("Map of reports", on Details and in the Guide's sheet). The Guide's
+  ahead card shows the report's map pin (same colour + shape) as its badge.
+- "0 ON MAP" explained and fixed: that Hazards-card pill counted `hazardLog` records — hazards the cane
+  logged on this walk (GeoJSON) — never Waymark reports. It now reads "N logged" (VoiceOver: "… hazards
+  logged on this walk, separate from sidewalk reports"); the map's own panel counts Waymark reports ("N
+  Project Sidewalk reports on this map"). No XCUITest queries that pill. design.md §6 and CODE_REFERENCE fixed.
+- Logic first (`WaymarkMapTests`, 15 tests; red in `j2-red.log`, `j2b-red.log`).
+- Independent review (1 agent, did not write the diff), each finding checked in the code:
+  - Fixed M1 (p = 0.696 read "70 % · Uncertain"): band from the shown percent; edge tests at 0.695 / 0.395.
+  - Fixed M2: pins were ~28 pt and the clear padding was not tappable → 44 pt frame + `contentShape`.
+  - Fixed M3: pins went stale while open → reload on route start / stop and every 5 s.
+  - Fixed M4 / M5: tour tapped `Done.firstMatch` and a `descendants(.any)` label → each sheet's own nav-bar
+    Done with `waitForNonExistence`; pins found by identifier `waymark-pin-<id>` and `isHittable`.
+  - Fixed M6: `.automatic` also framed a far-away walker → the camera opens on route + pins.
+  - Fixed L7 (VoiceOver focus + `.isSelected`), L8 ("likely" said twice), L9 (rose = STOP colour on pins →
+    amber / lemon / sky blue), L10 (docs; "1 reports"), L11 ("N logged this walk" too long → "N logged"),
+    L12 (tests: sample midpoint coverage, cap with route and no walker, rounding edges).
+  - Rejected L13 (details panel does not scroll at the largest text sizes): its Close button is always
+    on screen and dismisses it; no content is lost.
+  - Mine, from the first map shot: 162 overlapping pins incl. side streets → corridor 40 → 25 m and no
+    walker circle while a route is shown; pin mark 28 → 24 pt.
+- test on device: Details → Sidewalk memory on → Map of reports: pins along the Ave in three shapes;
+  tap one → type, %, imagery date, votes; Hazards card pill says "0 logged".
+
+## Waymark judge demo 1 — sidewalk memory on the Guide (Sat Oct 17)
+
+- Off (the shipped default, unchanged): a chip on the Guide, "Sidewalk memory off · Turn on", opens the
+  existing Sidewalk memory card (same switch, binding, spotter buttons) in a sheet. On: the chip says
+  "Sidewalk memory on · 3,405 reports".
+- On, while walking: one card under Stop route names the nearest report ahead — the first
+  `WaymarkAhead` hit in the session's own order (`WaymarkSession.Step.nearest`, set before the speech
+  gate), with metres and belief p ("Reported curb ramp" / "1 m · 92 % likely"). Repeat / Next / Recenter /
+  Stop do not move (shot `wm-05-walking-ahead`, iPhone 18 Pro Max simulator — the 17 Pro Max cannot be
+  created on Xcode 27.1, STATUS_M 15:47).
+- Words in `WaymarkGlance` (CaneKitLogic, 12 tests, red first: `j1-red.log`, `j1b-red.log`); views only
+  read `AppModel`. Nothing new is spoken; no speech priority touched. No existing accessibility label
+  changed. New labels: "Sidewalk memory off. Turn on" / "Sidewalk memory on. N reports" (chip),
+  "Sidewalk memory. Reported …" (card), "Done" (sheet).
+- `make tour-waymark` + `CaneKitWaymarkTour` (judge screenshots on the Ave route).
+- Wording change in existing text: the spotter toast and "Last:" line now use `WaymarkGlance.words`
+  ("rough surface" for surface_problem, "sidewalk issue" for other; were "surface problem" / "report").
+  No XCUITest queries those strings.
+- Independent review (1 agent, did not write the diff), each finding checked in the code:
+  - Fixed H1: standing still blanked the card ("Nothing reported" with an obstacle 8 m ahead) because
+    `WaymarkAhead` selects nothing below 0.5 m/s or without a direction → the session keeps the last
+    walking report and re-reads its p (a spotter tap while standing shows at once). Tests
+    `standingStillKeepsTheLastReportWithItsCurrentBelief`, `aRouteBoundaryForgetsTheKeptReport` (red first, `j1c-red.log`).
+  - Fixed M2: a stale fix froze the card → `nearestFixTimestamp` + `NavigationHealth.isFresh` (tested
+    base rule), re-checked every 2 s: "Waiting for a fresh GPS fix".
+  - Fixed M3: the card showed street reports during the indoor leg → hidden while `indoor.isActive`.
+  - Fixed M4: the tour's cleanup was in the test body (a failed Stop left the switch on for later UI
+    tests) → `tearDown` relaunches and turns it off; every UI test class launches with `-waymarkEnabled NO`.
+  - Fixed M5: chip hit area 32 pt → padded to 44 pt; the idle chip row stacks when it does not fit.
+  - Fixed M6: a failed load showed "loading" forever → "Sidewalk memory unavailable" (tested).
+  - Found by my own tour run after the fixes: the 2 s `TimelineView` passed its scheduled entry date,
+    earlier than a just-arrived fix, so `isFresh` (which rejects a future fix) said "Waiting for a fresh
+    GPS fix" while walking → the card reads `Date()` at render time. The tour's tearDown relaunch raced
+    ("No such process") with a second `XCUIApplication` → it relaunches the same app object.
+  - Rejected L7 (re-render at 1 Hz): only the ahead card observes `nearest`; one small view, no layout churn.
+  - Fixed L9 / L10: doc wording (nearest "between routes", Makefile, test header claim), `docs/todo.md`
+    tracker, `grouped` edge tests, card status lines moved into `WaymarkGlance` with a test.
+- test on device: Guide shows "Sidewalk memory off · Turn on"; tap → sheet → switch on → Done; chip shows
+  the report count; Simulate walk → the card under Stop names a report with metres and "% likely".
+
 ## Waymark UI v3 "Graphite" — the app reimagined (Sat Oct 17)
 
 - Owner: "completely rework the UI … how the buttons are placed … different icons … cooler, not

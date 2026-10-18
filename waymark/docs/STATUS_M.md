@@ -4,6 +4,39 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
+## repo: 3d2a82b (branch `waymark/judge-demo` on jiijeicfe, pushed; NOT merged to `main`; base 0d9dca1) | wall: Sat 23:40 PT
+
+**Done (judge demo, owner's 5-task order; every commit `waymark:` + `test on device:`, CHANGELOG + CODE_REFERENCE, an independent review agent per commit, findings fixed or rejected in CHANGELOG):**
+- `f6dfc7c` T1 Sidewalk memory on the Guide: off → chip "Sidewalk memory off · Turn on" (opens the existing switch; default stays OFF in code); on + walking → card under Stop: nearest report ahead, same order as `WaymarkSession` ("Reported curb ramp / 1 m · 92 % likely"). Walking tiles + Stop unchanged.
+- `a5e147b` T2 Map of reports (MapKit only): Ave route corridor 25 m, pins coloured AND shaped by belief band (amber circle ≥ 70 % / lemon diamond 40–69 % / sky-blue ring < 40 %, lane ladder, colour-blind-safe), tap → type, %, imagery date, votes. "0 ON MAP" was the cane's own hazard log, never Waymark reports → now "0 logged".
+- `690f8bc` T4a UIUC gate (`CampusGate`): no Illinois content in the default build (campus suggestions, voice routes → MapKit in the walker's words, campus Siri AppEnum + phrases removed, ISR indoor script). Reachable only with `WAYMARK_DEMO_ROUTE=isr_cif` (UI tests / e2e unchanged). The app is framed for UW / the U District.
+- `db6064c` T3 Learning visible: "Not there · 50 % → 43 % · spotter" on the card, the ahead card and the map pin; unverifiable = no-op, says "confidence unchanged". **Belief storage:** `Documents/waymark/beliefs.json` (atomic write after each confirmed / contradicted outcome; `WaymarkStore.loadBeliefs` → `WaymarkSession.restore` on load); evidence lines append to `Documents/waymark/evidence.jsonl`. Persistence proven in the simulator: tour taps Not there at the real fire hydrant ps:13292406 (5/5 → p 0.50 → 0.43), relaunches, pin still 43 % "Checked on this phone before" (shots wm-08..10). Trip log gains p_before / p_after; evidence.jsonl schema unchanged. Base fix: `Settings.bool` now honours `-key NO` launch args (`StoredBool`).
+- `3d2a82b` T4b Where am I tile fully above the dock (idle mic 0.18, Dynamic-Type-aware); Profile neutral (signpost mark, "Waymark walker"; no photo path; author name gone from ios/ code).
+- Multi-agent: T3 and T4b ran as a workflow (2 worktrees × implement → independent review → fix); T4a by a worktree subagent + separate reviewer. Merged here as single commits authored `azphalt` noreply.
+
+**Evidence (Mac, Xcode 27.1, merged tree 3d2a82b; logs `waymark/logs/mac/v5-*.log`, git-ignored; judged by exit codes):**
+
+| command | result |
+|---|---|
+| `make test` | 1128 tests in 23 suites passed, exit 0 (baseline 0d9dca1: 1044) |
+| `make gen` / `make sim` | exit 0 / BUILD SUCCEEDED exit 0; App Intents metadata: 0 UIUC/campus words |
+| `make uitest SIM_LAT=40.1140 SIM_LON=-88.2249` ("Waymark Pro Max B" = iPhone 18 Pro Max, iOS 27.0) | exit 2: 12 passed, 1 skipped (Street View, by design), 1 failed `CaneKitIslandTour.testDynamicIsland` ("Start route" never reappears after Simulate walk + Stop×2). **Pre-existing:** fails identically at 0d9dca1 (`v5-base-island.log`), i.e. since UI v3; not fixed (a stop-the-simulation-first attempt did not help, reverted). |
+| `make tour` (same sim) | exit 0, 17 shots incl. 17-profile |
+| `make tour-waymark` (iPhone 18 Pro Max) | exit 0, 10 shots wm-01..wm-10 (guide off/on, sheet, map, pin, walking card, learning card / pin / relaunch) |
+| `make e2e-waymark` | PASS exit 0 (374 s): 6 SYNTHETIC labels, all 6 spoken at `.scene`, arrival 14.6 m, 1.49 lines/min |
+| `waymark_export.py --selftest` | exit 0 |
+
+**Device:** no phone run on this branch. `akeesh` (iPhone 17 Pro, 00008150-001A22D62E05401C) showed "unavailable" in `devicectl` at ~22:40 (locked / not connected). Simulator stands in for the 17 Pro Max: the 17 Pro Max cannot be created on Xcode 27.1, so iPhone 18 Pro Max (same 440 × 956 pt). Akash: unlock + connect, then `cd ios && make run`, and check the `test on device:` lines of the 5 commits.
+
+**Still unproven:** real field-walk evidence (F1: no `evidence.jsonl` from a real walk yet); the ahead card's learning line on screen (spotter taps are refused during a simulated walk); p_before / p_after in a real trip log; AX text sizes by eye; the island test; anything on the phone.
+
+**@W requests (Windows owns these files; Mac did not edit them):**
+- **(a) README + Devpost disclosure paragraph** (README between the waymark markers; Devpost): "Built on OpenCane (pre-existing; github.com/aritroBh/OpenCane at `fe86e10`, used with the authors' OK, D-18). What we built at DubHacks: Waymark's sidewalk memory — UW Project Sidewalk (CC0) labels for Seattle as offline priors, spoken only as reports and never over the cane's own warnings; a belief model and cost-weighted thresholds; evidence from LiDAR passes and a sighted spotter that visibly updates confidence; the map of reports; the Python pipeline, contracts and eval harness; and a UW / U District demo route. Diff since `fe86e10` (at 3d2a82b): 233 files changed, +22,759 / −1,125 (ios/**: 153 files, +9,151 / −1,021; waymark/**: 72 files, +12,918); 83 commits, 77 of them `waymark:` (the rest are merges). Street geometry © OpenStreetMap contributors (ODbL)." Please recompute the stat at merge time (`git diff --shortstat fe86e10 HEAD`).
+- **(b) After the field walk (F1):** Akash copies `Documents/waymark/evidence.jsonl` and `Documents/canekit-*.jsonl` off the phone (Files / AirDrop), runs `python3 ios/scripts/waymark_export.py --evidence evidence.jsonl --log canekit-*.jsonl --out waymark/eval/data/evidence/walk1` (coordinates stripped, exits 2 if any survive), commits only that output; W then runs `py -m wm_eval.run --priors ..\..\ios\CaneKit\Resources\waymark_priors.json --evidence evidence.jsonl --records waymark_records.jsonl --out out\walk1`.
+- **(c) Please record as decisions:** map corridor 25 m and confidence bands 70 / 40 % are display-only `[H]` (alerts still use tau); `CampusGate` (UIUC only under `isr_cif`); `Settings.bool` reads launch-arg strings; the branch needs review + merge to `main` (Akash).
+
+---
+
 ## repo: ba51f67 (`main`: UI v3 "Graphite" merged, #7) | wall: Sat 17:50 PT
 
 **Done:** UI v3 per owner (17:28, "reimagine the app, same functionality, cool not flashy"). Graphite

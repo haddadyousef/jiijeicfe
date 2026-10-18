@@ -169,7 +169,7 @@ extension EmergencyConfirm {
     /// `text` with every phone-like run (digits with spaces, dashes, dots, parentheses, a leading
     /// plus) of at least `maskMinDigits` digits replaced by `maskedNumber`. The emergency prompt
     /// reads the number back aloud before dialing (hard requirement, kept); the trip log — and the
-    /// cloud mirror, which sees the same records — gets "Say yes to call Aritro at [number].".
+    /// cloud mirror, which sees the same records — gets "Say yes to call Alex at [number].".
     /// Caller: `TripLogger.event` for the `text`, `response`, `matched_line` and `transcript` fields.
     /// Pinned by `logRecordsMaskThePhoneNumber`.
     /// - Parameter text: a logged line.

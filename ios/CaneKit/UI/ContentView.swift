@@ -400,7 +400,7 @@ private struct IndoorRecordCard: View {
                             value: indoor.isFinishingExit ? "reading GPS" : nil) { indoor.finishAtExit() }
                     .disabled(indoor.recordingFinished || indoor.isFinishingExit)
                 CKBigButton(title: "Save", systemImage: "square.and.arrow.down",
-                            hint: "Saves the walk as route \(IndoorScriptCatalog.sanitizedID(indoor.recordingID))") { indoor.saveRecording() }
+                            hint: "Saves the walk as route \(CampusGate.sanitizedRecordingID(indoor.recordingID, campusEnabled: IndoorGuide.campusIndoor))") { indoor.saveRecording() }  // waymark:
                     .disabled(!indoor.recordingFinished)
                 CKBigButton(title: "Cancel recording", systemImage: "xmark.circle", role: .destructive,
                             hint: "Discards this recording") { indoor.cancelRecording() }
@@ -412,12 +412,13 @@ private struct IndoorRecordCard: View {
                     .padding(.horizontal, CKSpacing.md)
                     .frame(minHeight: CKMetrics.touchTarget)
                     .background(CKColor.surfaceRaised, in: RoundedRectangle(cornerRadius: CKRadius.button, style: .continuous))
-                    .accessibilityHint("Saved under this name; using the ISR name replaces the floor-plan draft")
+                    // waymark: the ISR wording only when `IndoorGuide.campusIndoor` (`CampusGate`).
+                    .accessibilityHint(CampusGate.routeNameHint(campusEnabled: IndoorGuide.campusIndoor))  // waymark:
                 CKBigButton(title: "Start recording", systemImage: "record.circle", role: .secondary,
                             hint: "Counts steps and turns until you finish at the exit") { indoor.startRecording() }
                     .disabled(indoor.isActive)
                 CKBigButton(title: "Start indoor route", systemImage: "figure.walk", role: .secondary,
-                            hint: "Walks the saved ISR indoor route, then the route to CIF") { model.startIndoorRouteForTesting() }
+                            hint: CampusGate.startIndoorHint(campusEnabled: IndoorGuide.campusIndoor)) { model.startIndoorRouteForTesting() }  // waymark:
                     .disabled(indoor.isActive || model.nav.isNavigating || model.routeStartWaiting)
                 Text(catalogLine)
                     .font(CKFont.secondary).foregroundStyle(CKColor.textSecondary)
@@ -442,7 +443,8 @@ private struct IndoorRecordCard: View {
         return "Recording · \(steps) \(steps == 1 ? "part" : "parts"), \(total) steps counted, \(landmarks) \(landmarks == 1 ? "landmark" : "landmarks")"
     }
 
-    /// "Saved routes: Townsend Hall to the ISR front doors (not recorded yet)".
+    /// "Saved routes: Townsend Hall to the ISR front doors (not recorded yet)" — waymark: the bundled
+    /// ISR draft is in the catalog only when `IndoorGuide.campusIndoor`; otherwise recorded routes only.
     private var catalogLine: String {
         let scripts = model.indoor.scripts
         guard !scripts.isEmpty else { return "No indoor routes saved." }

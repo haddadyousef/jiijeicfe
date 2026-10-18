@@ -28,6 +28,10 @@
 //      seconds before a first fix, a denied permission, and indoors.) The campus centre biases
 //      the search; it is never used as a distance origin (that would be a made-up number).
 //    · The search radius is `RouteSource.searchRadiusM`, the same 3 km the route builder accepts.
+//    · waymark: the campus gazetteer rows and the campus centre only under
+//      `WAYMARK_DEMO_ROUTE=isr_cif` (`RouteSource.uiucDemo`, `CampusGate.suggestions` /
+//      `searchCentre`). The default build shows MapKit rows only, centred on the fix or else the
+//      demo route's first waypoint (`RouteSource.demoStart`); with neither there is no region bias.
 //
 //  Tests: the ranking, debounce and minimum length are pure and pinned in CaneKitLogic
 //  (`DestinationSuggestionsTests`); this class (completer, relay, stale-reply fence) has no unit
@@ -195,14 +199,20 @@ final class DestinationSearch {
     // MARK: MapKit
 
     /// Points the completer at `text` inside a square of `2 × RouteSource.searchRadiusM` around
-    /// the fix (or the campus centre). Runs after the debounce, on the main actor.
+    /// the fix (or the campus centre; waymark: the demo route's start in the default build, and no
+    /// region bias when even that is missing). Runs after the debounce, on the main actor.
     private func ask(_ text: String) {
-        let centre = origin ?? CampusPlaces.center
-        completer.region = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: centre.latitude, longitude: centre.longitude),
-            latitudinalMeters: 2 * RouteSource.searchRadiusM,
-            longitudinalMeters: 2 * RouteSource.searchRadiusM)
-        completer.regionPriority = .required     // nearby places, not the most famous match anywhere
+        // waymark: `CampusGate.searchCentre` — the campus centre only under WAYMARK_DEMO_ROUTE=isr_cif.
+        if let centre = CampusGate.searchCentre(fix: origin, campusEnabled: RouteSource.uiucDemo,
+                                                fallback: RouteSource.demoStart) {  // waymark:
+            completer.region = MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: centre.latitude, longitude: centre.longitude),
+                latitudinalMeters: 2 * RouteSource.searchRadiusM,
+                longitudinalMeters: 2 * RouteSource.searchRadiusM)
+            completer.regionPriority = .required     // nearby places, not the most famous match anywhere
+        } else {
+            completer.regionPriority = .default      // waymark: no point to bias towards
+        }
         completer.queryFragment = text
     }
 
@@ -235,8 +245,9 @@ final class DestinationSearch {
     /// - Parameter announce: false for a change the walker did not cause (a geocode landing), so
     ///   VoiceOver does not repeat the row count over their typing.
     private func republish(announce: Bool = true) {
-        let next = DestinationSuggestions.suggestions(query: query, completions: completions, from: origin,
-                                                      locality: locality)
+        // waymark: no campus rows unless WAYMARK_DEMO_ROUTE=isr_cif (`CampusGate.suggestions`).
+        let next = CampusGate.suggestions(query: query, completions: completions, from: origin,
+                                          locality: locality, campusEnabled: RouteSource.uiucDemo)  // waymark:
         guard next.map(\.id) != suggestions.map(\.id) else { return }
         suggestions = next
         if announce { revision += 1 }

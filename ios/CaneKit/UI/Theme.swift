@@ -933,7 +933,7 @@ struct CKChip: View {
             CKStatusPill(text: "82%", spoken: "Battery 82 percent")
         }
         CKCard(title: "Next instruction") {
-            Text("Turn left onto Goodwin Avenue").font(CKFont.instruction)
+            Text("Turn left onto NE 45th Street").font(CKFont.instruction)  // waymark: was a UIUC street
             Text("120 m").font(CKFont.hero(64)).foregroundStyle(CKColor.textPrimary)
         }
         CKBigButton(title: "Stop route", systemImage: "stop.fill", role: .destructive,

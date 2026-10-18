@@ -588,7 +588,7 @@ private func denseGround(_ profile: (Float) -> Float) -> [GroundSample] {
         whatItSaw: "drop-off curb",
         severity: "critical"
     )
-    let event = r.asGrokBotEvent(user: "Aritro", caneID: "opencane-01")
+    let event = r.asGrokBotEvent(user: "Alex", caneID: "opencane-01")
     #expect(event.type == .obstacle)
     #expect(event.severity == .critical)
     #expect(event.lat == 40.1105)
@@ -597,7 +597,7 @@ private func denseGround(_ profile: (Float) -> Float) -> [GroundSample] {
     #expect(event.heading == 180.0)
     #expect(event.speedMps == 1.1)
     #expect(event.note == "Two meters ahead, drop-off.")
-    #expect(event.user == "Aritro")
+    #expect(event.user == "Alex")
     #expect(event.caneID == "opencane-01")
     #expect(event.obstacle?.kind == "dropOff")
     #expect(event.obstacle?.distanceM == 2.0)

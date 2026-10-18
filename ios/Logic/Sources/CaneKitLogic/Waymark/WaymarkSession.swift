@@ -82,6 +82,24 @@ public struct WaymarkSession: Sendable {
         public var records: [[String: String]]
         /// How many labels were ahead (`WaymarkAhead.select` hits), for the `lookup` log.
         public var candidates: Int
+        /// The first hit in decision order (closest along the path, ties by id) with its belief,
+        /// for the Guide's Sidewalk memory card; nil when nothing is ahead. Set before the speech
+        /// gate, so a busy queue does not blank the card (judge demo, task 1). While the walker
+        /// stands still or has no direction (`WaymarkAhead` selects nothing then), the last
+        /// walking value is kept with its belief read again (review 1).
+        public var nearest: Nearest? = nil
+    }
+
+    /// The nearest label ahead for display (`Step.nearest`). Same selection as the spoken line.
+    public struct Nearest: Sendable, Equatable {
+        /// The label's id ("ps:13292406").
+        public let labelID: String
+        /// Its type.
+        public let type: WaymarkLabelType
+        /// Metres ahead along the path.
+        public let alongM: Double
+        /// Belief p at this fix (`WaymarkBelief.read`).
+        public let p: Double
     }
 
     /// Spatial index over the bundle.
@@ -94,6 +112,8 @@ public struct WaymarkSession: Sendable {
     private var policy = WaymarkAlertPolicy()
     /// "label_id|reason" pairs already logged this route.
     private var logged: Set<String> = []
+    /// The last `Step.nearest` computed while moving with a direction, kept for standing fixes.
+    private var lastNearest: Nearest?
 
     /// Search radius around the fix: anything farther cannot be a `WaymarkAhead` hit.
     public static let searchRadiusM = WaymarkAhead.lookaheadMaxM + WaymarkAhead.corridorHalfWidthM
@@ -121,6 +141,20 @@ public struct WaymarkSession: Sendable {
                                        headingDeg: context.headingDeg, legs: context.legs)
             .sorted { ($0.alongM, $0.prior.id) < ($1.alongM, $1.prior.id) }
         out.candidates = hits.count
+        // Same gate `WaymarkAhead.select` applies: standing, an invalid speed or no direction selects
+        // nothing, which says nothing about what is ahead — keep the last report, re-read its belief.
+        let moving = fix.speed.isFinite && fix.speed >= WaymarkAhead.minSpeedMps
+            && ((context.legs?.isEmpty == false) || context.headingDeg?.isFinite == true)
+        if moving {
+            lastNearest = hits.first.map {
+                Nearest(labelID: $0.prior.id, type: $0.prior.type, alongM: $0.alongM,
+                        p: (beliefs[$0.prior.id] ?? WaymarkBelief()).read(prior: $0.prior, now: context.nowUTC).p)
+            }
+            out.nearest = lastNearest
+        } else if let kept = lastNearest, let prior = byID[kept.labelID] {
+            out.nearest = Nearest(labelID: kept.labelID, type: kept.type, alongM: kept.alongM,
+                                  p: (beliefs[kept.labelID] ?? WaymarkBelief()).read(prior: prior, now: context.nowUTC).p)
+        }
         guard !hits.isEmpty else { return out }
         // Silences are logged only inside the trigger distance (A1 review M5): a gate that holds a
         // label 30 m out is not the decision the eval needs; the one at speaking distance is.
@@ -163,13 +197,23 @@ public struct WaymarkSession: Sendable {
     }
 
     /// Adds one piece of field evidence (spotter tap, LiDAR / ground / vision check, E1).
-    /// Unknown label ids are ignored; `.unverifiable` changes nothing (`WaymarkBelief.update`).
+    /// Unknown label ids are ignored; `.unverifiable` changes nothing (`WaymarkBelief.update`) —
+    /// not the stored belief, not its clock.
     /// - Parameters: outcome, sensor, the label id and UTC seconds.
-    public mutating func record(_ outcome: WaymarkOutcome, sensor: WaymarkSensor, labelID: String, nowUTC: Double) {
-        guard let prior = byID[labelID], outcome != .unverifiable else { return }
+    /// - Returns: judge demo task 3 — p before and after at `nowUTC` with the outcome and source
+    ///   (equal before and after for `.unverifiable`), or nil for an unknown id.
+    @discardableResult
+    public mutating func record(_ outcome: WaymarkOutcome, sensor: WaymarkSensor, labelID: String,
+                                nowUTC: Double) -> WaymarkLearning? {
+        guard let prior = byID[labelID] else { return nil }
         var belief = beliefs[labelID] ?? WaymarkBelief()
-        belief.update(outcome, sensor: sensor, type: prior.type, now: nowUTC)
-        beliefs[labelID] = belief
+        let before = belief.read(prior: prior, now: nowUTC).p
+        if outcome != .unverifiable {
+            belief.update(outcome, sensor: sensor, type: prior.type, now: nowUTC)
+            beliefs[labelID] = belief
+        }
+        return WaymarkLearning(labelID: labelID, type: prior.type, outcome: outcome, sensor: sensor,
+                               pBefore: before, pAfter: belief.read(prior: prior, now: nowUTC).p)
     }
 
     /// Puts back beliefs saved by an earlier run (E1, `beliefs.json`). Ids this bundle does not
@@ -182,8 +226,8 @@ public struct WaymarkSession: Sendable {
     public func prior(_ id: String) -> WaymarkPrior? { byID[id] }
 
     /// A route began: every label may be announced again, and silences are logged afresh.
-    public mutating func routeStarted() { policy.routeStarted(); logged.removeAll() }
+    public mutating func routeStarted() { policy.routeStarted(); logged.removeAll(); lastNearest = nil }
 
     /// A route ended (stop or arrival): same reset as `routeStarted()`.
-    public mutating func routeEnded() { policy.routeEnded(); logged.removeAll() }
+    public mutating func routeEnded() { policy.routeEnded(); logged.removeAll(); lastNearest = nil }
 }

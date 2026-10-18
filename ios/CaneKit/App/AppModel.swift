@@ -3449,9 +3449,9 @@ final class AppModel {
         buildRoute(to: .query(text), searchLine: "Finding a route to \(text).")
     }
 
-    /// Walking route from the current fix to a gazetteer entrance, no search (Siri "Take me to
-    /// Grainger in Waymark" → `TakeMeToIntent` with a `CampusDestination`; a tapped CAMPUS row in
-    /// `DestinationField`). Puts `place.name` in the destination field.
+    /// Walking route from the current fix to a gazetteer entrance, no search (a tapped CAMPUS row in
+    /// `DestinationField`, offered only under `WAYMARK_DEMO_ROUTE=isr_cif`; waymark: the Siri
+    /// `CampusDestination` path was removed). Puts `place.name` in the destination field.
     /// - Parameter place: a `CampusPlaces` entry; its entrance coordinate is used as-is.
     func navigate(to place: CampusPlace) {
         destinationQuery = place.name
@@ -4688,9 +4688,11 @@ enum Settings {
     static var onChange: (() -> Void)?
 
     /// Stored Bool for `key`, or `d` when the key has never been written (not `false`).
+    /// waymark: `StoredBool.parse` also reads a launch argument's "YES" / "NO" string, so the UI
+    /// tests' `-waymarkEnabled NO` mask works (`as? Bool` read it as unset — task 3 review).
     static func bool(_ key: String, default d: Bool) -> Bool {
         _ = launchMode              // ⚠ forces the recovery above before any setting is read
-        return UserDefaults.standard.object(forKey: key) as? Bool ?? d
+        return StoredBool.parse(UserDefaults.standard.object(forKey: key)) ?? d   // waymark:
     }
     /// Persists `value` under `key` in `UserDefaults.standard`, then tells `onChange`.
     static func set(_ value: Bool, _ key: String) {

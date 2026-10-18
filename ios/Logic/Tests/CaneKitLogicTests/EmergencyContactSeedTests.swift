@@ -80,8 +80,8 @@ import Testing
 /// back before dialing); the log sees "[number]". Only runs of ≥ 7 digits are masked, so route
 /// distances and counts survive.
 @Test func logRecordsMaskThePhoneNumber() {
-    let prompt = EmergencyConfirm.promptLine(name: "Aritro", number: "+1 (217) 555-0100")
-    #expect(EmergencyConfirm.logSafe(prompt) == "Say yes to call Aritro at [number].")
+    let prompt = EmergencyConfirm.promptLine(name: "Alex", number: "+1 (217) 555-0100")
+    #expect(EmergencyConfirm.logSafe(prompt) == "Say yes to call Alex at [number].")
     #expect(EmergencyConfirm.logSafe("at 217 555 0100.") == "at [number].")          // a resumed clause
     #expect(EmergencyConfirm.logSafe("call 2175550100 now") == "call [number] now")
     for unchanged in ["Two meters ahead, door.", "GPS weak.", "Passed ISR. CIF in 120 meters.",

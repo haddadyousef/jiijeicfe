@@ -1,5 +1,13 @@
 # LIVE TRACKER — Sun Sep 13 (updated as work lands; newest first)
 
+- [ ] Waymark judge demo (Sat Oct 17, branch `waymark/judge-demo`) — tasks 1–5 done; device + walk open
+  - [x] 1. Sidewalk memory on the Guide: off chip → sheet with the existing switch; ahead card under Stop.
+  - [x] 2. Map of reports coloured and shaped by confidence; "0 on map" badge explained.
+  - [x] 3. Learning visible (before → after, source); persistence checked (relaunch in the tour).
+  - [x] 4. Demo cleanup: Where am I tile, neutral Profile (4b), no UIUC in the default build (4a).
+  - [x] 5. Verification runs and STATUS_M entry (uitest: pre-existing CaneKitIslandTour failure, see STATUS_M).
+  - [ ] Phone run on akeesh (unavailable at 22:40); F1 field walk; merge `waymark/judge-demo` to `main`.
+
 - [x] Step 69 — adversarial audit hardening (Tue Sep 22)
   - [x] Seeded geofence finding fixed: full reported accuracy must fit inside the arrival fence; the
     `withKnownIssue` is removed and the 1,000-walk campaign is a hard assertion.

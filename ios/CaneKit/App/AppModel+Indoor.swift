@@ -47,8 +47,11 @@ extension AppModel {
 
     /// Settings "Start indoor route" (testing): the catalog's ISR script (`defaultRecordingID`), else
     /// the first one, to the CIF demo route. Says "No indoor route saved." with an empty catalog.
+    /// waymark: outside `IndoorGuide.campusIndoor` the default id is "indoor_route" and the outdoor
+    /// leg is the default demo route (`CampusGate.defaultRecordingID`, `IndoorGuide.handOver`).
     func startIndoorRouteForTesting() {
-        guard let script = indoor.scripts.first(where: { $0.id == IndoorScriptCatalog.defaultRecordingID })
+        let defaultID = CampusGate.defaultRecordingID(campusEnabled: IndoorGuide.campusIndoor)  // waymark:
+        guard let script = indoor.scripts.first(where: { $0.id == defaultID })  // waymark:
                 ?? indoor.scripts.first else {
             speech.say("No indoor route saved.", .nav, ttl: 6)
             return

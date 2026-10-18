@@ -40,7 +40,7 @@ final class AudioRouteMonitor {
 
     /// True when the current output is a headphone route (Bluetooth A2DP/LE, wired, USB).
     private(set) var headphonesConnected = false
-    /// Product name from the route ("Aritro's AirPods Pro") or the port type ("Speaker").
+    /// Product name from the route ("Alex's AirPods Pro") or the port type ("Speaker").
     /// Prefers the headphone port's name; otherwise the first output's name; "Speaker" if none.
     private(set) var outputName = "Speaker"
     /// Best-effort: the output name contains "AirPods" (head tracking needs Pro/Max/3rd gen; the

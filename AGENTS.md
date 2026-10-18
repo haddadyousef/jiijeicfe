@@ -402,12 +402,13 @@ bench has *disproved* must never sit in the file as though it were settled — m
   `AppModel.navigate(to:)` / `navigate(to place:)` Siri uses, so "Walking to <place>, N meters." is
   still spoken before guidance. The row count is the app's only VoiceOver announcement (design.md §5.5).
 - "Take me to …" (typed field or Siri) checks the campus gazetteer (`CampusPlaces`: CIF, ISR,
-  Grainger, Illini Union, Siebel, Main Library, ARC) before MapKit, then walks to the *nearest*
+  Grainger, Illini Union, Siebel, Main Library, ARC) before MapKit — waymark: only under
+  `WAYMARK_DEMO_ROUTE=isr_cif` (`CampusGate`; the default build searches MapKit in the walker's words), then walks to the *nearest*
   MKLocalSearch result within 3 km (a name containing every typed word preferred), never MapKit's
   first answer; "Walking to <place>, N meters." is said before guidance so a wrong pick can be
-  stopped, and Stop also abandons a search still in flight. Siri phrases can only carry the
-  gazetteer places ("Take me to Grainger in OpenCane"; App Shortcut phrases cannot hold a String);
-  any other place goes through "Take me somewhere in OpenCane" and Siri asks where. Gazetteer
+  stopped, and Stop also abandons a search still in flight. Siri: every place goes through
+  "Take me somewhere in OpenCane" and Siri asks where (waymark: the campus-place phrases and their
+  `AppEnum` were removed so no UIUC name ships in Siri / Shortcuts). Gazetteer
   entrances other than CIF / ISR are OSM entrance nodes, not yet walked.
 - "Directions from here" (was "Navigate to CIF from here") routes with Apple Maps to the demo route
   file's last waypoint as a bare coordinate (no search), so it can never pick a different place.

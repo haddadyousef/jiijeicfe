@@ -11,6 +11,10 @@
 //      atomically after every outcome and read back on load, so evidence survives a relaunch.
 //  Never throws to the caller: a write failure is returned as a message for the trip log and the
 //  engine carries on (evidence is a measurement, not a safety function).
+//  Judge demo task 3: under UI tests only (`CANEKIT_UITEST=1`), `WAYMARK_STORE_SUBDIR` swaps
+//  `waymark/` for a throwaway `Documents/<subdir>/` (`WaymarkStoreFolder`, sanitised in
+//  CaneKitLogic), so a tour never reads or writes the real `beliefs.json`; at load, folders left by
+//  earlier UI-test runs are removed (`removeStaleTestFolders`, UI tests only).
 //  Owner: `WaymarkEngine`. Tests: the line format is `WaymarkRecordTests` / `WaymarkGoldenTests`.
 //
 
@@ -22,9 +26,15 @@ struct WaymarkStore {
     /// `Documents/waymark/`, created on first use. Nil if Documents cannot be found.
     let folder: URL?
 
+    /// The folder's name under Documents (`waymark`, or the UI-test folder).
+    static let folderName: String = {
+        let env = ProcessInfo.processInfo.environment
+        return WaymarkStoreFolder.name(subdir: env["WAYMARK_STORE_SUBDIR"], uiTest: env["CANEKIT_UITEST"] == "1")
+    }()
+
     /// The app's store. Tests or previews could pass another folder.
     init(folder: URL? = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("waymark", isDirectory: true)) {
+            .appendingPathComponent(WaymarkStore.folderName, isDirectory: true)) {
         self.folder = folder
     }
 
@@ -80,6 +90,20 @@ struct WaymarkStore {
         guard let url = beliefsURL, let data = try? Data(contentsOf: url),
               let beliefs = try? JSONDecoder().decode([String: WaymarkBelief].self, from: data) else { return [:] }
         return beliefs
+    }
+
+    /// Task 3 review: under UI tests only (`CANEKIT_UITEST=1`), deletes the throwaway store folders
+    /// earlier tour runs left in `Documents/` (`WaymarkStoreFolder.staleTestFolders`: test-prefixed
+    /// names other than the active one; never `waymark`). A no-op in a normal launch.
+    func removeStaleTestFolders() {
+        let uiTest = ProcessInfo.processInfo.environment["CANEKIT_UITEST"] == "1"
+        guard uiTest, let folder,
+              let names = try? FileManager.default.contentsOfDirectory(atPath: folder.deletingLastPathComponent().path)
+        else { return }
+        let documents = folder.deletingLastPathComponent()
+        for name in WaymarkStoreFolder.staleTestFolders(names, active: folder.lastPathComponent, uiTest: uiTest) {
+            try? FileManager.default.removeItem(at: documents.appendingPathComponent(name, isDirectory: true))
+        }
     }
 
     /// Creates `Documents/waymark/` if needed.

@@ -41,34 +41,60 @@ struct VoiceTile: View {
     /// Shown under the rings when there is no answer yet: the three words to start with.
     static let hintLine = "Tap to talk. Try “route”, “where am I” or “help”."
 
-    /// Share of the visible page the ring square takes. UI v3 "Graphite": the Guide passes 0.30
-    /// idle (under the route card) and 0.26 while walking (under the compass and the control deck).
-    /// UI v2 (2026-10-17) passed 0.40 idle and 0.30 while walking, so the tiles under it (Where am I / Start route; Repeat / Stop
-    /// route) sit above the tab bar — the 04-navigating tour shot at 0.46 had the whole walking
-    /// grid below the fold under a long instruction. Still the largest target on the page.
-    var heightFraction: CGFloat = 0.46
+    /// waymark: the Guide state (judge demo task 4 + review fix). It picks the ring square through
+    /// `WaymarkMicLayout.square(walking:textScale:)`: walking 0.26 of the visible page, no disc cap
+    /// (under the compass and the control deck, unchanged from UI v3); idle 0.18 with the disc capped
+    /// at 0.62 of the square at the default text size (was 0.30, which left the Where am I tile cut
+    /// in half by the tab dock on a Pro Max), both growing with Dynamic Type up to 0.30 so the idle
+    /// disc still reaches its full scaled size at accessibility sizes.
+    /// History: this was `heightFraction: CGFloat = 0.46`; UI v2 (2026-10-17) passed 0.40 idle and
+    /// 0.30 while walking, so the tiles under it (Where am I / Start route; Repeat / Stop route) sit
+    /// above the tab bar — the 04-navigating tour shot at 0.46 had the whole walking grid below the
+    /// fold under a long instruction. Still the largest target on the page.
+    var walking = false
+
+    /// waymark: the ring square for this state and text size (`WaymarkMicLayout`).
+    private var square: WaymarkMicLayout.Square {
+        WaymarkMicLayout.square(walking: walking,
+                                textScale: WaymarkMicLayout.textScale(preferredDisc: Double(disc)))
+    }
+
+    /// waymark: the disc diameter drawn in a square of `side` points (`WaymarkMicLayout.discDiameter`).
+    /// `side` comes from the same layout pass as the square itself, so the disc never draws at the
+    /// uncapped size for a frame (review fix: no "pop" at launch or on Stop / arrival).
+    private func discSize(side: CGFloat) -> CGFloat {
+        CGFloat(WaymarkMicLayout.discDiameter(preferred: Double(disc), side: Double(side),
+                                              maxShare: square.discShare))
+    }
 
     /// Rings + disc as one button, then the status line.
     var body: some View {
         VStack(spacing: CKSpacing.md) {
             Button { model.toggleVoiceInput() } label: {
-                ZStack {
-                    ContourRings(motion: reduceMotion ? .still : motion, ink: CKColor.textPrimary)
-                    Circle()
-                        .fill(isBusy ? CKColor.danger : CKColor.accent)
-                        .frame(width: disc, height: disc)
-                        .overlay {
-                            Image(systemName: glyph)
-                                .font(.system(size: disc * 0.38, weight: .bold))
-                                .foregroundStyle(isBusy ? CKColor.ink : CKColor.onAccent)
-                        }
-                        .accessibilityHidden(true)
+                // waymark: GeometryReader so the idle disc cap uses this pass's square side (the
+                // shorter edge). It fills exactly the frame below, as the greedy rings canvas did.
+                GeometryReader { geo in
+                    let discSize = discSize(side: min(geo.size.width, geo.size.height))
+                    ZStack {
+                        ContourRings(motion: reduceMotion ? .still : motion, ink: CKColor.textPrimary)
+                        Circle()
+                            .fill(isBusy ? CKColor.danger : CKColor.accent)
+                            .frame(width: discSize, height: discSize)   // waymark: was `disc`
+                            .overlay {
+                                Image(systemName: glyph)
+                                    .font(.system(size: discSize * 0.38, weight: .bold))
+                                    .foregroundStyle(isBusy ? CKColor.ink : CKColor.onAccent)
+                            }
+                            .accessibilityHidden(true)
+                    }
+                    .frame(width: geo.size.width, height: geo.size.height)
                 }
                 .frame(maxWidth: .infinity)
                 // UI audit 2026-09-13: 0.6 → 0.46 of the visible page so the compact row (Where am I /
                 // Start route) sits above the tab bar on a 17 Pro Max instead of cut in half, and
                 // stays reachable on smaller iPhones. Still the largest target on the page.
-                .containerRelativeFrame(.vertical) { height, _ in height * heightFraction }
+                // waymark: the share is `square.heightFraction` (was `heightFraction`).
+                .containerRelativeFrame(.vertical) { height, _ in height * CGFloat(square.heightFraction) }
                 // The whole ring square is the target, not just the stroked pixels.
                 .contentShape(Rectangle())
             }

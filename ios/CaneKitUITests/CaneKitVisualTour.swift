@@ -4,9 +4,9 @@
 //
 //  Not a pass/fail test so much as a camera: walks every screen state a person can reach in the
 //  simulator (idle Guide, navigating, after Repeat / Next / Recenter, "Where am I" with no camera,
-//  the Sense page, the Settings page with the haptic tests and "Silence haptics", stopped, and Go
-//  with an empty destination) and saves a PNG of each so the screens can be reviewed without a
-//  human tapping. Run with `make tour`, which is
+//  the Sense page, the Settings page with the haptic tests and "Silence haptics", stopped, Go
+//  with an empty destination and — waymark, judge demo task 4 — the Profile tab) and saves a PNG
+//  of each so the screens can be reviewed without a human tapping. Run with `make tour`, which is
 //    TEST_RUNNER_CANEKIT_SHOTS=<dir> xcodebuild … -only-testing:CaneKitUITests/CaneKitVisualTour test
 //  Screenshots land in <dir> (and as attachments in the .xcresult either way). `make uitest` also
 //  runs it (it is in the same target), without writing PNGs.
@@ -42,6 +42,9 @@ final class CaneKitVisualTour: XCTestCase {
         allowLocationPrompts()
         app = XCUIApplication()
         app.launchEnvironment["CANEKIT_UITEST"] = "1"
+        // Waymark judge demo (review 4): sidewalk memory at its shipped default (off) for this launch,
+        // whatever an earlier test left in the simulator's UserDefaults.
+        app.launchArguments += ["-waymarkEnabled", "NO"]
         // Waymark: the demo route defaults to the Seattle Ave walk; these tests assert on the UIUC
         // route's lines ("Townsend", "Illinois Street"), so pin it (the Mac gate also parks the
         // simulator at UIUC: SIM_LAT=40.1140 SIM_LON=-88.2249; the Makefile default is the Ave start).
@@ -51,13 +54,13 @@ final class CaneKitVisualTour: XCTestCase {
 
     /// The whole tour, in order: idle Guide, navigating, after Repeat / Next / Recenter,
     /// "Where am I" without a key, Sense page, Settings (haptic tests + silence), stopped,
-    /// and Go with an empty destination.
+    /// Go with an empty destination, and the Profile tab.
     ///
     /// Shot names, in order: idle-top, idle-middle, idle-bottom, navigating, after-repeat,
     /// after-next, after-recenter, navigating-middle, navigating-bottom, where-am-i-no-key (only if
     /// the button exists), sense-top, sense-bottom, settings-top, haptics-silenced (only if the
-    /// switch exists), settings-bottom, stopped, go-empty — each prefixed "NN-" by `snap`. The
-    /// route is still running while Sense and Settings are shot; the tour returns to Guide to Stop.
+    /// switch exists), settings-bottom, stopped, go-empty, profile (waymark) — each prefixed "NN-"
+    /// by `snap`. The route is still running while Sense and Settings are shot; the tour returns to Guide to Stop.
     ///
     /// ⚠ test contract: every `app.buttons[...]` / `app.switches[...]` label used below.
     func testTour() {
@@ -110,6 +113,14 @@ final class CaneKitVisualTour: XCTestCase {
 
         // Destination field: empty → error line; typed → route build attempt (no network in CI).
         scrollTo(app.buttons["Go"]).tap(); pause(0.5); snap("go-empty")
+
+        // waymark: the Profile tab's Medical ID header (judge demo task 4: neutral mark, no person's
+        // name or photo). Last, so every earlier shot keeps its number.
+        openTab("Profile")
+        // Review fix: prove the Profile tab is showing before the shot, so a missed tap cannot
+        // save a Guide picture as "profile". "Edit Medical ID" is an existing test-contract label.
+        XCTAssertTrue(app.buttons["Edit Medical ID"].waitForExistence(timeout: 5))
+        pause(0.6); snap("profile")
     }
 
     /// Selects a root tab by its VoiceOver label (icon-only on screen). Unlike the

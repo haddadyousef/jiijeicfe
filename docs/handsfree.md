@@ -135,10 +135,9 @@ shortcuts, not ours. Several wordings work for each command; the first one liste
 | **"Where am I in OpenCane"** — or "OpenCane describe the scene" | One sentence about what the camera sees: what is there, and whether it is on the left, in the centre or on the right. A measured LiDAR distance is added in front if the sensor has one. |
 | **"Ask OpenCane about the scene"** — or "Ask OpenCane a question" | Siri asks **"What do you want to know?"** Say your question ("is there a bench on my left", "what does that sign say"). One sentence back. |
 | **"How is OpenCane doing"** — or "OpenCane status", "Is OpenCane working", "Check OpenCane" | The spoken version of the whole screen: obstacle detection, GPS, AirPods, cane haptics, route, battery. Always in that order. |
-| **"Take me to Grainger in OpenCane"** (CIF, ISR, Grainger, the Illini Union, Siebel, the Main Library, the ARC) | Walks you there from where you are. |
 | **"Take me somewhere in OpenCane"** | Siri asks where; say any place ("Starbucks on Green Street"). |
-| **"Talk to OpenCane"** — or "Speak to OpenCane" | Opens the app and starts listening. Ask anything below, or "Take me to CIF", "How is my battery?", "What is in front of me?". This is also the Action button target (section 3). |
-| **"Start my route in OpenCane"** — or the legacy phrase "Start the demo route in OpenCane" | The recorded ISR Townsend Hall → CIF route. |
+| **"Talk to OpenCane"** — or "Speak to OpenCane" | Opens the app and starts listening. Ask anything below, or "Take me to the Ave and NE 50th", "How is my battery?", "What is in front of me?". This is also the Action button target (section 3). |
+| **"Start my route in OpenCane"** — or the legacy phrase "Start the demo route in OpenCane" | The demo route: The Ave, NE 42nd → NE 50th (the original UIUC route only under `WAYMARK_DEMO_ROUTE=isr_cif`). |
 | **"Repeat in OpenCane"** — or "OpenCane say that again" | Says the current instruction again. |
 | **"Next waypoint in OpenCane"** | Skips to the next instruction. |
 | **"Stop the route in OpenCane"** — or "Stop navigating in OpenCane" | Ends guidance, and cancels a destination search still running. |
@@ -171,8 +170,8 @@ can put any of them on the Action button (section 3) by first making a one-step 
   from what you asked for, so a feature that refuses to start — a denied microphone, for instance —
   is never announced as on.
 - **Directions from here** (was "Navigate to CIF from here") — walking directions to the end of the demo route (The Ave and NE 50th; the CIF east entrance under `WAYMARK_DEMO_ROUTE=isr_cif`), wherever you start
-  (the Guide card button does the same thing). Its Siri phrase moved to "Take me to CIF in
-  OpenCane" when its shortcut slot went to "Talk to OpenCane".
+  (the Guide card button does the same thing). It has no Siri phrase since its shortcut slot went to
+  "Talk to OpenCane" (the campus "Take me to CIF" phrase was removed by the Waymark UIUC gate).
 
 ---
 
