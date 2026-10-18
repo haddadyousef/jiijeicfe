@@ -35,7 +35,8 @@ struct ArrivalCardView: View {
     /// words; `trip.lastError` (e.g. a HealthKit refusal) shows in red.
     var body: some View {
         let trip = model.trip
-        CKCard(title: model.nav.arrived ? "Arrived" : "This trip") {
+        CKCard(title: model.nav.arrived ? "Arrived" : "This trip",
+               systemImage: model.nav.arrived ? "flag.checkered" : "chart.line.uptrend.xyaxis") {
             HStack(spacing: CKSpacing.lg) {
                 stat(value: distanceText(trip.distanceM), label: "walked")
                 stat(value: minutesText(trip.elapsed), label: "minutes")

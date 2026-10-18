@@ -27,7 +27,7 @@ struct WaymarkCard: View {
     /// Switch, status, spotter buttons + toast, evidence line.
     var body: some View {
         @Bindable var model = model
-        CKCard(title: "Sidewalk memory", systemImage: "map",
+        CKCard(title: "Sidewalk memory", systemImage: "signpost.right.and.left.fill",
                caption: "Warns about obstacles and missing curb ramps other people reported, before you reach them.") {
             CKToggleRow(title: "Sidewalk memory",
                         subtitle: "Reports from Project Sidewalk, spoken ahead of you",

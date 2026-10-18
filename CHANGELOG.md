@@ -2,6 +2,21 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark UI v3 "Graphite" — the app reimagined (Sat Oct 17)
+
+- Owner: "completely rework the UI … how the buttons are placed … different icons … cooler, not
+  flashy … functionality the same". Graphite palette (contrast measured: text ≥ 16.9:1, secondary
+  ≥ 5.5:1, outlines ≥ 3.3:1); cards rounder with a soft shadow.
+- Guide idle: route card with a drawn route sketch, destination, length and stop count, Start route,
+  Directions from here and Simulate walk together; chips; microphone; Where am I; Where to?
+- Guide walking: compass card (arrow turns toward the next stop, metres in the centre, "Stop N of M");
+  round Repeat · Next · Recenter deck; full-width two-tap Stop route on the first screen; Route status card.
+- Details: "What's ahead" summary sentence and signal-bar tiles (STOP fills the tile). Floating tab
+  dock and new symbols on tabs and cards.
+- Every ⚠ test-contract label, action and VoiceOver sentence kept (no new files, no `gen.sh`).
+- test on device: idle route card shows the sketch and "731 m · 9 stops"; Start route → compass
+  arrow turns as you veer; Repeat / Next / Recenter; Stop route twice; Details tiles show bars.
+
 ## Waymark X-e2e — the Ave replay with sidewalk memory on (Sat Oct 17)
 
 - `e2e.py --scenario waymark_ave` / `make e2e-waymark` (D-35 item 3): replays W's `route_trace.json` on

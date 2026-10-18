@@ -485,6 +485,23 @@ screen ("Head row" / "Body row" to VoiceOver), with a colour key including "Not 
 selected in blue. **Demo route:** The Ave and NE 42nd → NE 50th by default (`RouteSource.bundled()`);
 `WAYMARK_DEMO_ROUTE=isr_cif` keeps the UIUC route for the XCUITests and e2e.py.
 
+**UI v3 "Graphite" (2026-10-17, owner: "reimagine the application — where the buttons are, different
+icons, more user friendly, cooler, not flashy; same functionality").** Palette: cool graphite neutrals
+with a graphite (light) / near-white (dark) accent; colour is reserved for the lane ladder and status,
+so a coloured thing on screen always means something. Guide, idle: a **route card** first — a drawn
+sketch of the route, "To The Ave and NE 50th", "731 m · 9 stops", **Start route**, **Directions from
+here**, a quiet **Simulate walk** link (no longer behind "Demo") — then GPS / light chips, the
+microphone, **Where am I** (`viewfinder`) and the **Where to?** search card. Guide, walking: a
+**compass card** — a ring whose arrow turns toward the next stop with the metres in its centre,
+"Stop 3 of 9", the instruction, then chips (heading, GPS, GPS weak, Dark); a **control deck** of round
+actions **Repeat · Next · Recenter**; **Stop route** full width right under it (always on the first
+screen; still two taps); the microphone; a **Route status** card (beacon, AirPods, Simulate walk).
+Details: "What's ahead" opens with one sentence ("Closest: 1.2 m, center, body height.") and the tiles
+are quiet raised cells with a four-bar meter in the lane colour (more bars = closer); STOP fills the
+whole tile in the urgent colour with an ink outline. Tabs: a floating dock with new symbols
+(`figure.walk.motion`, `dot.radiowaves.up.forward`, `slider.horizontal.3`, `person.text.rectangle`),
+the word under each. No control, label or action was removed or renamed (§9 unchanged).
+
 **Progressive disclosure (UI rework 2026-10-17, owner: "simpler, don't lose any functionality").**
 Each page shows what a walk needs; everything else sits in a `CKMoreSection` — a ≥ 60 pt header
 ("<title>, collapsed / expanded" to VoiceOver) whose open state is remembered per section. No
@@ -494,8 +511,8 @@ starts closed whatever was stored).
 
 | Page | Always shown | In a section (closed by default) |
 |---|---|---|
-| Guide, idle | Guide card, microphone, Where am I / Start route, Where to (destination, Navigate to CIF) | **Demo**: Simulate walk |
-| Guide, walking | everything, unchanged (Route tools: Recenter, beacon / headphone pills, Simulate walk) | — (a test contract and two warning pills live here) |
+| Guide, idle | Route card (Start route, Directions from here, Simulate walk), chips, microphone, Where am I, Where to | — (UI v3: Simulate walk moved onto the route card) |
+| Guide, walking | everything (compass, Repeat / Next / Recenter, Stop route, microphone, Route status: beacon / headphone pills, Simulate walk) | — (a test contract and two warning pills live here) |
 | Details | status, Obstacles grid, Sidewalk memory card, Hazards card; Hands-free and Camera cards whenever any of their switches is on | **Hands-free and camera** (only while all off); **Diagnostics** (Recent activity / Scene engine) |
 | Settings | Alerts, Voice, Phone on cane, Vibration | **Family alerts**; **Testing tools** (Watch, Record an indoor route, This phone) |
 | Profile | unchanged | — |

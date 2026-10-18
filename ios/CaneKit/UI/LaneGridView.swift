@@ -44,7 +44,7 @@ struct LaneGridView: View {
         // UI audit 2026-09-13: pill beside the title's caption instead of alone on its own row;
         // "Trusted" / "Sweeping" → "Steady" / "Swinging" (what the cane is doing, in plain words).
         // UI v2 (2026-10-17): "Obstacles" → "What's ahead", plus a colour key under the rows.
-        CKCard(title: "What's ahead", systemImage: "square.grid.3x2",
+        CKCard(title: "What's ahead", systemImage: "dot.viewfinder",
                caption: "Nearest thing to your left, center and right, at head and body height.") {
             HStack {
                 CKStatusPill(text: report.isTrusted ? "Steady" : "Swinging",
@@ -54,10 +54,33 @@ struct LaneGridView: View {
                              updatesFrequently: true)
                 Spacer()
             }
+            // UI v3: one plain line first — the closest thing, in words — then the two rows.
+            Text(summary)
+                .font(CKFont.body.weight(.semibold))
+                .foregroundStyle(CKColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.updatesFrequently)
             row(title: "Head", values: report.head, coverage: report.grid.headCoverage)
             row(title: "Body", values: report.torso, coverage: report.grid.torsoCoverage)
             legend
         }
+    }
+
+    /// "Closest: 1.2 m, center, body height." / "All clear ahead." / "No depth yet." — the nearest
+    /// covered cell under the same 4.5 m display cutoff as the tiles.
+    private var summary: String {
+        guard report.depthAvailable else { return "No depth yet." }
+        var best: (d: Float, lane: Int, band: String)? = nil
+        let bands: [(String, [Float], [Bool])] = [("head height", report.head, report.grid.headCoverage),
+                                                  ("body height", report.torso, report.grid.torsoCoverage)]
+        for (band, values, coverage) in bands {
+            for i in 0..<min(3, values.count) where (i >= coverage.count || coverage[i]) {
+                let d = values[i]
+                if d.isFinite, d < 4.5, d < (best?.d ?? .infinity) { best = (d: d, lane: i, band: band) }
+            }
+        }
+        guard let best else { return "All clear ahead." }
+        return "Closest: \(String(format: "%.1f", best.d)) m, \(Self.laneNames[best.lane].lowercased()), \(best.band)."
     }
 
     /// Colour key for a sighted helper: four swatches with their words. Hidden from VoiceOver (each
@@ -136,10 +159,10 @@ struct LaneGridView: View {
 /// One cell: metres (or "clear"), a level word, lane-ladder fill. Hidden from VoiceOver —
 /// the row exposes the combined value.
 ///
-/// Redundancy (design.md §0 rule 2): fill colour + level word (STOP / NEAR / FAR / CLEAR / NO DATA /
-/// NOT SEEN) + a number, plus a glyph on NEAR / STOP and a border on STOP (UI rework 2026-10-17),
-/// so no state depends on colour alone. Text on a lane fill is
-/// `ink`; on the no-data / no-cover fill it is `textSecondary`.
+/// Redundancy (design.md §0 rule 2): level word (STOP / NEAR / FAR / CLEAR / NO DATA / NOT SEEN) +
+/// a number + a bar count, plus a glyph on NEAR / STOP and a full fill and border on STOP, so no
+/// state depends on colour alone (UI v3: lane colour now lives in the bars and the STOP fill).
+/// Text is `textPrimary` on the raised tile, `ink` on the STOP fill, `textSecondary` without data.
 struct LaneTile: View {
     /// Column caption: "Left", "Center" or "Right".
     let label: String
@@ -155,17 +178,24 @@ struct LaneTile: View {
     /// Ladder level from CaneKitLogic (thresholds live there, not in the UI).
     private var level: TileLevel { TileLevel.level(for: distance, hasData: hasData, covered: covered) }
 
+    /// UI v3 "Graphite": a quiet raised tile — lane name, metres in `textPrimary`, a four-bar meter
+    /// lit in the level's lane colour (more bars = closer), the glyph + level word. STOP fills the
+    /// whole tile with the urgent colour, ink text and a thick outline, so the one level that
+    /// matters most is unmissable at a glance.
     var body: some View {
-        VStack(spacing: 2) {
-            Text(label)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle((level == .noData || level == .noCover) ? CKColor.textSecondary : CKColor.ink.opacity(0.7))
+        let shape = RoundedRectangle(cornerRadius: CKRadius.tile, style: .continuous)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(label)
+                    .font(.caption.weight(.semibold))
+                    .opacity(0.75)
+                Spacer(minLength: 2)
+                meter
+            }
             Text(text)
                 .font(CKFont.tile)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-            // UI rework 2026-10-17: NEAR and STOP add a glyph, STOP a thick ink border, so the two
-            // dangerous levels read by shape too (colour-blind and greyscale screens).
             HStack(spacing: 2) {
                 if let glyph = levelGlyph {
                     Image(systemName: glyph).font(.caption2.weight(.bold))
@@ -176,17 +206,43 @@ struct LaneTile: View {
             .lineLimit(1)
             .minimumScaleFactor(0.7)       // glyph + word in a third of the width at large text
         }
-        .foregroundStyle((level == .noData || level == .noCover) ? CKColor.textSecondary : CKColor.ink)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, CKSpacing.md)
-        .background(fill, in: RoundedRectangle(cornerRadius: CKRadius.tile, style: .continuous))
+        .foregroundStyle(level == .urgent ? CKColor.ink
+                         : (level == .noData || level == .noCover) ? CKColor.textSecondary : CKColor.textPrimary)
+        .padding(.horizontal, CKSpacing.sm + 2)
+        .padding(.vertical, CKSpacing.sm + 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(level == .urgent ? CKColor.laneUrgent : CKColor.surfaceRaised, in: shape)
         .overlay {
             if level == .urgent {
-                RoundedRectangle(cornerRadius: CKRadius.tile, style: .continuous)
-                    .strokeBorder(CKColor.ink, lineWidth: 3)
+                shape.strokeBorder(CKColor.ink, lineWidth: 3)
             }
         }
         .accessibilityHidden(true)
+    }
+
+    /// Four rising bars, `bars` of them lit in the level's lane colour (outlined so the pale
+    /// colours read on a light tile); unlit bars are the border colour. Decoration beside the words.
+    private var meter: some View {
+        HStack(alignment: .bottom, spacing: 2) {
+            ForEach(0..<4, id: \.self) { i in
+                RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                    .fill(i < bars ? fill : CKColor.border)
+                    .overlay(RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                        .strokeBorder(i < bars && level != .urgent ? CKColor.controlBorder : .clear, lineWidth: 0.5))
+                    .frame(width: 4, height: CGFloat(5 + i * 3))
+            }
+        }
+    }
+
+    /// Lit bars per level: clear 1, far 2, near 3, stop 4, none without data or coverage.
+    private var bars: Int {
+        switch level {
+        case .clear: 1
+        case .far: 2
+        case .near: 3
+        case .urgent: 4
+        case .noData, .noCover: 0
+        }
     }
 
     /// Shape cue beside the level word: an octagon for STOP, a triangle for NEAR, none otherwise.

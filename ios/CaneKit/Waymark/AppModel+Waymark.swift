@@ -17,6 +17,16 @@ import CaneKitLogic
 
 extension AppModel {
 
+    /// The demo route itself (read once; nil when the file is missing). UI v3: the Guide's route card
+    /// draws its shape and shows its length and stop count.
+    static let demoRoute: Route? = try? RouteSource.bundled()
+
+    /// The demo route's walking length along its waypoints, metres (0 without a route).
+    static let demoRouteLengthM: Double = {
+        guard let w = demoRoute?.waypoints, w.count > 1 else { return 0 }
+        return zip(w, w.dropFirst()).map { GeoMath.distanceMeters($0.coordinate, $1.coordinate) }.reduce(0, +)
+    }()
+
     /// Where the demo route ends, for the Guide's subtitles and "Directions from here": the part of
     /// the route name after its last " to " ("The Ave and NE 50th"; "CIF" for the UIUC route).
     /// Read once (the bundle cannot change). "" when the route file is missing.

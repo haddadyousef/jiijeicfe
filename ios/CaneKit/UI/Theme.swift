@@ -46,34 +46,37 @@ import UIKit
 /// meaning: every lane fill is paired with a level word and a number in `LaneTile`.
 enum CKColor {
 
-    // Surfaces: warm neutrals tinted toward cane ivory, never pure grey.
-    /// Screen ground behind every card (`ContentView`). Ivory in light, near-black in dark.
-    static let background    = dynamic(0xF4F1EA, 0x0E0D0B, hcLight: 0xFFFFFF, hcDark: 0x000000)
-    /// `CKCard` fill. Flat: elevation is a fill change plus a hairline, never a shadow (§7).
-    static let surface       = dynamic(0xFFFFFF, 0x1A1816, hcLight: 0xFFFFFF, hcDark: 0x0A0A0A)
-    /// Secondary-button fill and the no-data tile fill (via `laneNoData` / `neutral`).
-    static let surfaceRaised = dynamic(0xEAE6DD, 0x26231F, hcLight: 0xE3DED3, hcDark: 0x141210)
+    // Surfaces (UI v3 "Graphite", 2026-10-17): cool neutral greys, near-monochrome, so the only
+    // colour on screen is hazard colour. Contrast: design.md §2 (text ≥ 16.9:1, secondary ≥ 5.5:1).
+    /// Screen ground behind every card (`ContentView`). Cool grey in light, near-black in dark.
+    static let background    = dynamic(0xF2F3F5, 0x0A0B0D, hcLight: 0xFFFFFF, hcDark: 0x000000)
+    /// `CKCard` fill.
+    static let surface       = dynamic(0xFFFFFF, 0x16181B, hcLight: 0xFFFFFF, hcDark: 0x0A0A0A)
+    /// Bar tracks, chips and the no-data tile fill (via `laneNoData` / `neutral`).
+    static let surfaceRaised = dynamic(0xE8EAEE, 0x23262B, hcLight: 0xDDE0E5, hcDark: 0x1A1C20)
     /// Hairlines on cards; flips to pure black / white under Increase Contrast.
-    static let border        = dynamic(0xC9C3B6, 0x3A362F, hcLight: 0x000000, hcDark: 0xFFFFFF)
+    static let border        = dynamic(0xD8DBE1, 0x2C3036, hcLight: 0x000000, hcDark: 0xFFFFFF)
     /// Outline of controls that share their container's fill (secondary buttons, section headers):
     /// ≥ 3:1 on the card and on the page ground in both modes (WCAG 1.4.11; UI v2 review M6).
-    static let controlBorder = dynamic(0x8A8577, 0x6E685E, hcLight: 0x000000, hcDark: 0xFFFFFF)
+    static let controlBorder = dynamic(0x80868F, 0x6A707A, hcLight: 0x000000, hcDark: 0xFFFFFF)
 
     // Text.
     /// Body text on `background` / `surface` (≥ 14:1).
-    static let textPrimary   = dynamic(0x17140F, 0xF4F1EA, hcLight: 0x000000, hcDark: 0xFFFFFF)
+    static let textPrimary   = dynamic(0x101215, 0xF1F3F6, hcLight: 0x000000, hcDark: 0xFFFFFF)
     /// Hints, card titles, secondary rows (≥ 6.5:1). Never used for text a hazard depends on.
-    static let textSecondary = dynamic(0x5C574D, 0xB5AFA3, hcLight: 0x3A362F, hcDark: 0xD9D4C9)
+    static let textSecondary = dynamic(0x575D66, 0xA3AAB4, hcLight: 0x2E3238, hcDark: 0xD5D9DF)
 
     /// The brand accent (UI v2, 2026-10-17): deep blue `#1E40AF` in light mode (white text 8.7:1,
     /// AAA); in dark mode cane ivory `#F4F1EA` with near-black text (17:1) — a sky blue there was the
     /// CLEAR tile colour exactly (review M5). Primary buttons, the selected tab, the voice disc and
     /// the tinted badges. It never carries hazard meaning; hazard is only the lane ladder.
-    static let accent   = dynamic(0x1E40AF, 0xF4F1EA, hcLight: 0x1E3A8A, hcDark: 0xFFFFFF)
+    /// UI v3 "Graphite": the accent is graphite in light mode and near-white in dark mode — calm,
+    /// 17:1 against its text, and never confusable with a hazard colour.
+    static let accent   = dynamic(0x15181D, 0xEEF0F3, hcLight: 0x000000, hcDark: 0xFFFFFF)
     /// Text / symbols on an `accent` fill (primary `CKBigButton`, selected tab).
-    static let onAccent = dynamic(0xFFFFFF, 0x0E0D0B, hcLight: 0xFFFFFF, hcDark: 0x000000)
+    static let onAccent = dynamic(0xFFFFFF, 0x0A0B0D, hcLight: 0xFFFFFF, hcDark: 0x000000)
     /// Text on every coloured fill (lane tiles, pills, banners). One rule, no exceptions.
-    static let ink      = dynamic(0x17140F, 0x17140F, hcLight: 0x000000, hcDark: 0x000000)
+    static let ink      = dynamic(0x101215, 0x101215, hcLight: 0x000000, hcDark: 0x000000)
 
     // Lane ladder: identical in light and dark (the fill *is* the signal).
     // Thresholds live in CaneKitLogic.TileLevel: clear ≥ 2.0 m, far ≥ 1.2, near ≥ 0.7, urgent < 0.7.
@@ -191,8 +194,8 @@ enum CKRadius {
     static let tile: CGFloat = 14
     /// Big buttons (UI v2: 22, softer; still a slab, not a pill).
     static let button: CGFloat = 22
-    /// Cards (UI v2: 26).
-    static let card: CGFloat = 26
+    /// Cards (UI v2: 26; v3: 28).
+    static let card: CGFloat = 28
     /// Status pills (effectively a capsule). Not referenced: `CKStatusPill` draws a `Capsule()`.
     static let pill: CGFloat = 999
 }
@@ -534,7 +537,7 @@ struct CKStatusPill: View {
 /// A flat surface with a hairline. Groups its children as one VoiceOver container whose label
 /// is the title, so the rotor can jump card to card.
 ///
-/// docs/design.md §3 (radius 26 since UI v2, `lg` + 2 padding, no shadow) and §8 ("`CKCard(title:)` groups
+/// docs/design.md §3 (radius 28 since UI v3, `lg` + 2 padding, a soft shadow since UI v3) and §8 ("`CKCard(title:)` groups
 /// children as one VoiceOver container"). The title is drawn as a `.isHeader` so the headings
 /// rotor stops on "Arrived" / "This trip" (Guide page; its status card is untitled since UI v2 and heads itself "Ready" / "Next step"); "What's ahead", "Sidewalk memory", "Hazards" (Details);
 /// "Cues", "Haptics", "Watch", "Mount", "This phone" (Settings). An untitled card (the Sense
@@ -554,7 +557,7 @@ struct CKCard<Content: View>: View {
 
     /// Header (badge + title with the header trait, then the caption) then the rows, `lg` padding,
     /// full width, `surface` fill in a continuous `card`-radius shape with a hairline (3 pt under
-    /// Increase Contrast). No shadow.
+    /// Increase Contrast) and a soft UI v3 shadow.
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: CKRadius.card, style: .continuous)
         VStack(alignment: .leading, spacing: CKSpacing.md) {
@@ -581,8 +584,11 @@ struct CKCard<Content: View>: View {
         .padding(CKSpacing.lg + 2)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(CKColor.surface, in: shape)
-        .overlay(shape.strokeBorder(CKColor.border.opacity(contrast == .increased ? 1 : 0.7),
+        .overlay(shape.strokeBorder(CKColor.border.opacity(contrast == .increased ? 1 : 0.8),
                                     lineWidth: CKMetrics.border(for: contrast)))
+        // UI v3: a soft lift instead of a heavy outline (invisible in dark mode, where the fill step
+        // carries the depth). Decoration only.
+        .shadow(color: Color.black.opacity(0.06), radius: 14, x: 0, y: 6)
         .accessibilityElement(children: .contain)
         // An empty label would override the children for VoiceOver; only label titled cards.
         .accessibilityLabel(title.map { Text($0) } ?? Text(""))
@@ -815,6 +821,104 @@ struct CKErrorText: View {
                 .foregroundStyle(CKColor.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+}
+
+// MARK: - UI v3 "Graphite" components (2026-10-17)
+
+/// A round icon action with its word under it — the walking control deck (Repeat, Next, Recenter).
+/// 72 pt disc (scaled with Dynamic Type), the word below; the whole column is the target.
+/// Accessibility: one button labelled `title` (⚠ test contract where the title is), hint `hint`.
+struct CKCircleAction: View {
+    /// Word under the disc and the VoiceOver label.
+    let title: String
+    /// SF Symbol in the disc.
+    let systemImage: String
+    /// `true` = graphite disc (the main action), `false` = outlined disc.
+    var prominent: Bool = false
+    /// VoiceOver hint.
+    var hint: String? = nil
+    /// Tap handler.
+    let action: () -> Void
+    /// Disc diameter, scaled with Dynamic Type.
+    @ScaledMetric(relativeTo: .title) private var disc: CGFloat = 72
+    /// Reduce Motion: no press scale.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Increase Contrast: thicker outline.
+    @Environment(\.colorSchemeContrast) private var contrast
+
+    /// Disc + word, as one button.
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: CKSpacing.sm) {
+                Image(systemName: systemImage)
+                    .font(.system(size: disc * 0.36, weight: .semibold))
+                    .foregroundStyle(prominent ? CKColor.onAccent : CKColor.textPrimary)
+                    .frame(width: disc, height: disc)
+                    .background(Circle().fill(prominent ? CKColor.accent : CKColor.surface))
+                    .overlay(Circle().strokeBorder(CKColor.controlBorder,
+                                                   lineWidth: prominent ? 0 : CKMetrics.border(for: contrast) + 0.5))
+                Text(title)
+                    .font(CKFont.secondary.weight(.semibold))
+                    .foregroundStyle(CKColor.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, minHeight: CKMetrics.touchTarget)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(CKPressStyle(reduceMotion: reduceMotion))
+        .accessibilityLabel(title)
+        .accessibilityHint(hint ?? "")
+    }
+}
+
+/// Press feedback for custom-drawn buttons: a small scale (opacity under Reduce Motion) and the
+/// light press haptic, like `CKBigButtonStyle`. Disabled = 40 % opacity.
+struct CKPressStyle: ButtonStyle {
+    /// Reduce Motion swaps the scale for an opacity change.
+    var reduceMotion = false
+    /// Drives the disabled opacity.
+    @Environment(\.isEnabled) private var isEnabled
+
+    /// Scale / opacity + haptic.
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(isEnabled ? 1 : 0.4)
+            .opacity(configuration.isPressed && reduceMotion ? 0.8 : 1)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.95 : 1)
+            .animation(reduceMotion ? nil : .spring(duration: 0.14), value: configuration.isPressed)
+            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { $0 == false && $1 }
+    }
+}
+
+/// A small status chip: symbol + words on a raised capsule, `textPrimary` text (UI v3: the quiet
+/// counterpart of `CKStatusPill`, for facts that are not a warning). One VoiceOver element.
+struct CKChip: View {
+    /// Visible words (not uppercased).
+    let text: String
+    /// SF Symbol before the words.
+    let systemImage: String
+    /// A small coloured dot before the symbol, for a state (nil = none). Never the only cue.
+    var dot: Color? = nil
+    /// VoiceOver label when the words are terse.
+    var spoken: String? = nil
+
+    /// Capsule chip.
+    var body: some View {
+        HStack(spacing: CKSpacing.xs + 2) {
+            if let dot {
+                Circle().fill(dot).frame(width: 8, height: 8)
+            }
+            Image(systemName: systemImage).font(.footnote.weight(.semibold))
+            Text(text).font(.footnote.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
+        }
+        .foregroundStyle(CKColor.textPrimary)
+        .padding(.horizontal, CKSpacing.md)
+        .frame(minHeight: 32)
+        .background(CKColor.surfaceRaised, in: Capsule())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken ?? text)
     }
 }
 

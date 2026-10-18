@@ -21,7 +21,7 @@
 //      random state, no timers when still (`TimelineView` paused).
 //    · Theme colours only (`CKColor`): ink rings on the page, accent disc, danger disc while listening.
 //
-//  Owner / caller: `GuideCard` (first control under the pills, above the compact row).
+//  Owner / caller: `GuideCard` (UI v3: under the route card idle, under the control deck walking).
 //  Tests: no unit test (drawing); the UI tests reach the buttons below it through `scrollTo`
 //  (`CaneKitUITests`, `CaneKitVisualTour`, `CaneKitIslandTour`); `make tour` pictures show it.
 //
@@ -41,8 +41,9 @@ struct VoiceTile: View {
     /// Shown under the rings when there is no answer yet: the three words to start with.
     static let hintLine = "Tap to talk. Try “route”, “where am I” or “help”."
 
-    /// Share of the visible page the ring square takes. UI v2 (2026-10-17): the Guide passes 0.40
-    /// idle and 0.30 while walking, so the tiles under it (Where am I / Start route; Repeat / Stop
+    /// Share of the visible page the ring square takes. UI v3 "Graphite": the Guide passes 0.30
+    /// idle (under the route card) and 0.26 while walking (under the compass and the control deck).
+    /// UI v2 (2026-10-17) passed 0.40 idle and 0.30 while walking, so the tiles under it (Where am I / Start route; Repeat / Stop
     /// route) sit above the tab bar — the 04-navigating tour shot at 0.46 had the whole walking
     /// grid below the fold under a long instruction. Still the largest target on the page.
     var heightFraction: CGFloat = 0.46
