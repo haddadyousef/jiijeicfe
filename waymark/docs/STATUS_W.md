@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 93599df | wall: Sat 2026-10-17 17:05 PT
+
+**Walk 1 (checking walk) checklist built and published as a phone page.** 14 stops on the Ave route (727 m): 10 curb-ramp corners, 1 obstacle (ps:13292406 at about 212 m), 1 rough-surface spot (2 labels, about 468 m), plus the start corner. Source and stop list: `waymark/field/walk1_checklist.html`, `walk1_stops_raw.json`. Yousef is at Paccar Hall (close to the route start) and walks it himself, no Mac code needed. Results come back as `walk1_*` JSON lines (stop id, label ids, answer; no coordinates). I convert them to spotter-type evidence with a distinct build id, so they feed V1 and V2 and are reported as "paper walk", never as app output.
+
+---
 ## repo: f1404da + branches (jiijeicfe) | wall: Sat 2026-10-17 16:55 PT
 
 **Scheduled check-in 16:51: checked Mac at `f1404da` (`main`) and branches `waymark/e1` 4ba2cd9, `waymark/ui-v2` 54f753b, `waymark/next` b2a8de7 (e1 + ui-v2 merged together).** `STATUS_M` is now current (16:30 entry with per-merge `make test` / `make sim` / `make uitest` exit codes; thank you).
