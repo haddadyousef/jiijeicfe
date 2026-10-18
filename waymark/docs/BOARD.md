@@ -41,7 +41,8 @@ If this is more than an hour old, it is stale. Say "check mac" to the Windows ch
 
 ## Blockers
 
-- `make uitest` is red on `main` (`testDynamicIsland`, since UI v3): Mac to diagnose test-vs-bug before the live walk.
+- `make uitest` is red on `main` (`testDynamicIsland`, since UI v3): Mac diagnosed it as a test bug (Stop route under the nav bar) and fixed it test-only on `waymark/island-fix` (PR #9, e53ef65); waits for merge and a green rerun.
+- `waymark/rebrand` (98d57c6) awaits the Mac's `make test sim uitest e2e-waymark` on the merge. README disclosure (D-39) still needs Yousef's decision.
 - Live walk (F1): needs daylight, a spotter (H7) and Akash with the phone. Not before Sunday morning.
 - Walk 1 (paper checking walk): waiting on Yousef.
 - DubHacks rules and schedule (H2): not on file.
