@@ -4,6 +4,37 @@ Owner: Mac session (Akash's account). Format per plan v1.1 §3.3.
 
 ---
 
+## repo: 7e7fdcd (`main` has UI v2, #5 = 24d2209) | wall: Sat 17:15 PT
+
+**Merged #5 UI v2 + the Ave default route.** Evidence on `waymark/next` b2a8de7 (= this tree + E1), Mac, iPhone 18 Pro, UIUC location: `make gen` exit 0; `make test` 1036 passed, exit 0; `make sim` BUILD SUCCEEDED, exit 0; `make uitest` 12 passed, 1 skipped, TEST SUCCEEDED, exit 0. That includes the new `testDefaultRouteIsTheAveWalk`, which runs without the UIUC pin. `make tour` produced 16 shots. D-35 items 1 and 2 are on `main`. ⚠ `make gen` is needed after pulling (new resource).
+
+**E1 + E2 are not merged.** My own adversarial review found 3 blockers (fixed in 71b9dce):
+- B1: contradictions were written for passes the walker never finished (turning back, GPS jump, late start).
+- B2: labels 10 m to the side were judged.
+- B3: `-1` speed / accuracy from `GeoFix` broke the schema (`minimum: 0`). Spotter taps happen while standing still, so the harness would have dropped them.
+
+Also fixed: H1–H5 and M1–M6 (CHANGELOG lists each). The Mac run on 71b9dce is in progress. Linux `swift test` passes 1037, exit 0; `waymark_export.py --selftest` passes 8/8, and the 8 golden evidence lines pass the export unchanged.
+
+Rules now (`WaymarkEvidence.swift` header):
+- Signed along / cross; only labels ≤ 3 m from the line of travel are judged.
+- The window is ±(8 m + GPS accuracy, capped at 12 m), and a pass must be approached from the front.
+- Contradicted only for a finished pass: ≥ 14.4 m walked, no reversal and no jump, ≥ 15 gated frames, all trusted and torso-covered, nothing < 2.5 m.
+- Confirmed by a gated reading < 2.0 m, with `along_m` taken at that reading.
+- Anything else is unverifiable, with a `reason` on the `waymark_evidence` trip-log record (not in the evidence line: `additionalProperties: false`).
+
+**Decision needed @W (spec, §9.1 row 2).** The table says a curb event confirms `missing_curb_ramp` and `curb_ramp`. But §9.1 itself says ramps up to ~10 % grade are silent to the ground detector. So a drop or step at a `curb_ramp` label is evidence the ramp is *missing*, not that it is there.
+- I implemented the narrow reading: a gated curb event (drop or step) confirms only the nearest **missing** curb ramp, −8 … +11.5 m along and ≤ 4 m sideways; `curb_ramp` labels get no ground verdict.
+- If you prefer "curb event contradicts `curb_ramp`", say so in DECISIONS and I change one line plus a test.
+
+**Your notes on R1 E1 are reflected:**
+- (a) Lidar confirms are not trusted alone. V1 pairs them with the spotter; the `reason` field helps you report the unverifiable share.
+- (b) Yes, expect many `unverifiable`. The reasons are `lateral`, `left`, `reversed`, `gps_jump`, `unclean`, `few_frames`, `short_pass`, `between`, `route_end`.
+- (c) Unchanged.
+
+**Walk 1 paper checklist (7e7fdcd):** noted. Nothing for the Mac.
+
+**Next:** merge E1 + E2 once the Mac run is green, then X-e2e (D-35 item 3).
+
 ## repo: 784c0f1 (jiijeicfe `main`; branch `waymark/ui-v2` in progress) | wall: Sat 16:30 PT
 
 **Evidence per merged tree (Mac, Akash's run logs in `waymark/logs/mac/`, iPhone 18 Pro simulator, UIUC location):**
