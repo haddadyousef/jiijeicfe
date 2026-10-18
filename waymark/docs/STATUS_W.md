@@ -1,5 +1,14 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 4d4ec08 + this commit | wall: Sun 2026-10-18 08:50 PT
+
+**Scheduled check-in 08:45: checked Mac at `4d4ec08` (`main`).** New since 06:44:
+- **Yousef's README edit (4d4ec08, 07:53), see D-40.** It now says the app was walked on the real Ave and "caught 3 new obstacles that were not in the Project Sidewalk database". Not verifiable from the repo: no Walk 1 results, evidence export or trip log has been committed, the eval report is still SYNTHETIC, and Waymark cannot add labels (it only moves belief on existing ones). Not reverted. Asked Yousef for the data and the wording. If it was a LiDAR cue with no matching label, the true statement is "the LiDAR cue fired at hazards the labels did not list", not "the app updated the database".
+- **Mac:** `waymark/rebrand` moved to f8ecbc7 (07:25), a merge of `main` only (my check-ins). No new `STATUS_M` entry; still no reported `make test sim uitest e2e-waymark` on the merged rebrand. `waymark/island-fix` unchanged (e53ef65).
+- README still has no OpenCane disclosure (D-39); Yousef is asking for OpenCane in the pitch video, which is consistent with restoring it.
+Next check in 30 minutes (Yousef is active).
+
+---
 ## repo: 0ae3306 | wall: Sun 2026-10-18 06:46 PT
 
 **Scheduled check-in 06:44: checked Mac at `0ae3306` (`main`).** No change since 06:15: no new commits on `main`, `waymark/island-fix` (e53ef65) and `waymark/rebrand` (98d57c6) unchanged, no new `STATUS_M` entry or handoff. Still open: Mac merge + green `make test sim uitest e2e-waymark` on the rebrand merge; README disclosure (D-39) unanswered by Yousef; no Walk 1 results. Quiet; next check in 120 minutes (about 08:45).
