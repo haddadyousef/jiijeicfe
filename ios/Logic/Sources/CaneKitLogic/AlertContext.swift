@@ -5,7 +5,7 @@
 //  What the phone knew when a cane event fired, and how that becomes (a) extra fields on the
 //  webhook payload and (b) a prompt for a cheap model that writes one family-facing sentence.
 //
-//  Why both: `note` on an `OpenCaneEvent` is the detector's own words ("Door ahead."). That is
+//  Why both: `note` on a `WaymarkEvent` is the detector's own words ("Door ahead."). That is
 //  precise and useless to a parent 40 miles away, who needs to know *where*, *how fast*, and
 //  *whether the phone is about to die*. The deterministic fields answer that; the model sentence
 //  makes it readable.
@@ -62,10 +62,10 @@ public struct AlertContext: Sendable, Equatable {
     /// enough that the whole payload stays a readable webhook body.
     public static let maxTextLength = 160
 
-    /// The extra fields for `OpenCaneEvent.extra`. Nil fields are omitted entirely, so the bot can
+    /// The extra fields for `WaymarkEvent.extra`. Nil fields are omitted entirely, so the bot can
     /// tell "unknown" from "zero"; text is truncated to `maxTextLength`.
-    public func extraFields() -> [String: OpenCaneJSON] {
-        var out: [String: OpenCaneJSON] = ["navigating": .bool(navigating), "has_fix": .bool(hasFix)]
+    public func extraFields() -> [String: WaymarkJSON] {
+        var out: [String: WaymarkJSON] = ["navigating": .bool(navigating), "has_fix": .bool(hasFix)]
         func put(_ key: String, _ text: String?) {
             guard let text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
             out[key] = .string(String(text.prefix(Self.maxTextLength)))

@@ -6,6 +6,7 @@
   - [x] 3. Learning visible (before → after, source); persistence checked (relaunch in the tour).
   - [x] 4. Demo cleanup: Where am I tile, neutral Profile (4b), no UIUC in the default build (4a).
   - [x] 5. Verification runs and STATUS_M entry (uitest: pre-existing CaneKitIslandTour failure, see STATUS_M).
+  - [x] `CaneKitIslandTour.testDynamicIsland` green: Stop route was under the navigation bar after the Simulate walk swipe (test `scrollTo` fix).
   - [ ] Phone run on akeesh (unavailable at 22:40); F1 field walk; merge `waymark/judge-demo` to `main`.
 
 - [x] Step 69 — adversarial audit hardening (Tue Sep 22)
@@ -46,8 +47,8 @@
   - [ ] Orchestrator: `make sim` (NavigationEngine / AppModel / MedicalProfileStore only parse-checked), `make uitest`, `make e2e` (intro wording changed; no e2e assertion depends on it)
   - [ ] Reviews: Muse on the diff, multi-agent, Antigravity
   - [ ] Device: indoor route start without AirPods 2 min still → no GPS lines; wall approach → one "Close."; lock → short line; AirPods out ×2 → one line; Profile shows Aritro; "emergency" → "no"
-- [ ] Step 67 — launch says only "OpenCane ready."; spoken destinations route on the phone (owner: "a lot of jargon … It should just be 'OpenCane ready' and then boom. When I say the location it doesn't even do it."; log 15-48-34Z)
-  - [x] Logic tests first (red on HEAD behaviour: 45 failing checks; new-API tests did not compile): `CameraControlGateTests` (8), `spokenDestinationsRouteOnThePhone`, `aTravelVerbAnywhereKeepsARealOrigin`, `noTravelIntentIsNotARoute`, `launchSaysOnlyOpenCaneReady`, `theOnlyMenuIsTheOneTheWalkerAsksFor`, budget 8 s, recovery line one sentence, aliases → `swift test` 900 green after the Muse round (1 known issue, Step 66)
+- [ ] Step 67 — launch says only "Waymark ready."; spoken destinations route on the phone (owner: "a lot of jargon … It should just be 'Waymark ready' and then boom. When I say the location it doesn't even do it."; log 15-48-34Z)
+  - [x] Logic tests first (red on HEAD behaviour: 45 failing checks; new-API tests did not compile): `CameraControlGateTests` (8), `spokenDestinationsRouteOnThePhone`, `aTravelVerbAnywhereKeepsARealOrigin`, `noTravelIntentIsNotARoute`, `launchSaysOnlyWaymarkReady`, `theOnlyMenuIsTheOneTheWalkerAsksFor`, budget 8 s, recovery line one sentence, aliases → `swift test` 900 green after the Muse round (1 known issue, Step 66)
   - [x] Launch: no menu (short or full); `VoiceShellPolicy.launchLine`; `listenAfterLaunchLine`; `speechDrainCap`; `voice_launch` log; LaunchRecovery line shortened
   - [x] `CameraControlGate` (5 s grace, 2 s debounce, blocked while listening / launch line) + `AppModel.cameraControlPressed` → `describe_skipped {reason}`
   - [x] `FastPathIntentClassifier` rule 14b travel intent + trailing fillers; CampusPlaces mishearing aliases
@@ -90,9 +91,9 @@
   - [x] Audit (scratchpad island/): activity exists only while a route guides; blue pill was the whenInUse session (Always now granted on the phone); design reads as a system glyph; **safety bug: "Path clear" while locked and depth paused**
   - [x] Safety: sensing live/paused/none in ContentState; never "clear" unless depth is live (CHANGELOG Step 64)
   - [x] Phases: warming (countdown), walking, indoor step i/n, listening/thinking, arrived, stopped card; IslandPhasePolicy + IslandAlertThrottle in Logic with tests
-  - [x] Look: OpenCane contour-ring mark, keyline tint, progress ring, expanded layout fixes, StandBy layout, Smart Stack family (StandBy / Smart Stack not pictured — phone)
+  - [x] Look: Waymark contour-ring mark, keyline tint, progress ring, expanded layout fixes, StandBy layout, Smart Stack family (StandBy / Smart Stack not pictured — phone)
   - [x] Alerts: escalation-only AlertConfiguration ≤ 1 per 30 s per level (⚠ can only fire while `.inactive`: depth pauses in the background)
-  - [x] Extras: Control Center "Talk to OpenCane" control + lock-screen accessory widget (device check pending)
+  - [x] Extras: Control Center "Talk to Waymark" control + lock-screen accessory widget (device check pending)
   - [~] make island pictures reviewed (done); Muse / multi-agent / Antigravity reviews, make uitest / e2e, phone — open
 - [x] Device test checklist: docs/test_checklist.md (launch/voice, emergency, obstacles, indoor, recording, outdoor, island, other)
 - [ ] Pull teammate d2b8efb (their "Step 64"; island becomes Step 64) and merge
@@ -215,7 +216,7 @@ sensors did not see is ever spoken.*
   `VLM_PROVIDER = custom`. Key format is **pipe**-delimited (`LLM|<digits>|<chars>`).
 - Added Sat 2026-09-12 (Steps 39, 43, 45; template `ios/Secrets.example.plist`), each read only from
   the git-ignored plist (the two webhook names also from the process environment first, for e2e):
-  - `OPENCANE_GROKBOT_WEBHOOK_URL` / `OPENCANE_GROKBOT_WEBHOOK_KEY` — the Grok Bot routine's webhook
+  - `OPENCANE_GROKBOT_WEBHOOK_URL` / `OPENCANE_GROKBOT_WEBHOOK_KEY` (legacy key names, kept for existing plists) — the Grok Bot routine's webhook
     trigger. Without them **Family alerts is dead**: the "Send cane events to family" switch and
     "Save family emails" are disabled and the card says "No webhook key…" (`ContentView` family card);
     falls, breadcrumbs, test events and the contacts list go nowhere.
@@ -246,13 +247,13 @@ simulator build clean, `make uitest` green):**
 - `fix/launch-crash` — no optional feature may keep the app from starting (the Hazards-toggle crash)
 - `fix/sound-watch-hardening` — six confirmed microphone defects fixed, incl. the crash
 - `feat/all-sensors` + safety fixes — both cameras, front-camera head yaw, danger sounds, all off by default
-- `feat/rename-opencane` — the product is OpenCane, the code is still CaneKit
+- the display-name rename branch — the product is Waymark, the code is still CaneKit
 - front-camera rotation, first attempt (0f32282) — coordinator angle, still tilted on device
 
 **Step 16 gate GREEN (2026-09-12 ~01:00):** 347 Logic tests passed, device build + install on
 the iPhone 17 Pro Max succeeded. The gate caught one real bug from the hand-merge: `\(.$state)`
 in the SilenceHapticsIntent phrases (missing `\` escape — fixed in `99f0a37`). Branches retired.
-Still to do on the phone: siren ~1.5 s behavior, "How is OpenCane doing" order, Both-cameras
+Still to do on the phone: siren ~1.5 s behavior, "How is Waymark doing" order, Both-cameras
 inset re-check after reinstall.
 
 **Committed in the main checkout:**
@@ -266,7 +267,7 @@ inset re-check after reinstall.
 - Hands-free — `HandsFreeIntents.swift`, `QuestionPrompt` / `StatusSummary` + tests,
   `docs/handsfree.md` (new); `AppIntents` 10-shortcut list, `VLMClient.cloudPrimary`,
   `SceneDescriber` ask path, `describe_result` question field (merged).
-- Conversational voice assistant — `TalkToOpenCaneIntent`, `VoiceInputEngine` (SFSpeechRecognizer with Hard Rule 7 audio safety), `ConversationCoordinator`, `ConversationModels`, `FastPathIntentClassifier`, `ConversationPrompt`, `WalkMarker` post drops, and rolling context memory (Step 23). **Rerun settled the test-count
+- Conversational voice assistant — `TalkToWaymarkIntent`, `VoiceInputEngine` (SFSpeechRecognizer with Hard Rule 7 audio safety), `ConversationCoordinator`, `ConversationModels`, `FastPathIntentClassifier`, `ConversationPrompt`, `WalkMarker` post drops, and rolling context memory (Step 23). **Rerun settled the test-count
   question** (2026-09-12, Step 27): the target held 366 `@Test` annotations and `make test` on
   Xcode 27 reported **366 tests passed in 1 suite**. Step 28 added six lifetime-guard tests, so the
   target then held **372 annotations** (historical: at Step 47 it holds **575 `@Test` annotations in
@@ -382,7 +383,7 @@ from the trip log.
 - [ ] `scripts/gen.sh` → `make build` → `make install` on the phone; watch app installs
 - [x] Commit "Steps 1–2 (pre-device)" + CHANGELOG entry
 - [x] Simulator build green (Swift 6 strict)
-- **test on device:** app shows "LiDAR OK — ready" with three green capability rows; watch shows "OpenCane / Waiting for the phone"
+- **test on device:** app shows "LiDAR OK — ready" with three green capability rows; watch shows "Waymark / Waiting for the phone"
 
 ## Step 2 — DepthEngine
 - [x] DepthFrameProcessor (historical Step 2 baseline: ARSession delegate on a background queue, gyro gate, 15 Hz, AsyncStream; current pipeline is 30 Hz normal / 60 Hz high-rate)
@@ -458,9 +459,9 @@ Phone: iPhone 17 Pro Max (iOS 27.0) connected, signed with the free Personal Tea
 - [ ] Experiments, off by default: front camera head direction; microphone sound alerts (sirens, horns)
 - [ ] Muse + Antigravity + Claude workflow review of all of the above; fix or reject with evidence
 - [ ] Install on the phone, verify each item from the trip log, push
-- [ ] **Action Button opens OpenCane and listens (Step 29).** Needs `cd ios && make run` from a
+- [ ] **Action Button opens Waymark and listens (Step 29).** Needs `cd ios && make run` from a
       normal terminal first (the reinstall re-indexes shortcuts), then Settings → Action Button →
-      Shortcut → Talk to OpenCane. If it is missing: open the Shortcuts app once, retry, restart
+      Shortcut → Talk to Waymark. If it is missing: open the Shortcuts app once, retry, restart
       last. Press → tick → "how is my battery" → press again → answer. Trip log must show
       `voice_toggle {source: actionButton}`.
 - [ ] **Distance-first warnings on the phone (Step 29).** Walk past a doorway: "N meters ahead,
@@ -472,7 +473,7 @@ Phone: iPhone 17 Pro Max (iOS 27.0) connected, signed with the free Personal Tea
       talking: no route/obstacle line over the dictation; `.safety` still breaks through;
       after stopping, the answer speaks first, then at most one still-valid held line.
 - [ ] **Blindfold walk to Grainger/Siebel (Step 31).** Reinstall FIRST (`make run` — Steps
-      29–33 are not on the phone yet). Phrases: "Talk to OpenCane → set location to Sift"
+      29–33 are not on the phone yet). Phrases: "Talk to Waymark → set location to Sift"
       or "take me to Granger Library". Expect: fast system-voice answer, exit-first clause
       if GPS is weak indoors, distance-first warnings en route. Sighted guide present,
       cane on. Trip log must show `voice_toggle`, `conv_turn` latencies, no `field_kind`.
@@ -670,7 +671,7 @@ for 60 s so a weak network can never stall a cue.
 - [x] Round-4 and round-5 adversarial reviews (28 + 22 findings) fixed; nav harness 0 false veers / 72 walks
 - [x] Logic tests (historical 146 green after Step 12), simulator build, 7 XCUITests + tour, `make e2e` (clean, missed_fence, gps_jitter, wrong_turn)
 - [x] Street View mock of ISR → CIF: FrameReplay, `make uitest-streetview`, `make e2e SCENARIO=streetview`, vision_probe
-- [x] graphify knowledge graph (`graphify-out/`, `graphify query`)
+- [x] graphify knowledge graph (`archive/graphify-out/`, `graphify query`)
 - [x] docs/stress_test_plan.md, docs/README.md, hardware/mount (phone-to-cane mount for Sagar)
 - [x] Muse + Antigravity check of the final diff (rounds 6–7 and the docs review)
 - [ ] Commit "Step 11 + 12 (pre-device)" + push
@@ -681,7 +682,7 @@ for 60 s so a weak network can never stall a cue.
 - [x] Street View e2e: hazard watch on, "Where am I" at start + every waypoint, ≥ 8 of 10 described
 - [x] `SceneVocabulary`: plain pedestrian nouns instead of Vision taxonomy words (5 tests)
 - [x] `sign_probe.swift`: measured sign range; text floor 1/128 (7.5 cm letters ≈ 7 m); STOP dropped, PUSH BUTTON added
-- [x] "OpenCane ready." no longer spoken after "Camera access is off"
+- [x] "Waymark ready." no longer spoken after "Camera access is off"
 - [x] On-device model gate (`isFaithful`: names a detected thing, no invented numbers), OCR-junk filter, new prompt
 - [x] One-word sign phrases must be close (`shortPhraseMinHeight` 1/80); people / ice / plants in the vocabulary
 - [x] Engineering bar written into AGENTS.md + CLAUDE.md; hardware/ handed to Sagar
@@ -713,7 +714,7 @@ for 60 s so a weak network can never stall a cue.
 
 ## Step 22 — Rename primary route action to "Start route to CIF" (Sat Sep 12)
 - [x] Renamed GuideCard button from the historical "Start demo route" to "Start route to CIF"
-- [x] Added "Start route to CIF in OpenCane" to Siri App Shortcuts in AppIntents
+- [x] Added "Start route to CIF in Waymark" to Siri App Shortcuts in AppIntents
 - [x] Synchronized test contracts across `AGENTS.md` (Rule 9), `docs/CODE_REFERENCE.md`, `docs/design.md`
 - [x] Updated `CaneKitUITests` and `CaneKitVisualTour` and verified all 10 tests pass
 - [x] Muse adversarial review passed confirming 1:1 label parity and zero contract regressions
@@ -745,8 +746,8 @@ for 60 s so a weak network can never stall a cue.
 - **test on device:** see CHANGELOG Step 27
 
 ## Step 39 — Cane events → Grok Bot family alerts (Sat Sep 12)
-- [x] `GrokBotEvent.swift` (Logic): `OpenCaneEvent` + `OpenCaneEventType` (open, so an unknown type
-      decodes) + `OpenCaneJSON` for `extra`; `CodingKeys` asserted as bytes — they are the bot's contract
+- [x] `GrokBotEvent.swift` (Logic): `WaymarkEvent` + `WaymarkEventType` (open, so an unknown type
+      decodes) + `WaymarkJSON` for `extra`; `CodingKeys` asserted as bytes — they are the bot's contract
 - [x] `FamilyAlertPolicy.swift` (Logic): breadcrumb 120 s, obstacle 60 s and ≤ 1.2 m, low battery once
       per discharge re-arming above 30 %; fall/sos never limited; `reset()` keeps battery arming
 - [x] `Alerts/GrokBotClient.swift`: bearer POST, 10 s timeout, one retry on transport failure, none on
@@ -821,7 +822,7 @@ for 60 s so a weak network can never stall a cue.
 - [x] Added `asGrokBotEvent(user:caneID:)` for direct Grok Bot ingestion
 - [x] Anti-flapping in `GroundHazardPolicy`: `isSameFamily` suppresses rapid depression toggling (pothole vs drop-off)
 - [x] 3-second temporal/spatial debounce in `HazardLog.record`
-- [x] Dynamic centered navigation title (`OpenCane`, `Sense`, `Settings` with `.inline` display mode)
+- [x] Dynamic centered navigation title (`Waymark`, `Sense`, `Settings` with `.inline` display mode)
 - [x] Added startup cleanup of orphaned `CLBackgroundActivitySession` in `LocationService.init()`
 
 ## Step 42 — Graceful GPS fallback, activity cleanup & on-device walk simulator (Sat Sep 12)
@@ -866,9 +867,9 @@ CHANGELOG Step 60 is the entry. "Step 51" already means two other things here.
 - **test on device:** see CHANGELOG Step 60
 
 ## Step 45 — Supabase cloud mirror (Sat Sep 12)
-- [x] 16 tables + 4 demo views + 3 RPCs + `hazard-photos` bucket, migrations `opencane_01`…`_06`, every table commented
+- [x] 16 tables + 4 demo views + 3 RPCs + `hazard-photos` bucket, migrations `opencane_01`…`_06` (names in the live database), every table commented
 - [x] PostGIS `geography` generated columns on `hazards` / `posts` / `route_waypoints`, GiST indexed; `hazards_near(lat, lon, radius)`
-- [x] RLS on all 16 tables with explicit anon policies; advisors clean on the OpenCane tables
+- [x] RLS on all 16 tables with explicit anon policies; advisors clean on the Waymark tables
 - [x] `CloudSchema.swift` + `CloudSchemaTests.swift` (CaneKitLogic): row types + `CloudBatchPolicy`, 17 tests
 - [x] Uniform-key encoding for bulk inserts (avoids PostgREST `PGRST102` mismatched-key rejection)
 - [x] `SupabaseClient.swift` (hand-rolled PostgREST + Storage over URLSession, no SDK) and `CloudSync.swift` (queue + 5 s flush)
@@ -908,9 +909,9 @@ CHANGELOG Step 60 is the entry. "Step 51" already means two other things here.
 - [x] `AppModel`: "Flashlight on in the dark (routes)" (Mount card, **default ON — deliberate, AGENTS.md**), torch only while a route guides via `setTorch(_:byApp:)`, off on lit / Stop / arrival / restart, walker's own torch never touched; "Low light. Obstacle detection still works." (+ " Flashlight on.") once per episode at `.nav` 10 s; the duplicate "Flashlight on." confirmation muted; `light {state, lux, torch, torch_by_app}` records
 - [x] Vision honesty: "It is dark, so this may miss things. " prefix on "Where am I" / a question when dark with no torch; `ScenePrompt` asks for "It is too dark to see." (`CloudSceneGate.tooDark` passes it, spoken as the answer); `HazardPrompt` asks for NONE in the dark; `scan` / `hazard_watch` carry `light: "dark"`; no mesh name (`centerHit = nil`) while tracking is not `.normal`
 - [x] `DepthReadiness.TimeoutReason` (2 tests): a timeout with depth live but tracking never `.normal` speaks "Camera tracking is limited, probably low light. Obstacle detection is running on LiDAR." (`.safety`, 15 s) instead of the false "Guiding with GPS."; `route_readiness {state: timed_out_tracking_limited | timed_out_fallback_gps, reason}`
-- [x] Details → Scene engine "Light" row (3 tests): "Light: lit (640 lux)" / "Light: dark (12 lux) · flashlight on (by OpenCane)" / "Light: dark (12 lux) · flashlight off — cameras may miss things" / "Light: unknown"; Guide card DARK pill (warning) next to GPS
+- [x] Details → Scene engine "Light" row (3 tests): "Light: lit (640 lux)" / "Light: dark (12 lux) · flashlight on (by Waymark)" / "Light: dark (12 lux) · flashlight off — cameras may miss things" / "Light: unknown"; Guide card DARK pill (warning) next to GPS
 - [x] `make test` 626 / 626; simulator build clean; docs (design.md §5.1 / §5.4 / §6.5 / Scene engine, CODE_REFERENCE, AGENTS.md two bullets)
-- [ ] **On the phone, dark room, torch off**: start a route → within ~3–4 s the torch comes on and "Low light. Obstacle detection still works. Flashlight on." is spoken **once**; no second "Flashlight on."; the tiles still show obstacles; Stop → "Flashlight off."; Details → Light row reads "dark (N lux) · flashlight on (by OpenCane)"
+- [ ] **On the phone, dark room, torch off**: start a route → within ~3–4 s the torch comes on and "Low light. Obstacle detection still works. Flashlight on." is spoken **once**; no second "Flashlight on."; the tiles still show obstacles; Stop → "Flashlight off."; Details → Light row reads "dark (N lux) · flashlight on (by Waymark)"
 - [ ] Dark room, no route: the line is spoken without "Flashlight on.", the torch stays off, the Guide card shows DARK; "Where am I" starts with "It is dark, so this may miss things." (or the model answers "It is too dark to see.")
 - [ ] Dark hallway route start: does readiness time out with `reason: tracking_limited_depth_live` and speak the LiDAR line (not "Guiding with GPS")? Do obstacle cues run during it?
 - [ ] Walker's own Flashlight switch on, then a route in the dark: the app must not switch it off at Stop
@@ -934,7 +935,7 @@ CHANGELOG Step 60 is the entry. "Step 51" already means two other things here.
 - [x] `NavLiveActivity.swift` redesigned: manoeuvre glyphs that cannot be mistaken for the OS location arrow (`arrow.up` retired), glance glyph-only when clear, instruction full-width in the expanded bottom region, stale state ("No update"), one VoiceOver sentence per presentation
 - [x] `LiveActivityCoalescer.staleAfter` (300 s, `staleAfterOutlivesACrossingWait`) → `staleDate` on every request / update
 - [x] `LocationService.setNavigating`: `showsBackgroundLocationIndicator` pinned false; the blue pill during a route is the OS's background-location indicator (design.md §6.7 says so)
-- [x] `CKBigButton.Layout.tile` for the two-up "Where am I" / "Talk to OpenCane" pair (equal shapes and heights); row label made flexible so "Simulate walk" no longer stacks alone
+- [x] `CKBigButton.Layout.tile` for the two-up "Where am I" / "Talk to Waymark" pair (equal shapes and heights); row label made flexible so "Simulate walk" no longer stacks alone
 - [x] Medical ID: the default profile is privacy-safe (no seeded identity, date of birth, address or phone); older seeded 555 placeholders are cleared. A walker/helper enters real values locally, and cloud mirroring is a separate explicit opt-in (Step 51).
 - [x] Cue levels differ on the cane (cue-v2 #41, implementation agent): `TorsoHapticPolicy` + 21 tests; Quiet no torso taps, Standard onset tap (< 1.5 m closing) + strong triple (< 0.6 m, proximity only after Muse), Detailed today minus shoreline re-taps, Indoors / crossing settle hold; Settings caption tells the truth
 - [x] Details tab "Scene engine" card (implementation agent): who answered the last Where am I, why, how long, when, from what; hazard-watch plan / last check / failure; cues in effect; `SceneEngineSummary` + 17 tests; `describe_result` / `hazard_watch` carry `trigger` / `source` / `cloud_ms` / `fallback_reason`
@@ -1011,7 +1012,7 @@ ground hazards (when on) speak their first confirmation; hush never touches any 
 - [x] **Step 57** `ConversationBudget` + coordinator latest-wins (filler 1.5 s, timeout 4 s, stale results silent, `conv_turn` budget fields)
 - [x] **Step 58 (part 1)** `VoiceTile` giant microphone + compact row; `VoiceShellPolicy` / `ScenePhaseReason` pure; `UtteranceEndDetector(maxListen:)`; `scrollTo` in the three UI suites
 - [x] **Step 59 (part 1)** `EmergencyConfirm` + coordinator (prompt, 8 s window, yes → flush + `tel:`), `ProfilePage` uses `telDigits`
-- [ ] Part 2 (AppModel): `commonLines` += `SpokenPhrases.shellLines` (drop the first pass's two literal shell lines); delete the "Still working on your last question." branch; speak `VoiceMenu.menuLine` after "OpenCane ready." + `VoiceShellPolicy.launchListen`; follow-up window (`followUp`, `awaitingEmergencyAnswer`); prefetch `EmergencyConfirm.promptLine` at launch and on profile save; Settings toggles; `scene_phase` logging
+- [ ] Part 2 (AppModel): `commonLines` += `SpokenPhrases.shellLines` (drop the first pass's two literal shell lines); delete the "Still working on your last question." branch; speak `VoiceMenu.menuLine` after "Waymark ready." + `VoiceShellPolicy.launchListen`; follow-up window (`followUp`, `awaitingEmergencyAnswer`); prefetch `EmergencyConfirm.promptLine` at launch and on profile save; Settings toggles; `scene_phase` logging
 - [ ] `VoiceInputEngine` / `SceneDescriber`: speak `SpokenPhrases.notHeardLine` / `describerBusyLine` instead of their literals
 - [ ] Gate: `make test` (once the head-cue conversion compiles), `make uitest` with `scrollTo`, `make tour` pictures of the tile, `make e2e`
 - [ ] Device: "help", "four", "emergency" → "no", an open question under 4 s, the rings respond to the finger anywhere on them

@@ -1,11 +1,11 @@
 //
-//  OpenCaneControls.swift
+//  WaymarkControls.swift
 //  CaneKitWidget
 //
 //  Step 64 extras: the brand when no route runs.
 //    · `TalkControl` — a Control Center / Lock Screen / Action button control, "Talk to Waymark",
 //      that opens the app listening (`TalkControlIntent`, ios/Shared/Intents).
-//    · `OpenCaneAccessoryWidget` — a lock-screen accessory widget (circular + rectangular) showing
+//    · `WaymarkAccessoryWidget` — a lock-screen accessory widget (circular + rectangular) showing
 //      the contour-ring mark; tapping opens the app to talk (`waymark://talk`, handled by
 //      `CaneKitApp.onOpenURL`).
 //
@@ -39,30 +39,30 @@ struct TalkControl: ControlWidget {
 }
 
 /// One static entry: the widget never changes.
-struct OpenCaneAccessoryEntry: TimelineEntry {
+struct WaymarkAccessoryEntry: TimelineEntry {
     let date: Date
 }
 
 /// Timeline with a single entry and no reloads.
-struct OpenCaneAccessoryProvider: TimelineProvider {
-    func placeholder(in context: Context) -> OpenCaneAccessoryEntry { .init(date: .now) }
-    func getSnapshot(in context: Context, completion: @escaping (OpenCaneAccessoryEntry) -> Void) {
+struct WaymarkAccessoryProvider: TimelineProvider {
+    func placeholder(in context: Context) -> WaymarkAccessoryEntry { .init(date: .now) }
+    func getSnapshot(in context: Context, completion: @escaping (WaymarkAccessoryEntry) -> Void) {
         completion(.init(date: .now))
     }
-    func getTimeline(in context: Context, completion: @escaping (Timeline<OpenCaneAccessoryEntry>) -> Void) {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<WaymarkAccessoryEntry>) -> Void) {
         completion(Timeline(entries: [.init(date: .now)], policy: .never))
     }
 }
 
 /// Lock-screen accessory: the mark (circular) or mark + "Waymark / Tap to talk" (rectangular).
-struct OpenCaneAccessoryWidget: Widget {
+struct WaymarkAccessoryWidget: Widget {
     static let kind = "waymark.widget.accessory"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: Self.kind, provider: OpenCaneAccessoryProvider()) { _ in
-            OpenCaneAccessoryView()
+        StaticConfiguration(kind: Self.kind, provider: WaymarkAccessoryProvider()) { _ in
+            WaymarkAccessoryView()
                 .containerBackground(for: .widget) { AccessoryWidgetBackground() }
-                .widgetURL(OpenCaneLinks.talk)
+                .widgetURL(WaymarkLinks.talk)
         }
         .configurationDisplayName("Waymark")
         .description("The Waymark mark. Tap to open Waymark and talk.")
@@ -71,14 +71,14 @@ struct OpenCaneAccessoryWidget: Widget {
 }
 
 /// The accessory's two layouts.
-private struct OpenCaneAccessoryView: View {
+private struct WaymarkAccessoryView: View {
     @Environment(\.widgetFamily) private var family
 
     var body: some View {
         switch family {
         case .accessoryRectangular:
             HStack(spacing: 8) {
-                OpenCaneMark().stroke(lineWidth: 1.5).frame(width: 34, height: 34)
+                WaymarkMark().stroke(lineWidth: 1.5).frame(width: 34, height: 34)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Waymark").font(.headline).widgetAccentable()
                     Text("Tap to talk").font(.caption)
@@ -88,7 +88,7 @@ private struct OpenCaneAccessoryView: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Waymark. Tap to talk.")
         default:
-            OpenCaneMark().stroke(lineWidth: 1.6)
+            WaymarkMark().stroke(lineWidth: 1.6)
                 .padding(6)
                 .widgetAccentable()
                 .accessibilityLabel("Waymark. Tap to talk.")

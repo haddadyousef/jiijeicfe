@@ -3,11 +3,12 @@
 //  CaneKitLogic
 //
 //  The JSON event object Waymark POSTs to the Grok Bot routine "OpenCane cane events"
-//  (folder opencane-cane-events) so a family member can be alerted. This file is the **contract**:
+//  (folder opencane-cane-events; the routine name is an external contract set in Grok Bot) so a
+//  family member can be alerted. This file is the **contract**:
 //  the bot parses these exact key names, so they are pinned by tests rather than left to
 //  Codable's synthesis defaults.
 //
-//  Owner: `GrokBotClient` (app, transport) encodes `OpenCaneEvent` and POSTs it; `FamilyAlerts`
+//  Owner: `GrokBotClient` (app, transport) encodes `WaymarkEvent` and POSTs it; `FamilyAlerts`
 //  (app) builds the events from cane detections. Nothing here performs I/O.
 //
 //  Key invariants:
@@ -25,15 +26,15 @@ import Foundation
 
 /// How urgent an event is. The bot texts family for `warn` and `critical`; `info` stays
 /// chat-only. Omitting it entirely asks the bot to infer (fall / sos ⇒ critical).
-public enum OpenCaneSeverity: String, Codable, Sendable, Equatable {
+public enum WaymarkSeverity: String, Codable, Sendable, Equatable {
     case info, warn, critical
 }
 
 /// The kind of event. Open on purpose — the contract is `"location" | ... | (string & {})`, so a
 /// new detector can send a new type without a bot-side deploy. The known cases are constants
 /// rather than enum cases so that decoding an unknown string cannot throw.
-public struct OpenCaneEventType: RawRepresentable, Codable, Sendable, Equatable, Hashable,
-                                 ExpressibleByStringLiteral {
+public struct WaymarkEventType: RawRepresentable, Codable, Sendable, Equatable, Hashable,
+                                ExpressibleByStringLiteral {
     public let rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
     public init(stringLiteral value: String) { self.rawValue = value }
@@ -63,7 +64,7 @@ public struct OpenCaneEventType: RawRepresentable, Codable, Sendable, Equatable,
 
 /// Nested `{ lat, lng }` form of a position. The flat `lat` / `lng` fields are what Waymark
 /// sends; this exists because the contract accepts either and a decode must not fail on it.
-public struct OpenCaneGeo: Codable, Sendable, Equatable {
+public struct WaymarkGeo: Codable, Sendable, Equatable {
     public var lat: Double
     public var lng: Double
     public init(lat: Double, lng: Double) {
@@ -74,7 +75,7 @@ public struct OpenCaneGeo: Codable, Sendable, Equatable {
 
 /// What was in the way. Every field is optional: the LiDAR path often knows a distance but not a
 /// kind, and the vision path the reverse.
-public struct OpenCaneObstacle: Codable, Sendable, Equatable {
+public struct WaymarkObstacle: Codable, Sendable, Equatable {
     /// Free text from the classifier: "door", "wall", "pole", "curb", "person".
     public var kind: String?
     /// Metres from the walker when detected.
@@ -99,15 +100,15 @@ public struct OpenCaneObstacle: Codable, Sendable, Equatable {
 /// One arbitrary JSON value, for the open-ended `extra` bag. Swift has no `unknown`, and
 /// `[String: Any]` is neither `Codable` nor `Sendable`, so the contract's
 /// `Record<string, unknown>` needs this.
-public enum OpenCaneJSON: Codable, Sendable, Equatable, ExpressibleByStringLiteral,
-                          ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral,
-                          ExpressibleByBooleanLiteral {
+public enum WaymarkJSON: Codable, Sendable, Equatable, ExpressibleByStringLiteral,
+                         ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral,
+                         ExpressibleByBooleanLiteral {
     case string(String)
     case number(Double)
     case bool(Bool)
     case null
-    case array([OpenCaneJSON])
-    case object([String: OpenCaneJSON])
+    case array([WaymarkJSON])
+    case object([String: WaymarkJSON])
 
     public init(stringLiteral value: String) { self = .string(value) }
     public init(integerLiteral value: Int) { self = .number(Double(value)) }
@@ -120,8 +121,8 @@ public enum OpenCaneJSON: Codable, Sendable, Equatable, ExpressibleByStringLiter
         else if let v = try? c.decode(Bool.self) { self = .bool(v) }
         else if let v = try? c.decode(Double.self) { self = .number(v) }
         else if let v = try? c.decode(String.self) { self = .string(v) }
-        else if let v = try? c.decode([OpenCaneJSON].self) { self = .array(v) }
-        else if let v = try? c.decode([String: OpenCaneJSON].self) { self = .object(v) }
+        else if let v = try? c.decode([WaymarkJSON].self) { self = .array(v) }
+        else if let v = try? c.decode([String: WaymarkJSON].self) { self = .object(v) }
         else {
             throw DecodingError.dataCorruptedError(in: c, debugDescription: "unsupported JSON value")
         }
@@ -142,17 +143,17 @@ public enum OpenCaneJSON: Codable, Sendable, Equatable, ExpressibleByStringLiter
 
 /// One event for the Grok Bot webhook. Only `type` is required; everything else is omitted when
 /// nil so the bot can tell "unknown" from "zero".
-public struct OpenCaneEvent: Codable, Sendable, Equatable {
-    /// Required. See `OpenCaneEventType`.
-    public var type: OpenCaneEventType
+public struct WaymarkEvent: Codable, Sendable, Equatable {
+    /// Required. See `WaymarkEventType`.
+    public var type: WaymarkEventType
     /// Omit to let the bot infer (fall / sos ⇒ critical).
-    public var severity: OpenCaneSeverity?
+    public var severity: WaymarkSeverity?
     /// ISO-8601 UTC ("2026-09-12T20:30:00Z"). `stamped(at:)` fills it when absent.
     public var timestamp: String?
     public var lat: Double?
     public var lng: Double?
     /// Nested alternative to `lat`/`lng`; Waymark sends the flat pair and leaves this nil.
-    public var location: OpenCaneGeo?
+    public var location: WaymarkGeo?
     /// Horizontal accuracy, metres.
     public var accuracyM: Double?
     /// Degrees from true north.
@@ -166,12 +167,12 @@ public struct OpenCaneEvent: Codable, Sendable, Equatable {
     public var label: String?
     /// Who is walking ("Tejas").
     public var user: String?
-    /// Which cane ("opencane-01").
+    /// Which cane ("opencane-01" — an external contract the bot and the cloud rows already carry).
     public var caneID: String?
     /// 0–100. `clampedBatteryPct` is what the constructors use.
     public var batteryPct: Int?
-    public var obstacle: OpenCaneObstacle?
-    public var extra: [String: OpenCaneJSON]?
+    public var obstacle: WaymarkObstacle?
+    public var extra: [String: WaymarkJSON]?
     /// `family_contacts` only: the addresses the bot should alert. Absent on every other event.
     public var emails: [String]?
     /// `family_contacts` only: ask the bot to email each address a confirmation. Absent means no.
@@ -190,12 +191,12 @@ public struct OpenCaneEvent: Codable, Sendable, Equatable {
         case sendTest = "send_test"
     }
 
-    public init(type: OpenCaneEventType,
-                severity: OpenCaneSeverity? = nil,
+    public init(type: WaymarkEventType,
+                severity: WaymarkSeverity? = nil,
                 timestamp: String? = nil,
                 lat: Double? = nil,
                 lng: Double? = nil,
-                location: OpenCaneGeo? = nil,
+                location: WaymarkGeo? = nil,
                 accuracyM: Double? = nil,
                 heading: Double? = nil,
                 speedMps: Double? = nil,
@@ -205,8 +206,8 @@ public struct OpenCaneEvent: Codable, Sendable, Equatable {
                 user: String? = nil,
                 caneID: String? = nil,
                 batteryPct: Int? = nil,
-                obstacle: OpenCaneObstacle? = nil,
-                extra: [String: OpenCaneJSON]? = nil,
+                obstacle: WaymarkObstacle? = nil,
+                extra: [String: WaymarkJSON]? = nil,
                 emails: [String]? = nil,
                 sendTest: Bool? = nil) {
         self.type = type
@@ -242,7 +243,7 @@ public struct OpenCaneEvent: Codable, Sendable, Equatable {
 
     /// A copy with `timestamp` set to `date` **only when it is missing** — a caller that already
     /// knows the detection time (the trip log's clock) keeps it.
-    public func stamped(at date: Date) -> OpenCaneEvent {
+    public func stamped(at date: Date) -> WaymarkEvent {
         guard timestamp == nil else { return self }
         var copy = self
         copy.timestamp = Self.iso8601(date)

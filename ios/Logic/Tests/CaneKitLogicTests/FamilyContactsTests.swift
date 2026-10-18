@@ -17,7 +17,7 @@ import Testing
 @Test func plausibleAddressesAreAccepted() {
     #expect(FamilyContacts.isValid("mom@example.com"))
     #expect(FamilyContacts.isValid("dad@example.com"))
-    #expect(FamilyContacts.isValid("first.last+opencane@mail.example.co.uk"))
+    #expect(FamilyContacts.isValid("first.last+waymark@mail.example.co.uk"))
 }
 
 /// The shapes that are obviously a typo are rejected, because the bot cannot tell a typo from a
@@ -127,7 +127,7 @@ import Testing
 /// The registration round-trips, so a stored or replayed payload decodes.
 @Test func registrationRoundTrips() throws {
     let event = FamilyContacts.registration(emails: ["mom@example.com"], sendTest: true)
-    let decoded = try JSONDecoder().decode(OpenCaneEvent.self, from: event.jsonBody())
+    let decoded = try JSONDecoder().decode(WaymarkEvent.self, from: event.jsonBody())
     #expect(decoded == event)
     #expect(decoded.type == .familyContacts)
 }

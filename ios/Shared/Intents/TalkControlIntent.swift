@@ -3,10 +3,10 @@
 //  CaneKit (app + widget extension)
 //
 //  The App Intent behind the Control Center / Lock Screen / Action button control "Talk to
-//  Waymark" (`TalkControl` in ios/CaneKitWidget/OpenCaneControls.swift, Step 64).
+//  Waymark" (`TalkControl` in ios/CaneKitWidget/WaymarkControls.swift, Step 64).
 //
-//  Why a second intent (not `TalkToOpenCaneIntent`): a `ControlWidgetButton` needs its intent type
-//  compiled into the widget extension, and `TalkToOpenCaneIntent`'s `perform` reaches `AppModel`,
+//  Why a second intent (not `TalkToWaymarkIntent`): a `ControlWidgetButton` needs its intent type
+//  compiled into the widget extension, and `TalkToWaymarkIntent`'s `perform` reaches `AppModel`,
 //  which the extension does not have. This file is compiled into both targets
 //  (`ios/project.yml`: `Shared/Intents`); `openAppWhenRun` makes the system run the APP's copy,
 //  whose `perform` toggles push-to-talk exactly like an Action button press. The widget's copy

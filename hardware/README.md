@@ -4,7 +4,7 @@
 > then generate G-code locally (`scripts/build_stl.ps1` + `scripts/slice_gcode.ps1` on Windows).
 > Sliced files are gitignored — they are ~85 MB of build output, not source.
 
-The only new hardware in OpenCane / CaneKit is a mount. It clamps the iPhone 17 Pro Max upright to
+The only new hardware in Waymark / CaneKit is a mount. It clamps the iPhone 17 Pro Max upright to
 the 27.65 mm non-metal stick (measured by the bore rings on 2026-09-12; it is a broom handle
 standing in for a cane), near the grip, with the LiDAR and rear camera facing forward and
 ~5° down. The phone's own buzz has to be felt through the cane. Everything else (AirPods Pro,
@@ -51,7 +51,7 @@ sliced, bore rings printed and read; the rest is not yet printed. See `CHANGELOG
    (`DESIGN.md` §10).
 5. Assemble (`DESIGN.md` §11). Set `hinge_angle` = 95 − cane angle. Run the tests in
    `DESIGN.md` §12 with Aritro.
-6. Fine-tune by reading the phone: OpenCane's Mount card shows "Camera tilt N° down · N fps" live.
+6. Fine-tune by reading the phone: Waymark's Mount card shows "Camera tilt N° down · N fps" live.
    Click the hinge until it says **good** (3–8° down) with the cane held the way the walker holds
    it. The same number is in every trip-log `lanes` line as `tilt`.
 
@@ -101,6 +101,6 @@ still.
 | Who | Owns |
 |---|---|
 | **Sagar**, **Tommy** (hardware) | Calipers, OpenSCAD render and fixes, coupons, all prints, inserts, assembly, setting the hinge angle, T0 fit, T7 shake, T8 drop, reprints |
-| **Aritro**, **Aarav**, **Tejas** (app) | Phone charged; Guided Access (triple-click the side button in OpenCane → Options: Touch, Side Button, Volume Buttons, Keyboards Off, Motion On → Start; then the watch is the only input, see `docs/devices_setup.md` step 4) and the Camera Control setting; app-side tests T2–T6, T9, T10; trip logs; `CHANGELOG.md` / `docs/todo.md` entries (AGENTS.md rule 10); any `CaneKitLogic` change the tests call for (e.g. `groundSkipFraction`, `DESIGN.md` §13) |
+| **Aritro**, **Aarav**, **Tejas** (app) | Phone charged; Guided Access (triple-click the side button in Waymark → Options: Touch, Side Button, Volume Buttons, Keyboards Off, Motion On → Start; then the watch is the only input, see `docs/devices_setup.md` step 4) and the Camera Control setting; app-side tests T2–T6, T9, T10; trip logs; `CHANGELOG.md` / `docs/todo.md` entries (AGENTS.md rule 10); any `CaneKitLogic` change the tests call for (e.g. `groundSkipFraction`, `DESIGN.md` §13) |
 | **Walker** (blindfolded tester) | Holds the cane in their own natural pose for the angle measurement (T1); identifies haptic patterns (T6); walks |
 | **Spotter** (sighted teammate) | Walks beside the walker on every outdoor test and films it with a second phone (`ios/README.md`) |

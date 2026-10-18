@@ -1,4 +1,4 @@
-# OpenCane — device test checklist (Sun Sep 13)
+# Waymark — device test checklist (Sun Sep 13)
 
 Tick each box on the phone (iPhone 17 Pro Max, unlocked, USB or not). Pull a trip log after each block:
 `cd ios && make audit` (copies the newest `canekit-*.jsonl`). ✅ pass · ❌ fail (write what happened).
@@ -6,14 +6,14 @@ Tick each box on the phone (iPhone 17 Pro Max, unlocked, USB or not). Pull a tri
 ## 0. Before you start
 - [ ] Latest build installed (Guide shows the big round microphone with contour rings)
 - [ ] Settings → Auto-Lock **Never** (Settings app → Display & Brightness)
-- [ ] Location: **Always** (Settings app → Privacy → Location Services → OpenCane)
+- [ ] Location: **Always** (Settings app → Privacy → Location Services → Waymark)
 - [ ] Microphone + Speech Recognition allowed
 - [ ] ElevenLabs: account topped up? (0 credits = every line in Apple's voice — expected, not a bug)
 
 ## 1. Launch and the voice shell
 Step 65 (calm feedback): waiting is tones, not words. Every tone is short (≤ 0.18 s) and quiet, with a
 soft tap felt on the cane. Nothing plays over "Head height.".
-- [ ] Open the app: **"OpenCane ready."** → soft rising two-note → mic opens by itself. Nothing else is said — no menu, first launch included (Step 67)
+- [ ] Open the app: **"Waymark ready."** → soft rising two-note → mic opens by itself. Nothing else is said — no menu, first launch included (Step 67)
 - [ ] Right after launch, squeeze the phone / press Camera Control and volume a few times in the first 5 s → no description, no busy taps (log: `describe_skipped {reason: launch_grace, pending: false}`); after 5 s one press → "Where am I"; three quick presses → one description (`describe_skipped {reason: debounce | grip_burst}`)
 - [ ] Review round Steps 67–68: open the app and press Camera Control ONCE at ~2 s → nothing at once; one description after the launch listen closes with nothing said (`describe_deferred {action: fired}`); press once, then say "status" in the listen → no description (`describe_deferred {action: dropped, reason: other_command}`); presses every ~1.8 s → a description every other press, never a lockout
 - [ ] At the launch listen say **"I just wanna get from here to Granger library"** → "Finding a route to Grainger Engineering Library." → route intro; no thinking ticks, no "No answer." (log: `conv_turn {fast_path: true}`). Also try "how do I get to CIF" and "can you take me to the Union please"
@@ -78,15 +78,15 @@ soft tap felt on the cane. Nothing plays over "Head height.".
 - [ ] Say **"where am I"** mid-route → description; lock the phone during it → nothing stale after unlock
 
 ## 7. Dynamic Island / Live Activity (Step 64)
-- [ ] Start a route, lock the phone: island shows the **OpenCane ring mark** + turn glyph + metres (not a location dot)
+- [ ] Start a route, lock the phone: island shows the **Waymark ring mark** + turn glyph + metres (not a location dot)
 - [ ] Route warming up: countdown in the island
 - [ ] Locked during a route: island says **obstacles paused** — never a green "Path clear"
 - [ ] Long-press the island: instruction (3 lines), route progress, obstacle state
 - [ ] Obstacle stop/head while locked: the screen lights once (not repeatedly)
 - [ ] Indoor walk: island "Indoors · step 3 of 5"
 - [ ] Stop route: "Route stopped" card for ~10 s
-- [ ] Control Center: add **Talk to OpenCane** control → it opens the app listening
-- [ ] Lock screen: OpenCane widget → opens the app
+- [ ] Control Center: add **Talk to Waymark** control → it opens the app listening
+- [ ] Lock screen: Waymark widget → opens the app
 
 ## 8. Other
 - [ ] Type a destination: tab bar hides with the keyboard; no Australian / foreign suggestions

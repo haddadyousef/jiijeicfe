@@ -73,6 +73,7 @@ public struct CKMobilityStats: Sendable, Equatable {
 @MainActor
 @Observable
 public final class MedicalProfileStore {
+    // Legacy keys, kept for stored data: renaming them would wipe every walker's saved profile.
     private static let profileKey = "opencane_medical_profile"
     private static let tripsKey = "opencane_completed_trips_count"
     /// The fake number an earlier build shipped with; `init` clears it rather than copying a

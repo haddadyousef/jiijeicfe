@@ -1,4 +1,4 @@
-# Team brief: OpenCane / CaneKit at HEAD `076fcaa` (Sat 2026-09-12 evening)
+# Team brief: Waymark / CaneKit at HEAD `076fcaa` (Sat 2026-09-12 evening)
 
 The short version for Sagar, Tommy, Aarav and Tejas. The full picture is in
 [`TEAM_HANDOFF.md`](TEAM_HANDOFF.md); start with its "Start here (5 minutes)" section. AI agents
@@ -10,7 +10,7 @@ resume from its §10.
   the app line added:
   - root tabs Guide / Sense / Settings (27);
   - sound recognition that fails safe to off (28);
-  - "Talk to OpenCane" on the Action Button and distance-first warnings (29);
+  - "Talk to Waymark" on the Action Button and distance-first warnings (29);
   - speech that holds while you talk (30);
   - instant answers, "set location", Sift / Granger (31);
   - the flashlight (32, fixed in 34);
@@ -74,18 +74,18 @@ resume from its §10.
    own lines; a comment after a value broke the first build.
 4. **AirPods Pro:**
    - pair them;
-   - Settings → Bluetooth → ⓘ → **Spatial Audio Off**, **Head Tracking Off** (OpenCane does its own);
+   - Settings → Bluetooth → ⓘ → **Spatial Audio Off**, **Head Tracking Off** (Waymark does its own);
    - allow Motion & Fitness when asked.
    - Full steps: `docs/devices_setup.md` → AirPods.
 5. **Apple Watch:**
    - it must be paired with the same iPhone;
    - turn on Developer Mode on the watch (Settings → Privacy & Security; if it is missing, open
      Xcode → Window → Devices and Simulators with the iPhone plugged in until the watch appears);
-   - in the iPhone's Watch app: General → **Automatic App Install**, or Available Apps → OpenCane →
+   - in the iPhone's Watch app: General → **Automatic App Install**, or Available Apps → Waymark →
      Install;
-   - open OpenCane on the watch.
+   - open Waymark on the watch.
    - Full steps: `docs/devices_setup.md` → Apple Watch.
-6. **Action Button:** after `make run`, Settings → Action Button → Shortcut → **Talk to OpenCane**.
+6. **Action Button:** after `make run`, Settings → Action Button → Shortcut → **Talk to Waymark**.
    If it is missing, open the Shortcuts app once and retry (`docs/handsfree.md`).
 
 ## Sagar and Tommy (hardware)
@@ -121,9 +121,8 @@ resume from its §10.
   on the cane, and update `CHANGELOG.md`, `docs/CODE_REFERENCE.md` and `docs/todo.md` in the same
   commit, with a `test on device:` line at the end of the commit message.
 - The step-by-step resume checklist is `TEAM_HANDOFF.md` §10.
-- To find anything: install the graph tool once with `uv tool install graphifyy`, then run
-  `graphify update .` after any code change (the committed graph was built from `076fcaa`) and
-  `graphify query "your question"` from the repo root.
+- To find anything: `docs/CODE_REFERENCE.md`, then `git grep`. The old knowledge graph is an archived,
+  stale snapshot in `archive/graphify-out/` (built from `076fcaa`); the `graphify` commands do not read it.
 
 ## Installing on the phone (Aritro)
 

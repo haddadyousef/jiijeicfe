@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Slice OpenCane printables to G-code headlessly, and VERIFY what came out.
+    Slice Waymark printables to G-code headlessly, and VERIFY what came out.
 
 .DESCRIPTION
     Creality Print 7.2 is an Orca fork and accepts Orca's command-line
@@ -165,7 +165,7 @@ foreach ($p in @($machineProfile, $processProfile, $filamentProfile)) {
 $wantSupport = if ($NoSupport) { $false } elseif ($Support) { $true } else { $Plate -eq 'cradle' }
 if ($Walls -gt 0 -or $wantSupport) {
     $ptag = $(if ($Walls -gt 0) { "${Walls}wall" } else { 'stdwall' }) + $(if ($wantSupport) { '_support' } else { '' })
-    $tmpProc = Join-Path ([IO.Path]::GetTempPath()) "opencane_proc_$ptag.json"
+    $tmpProc = Join-Path ([IO.Path]::GetTempPath()) "waymark_proc_$ptag.json"
     $j = Get-Content $processProfile -Raw | ConvertFrom-Json
     # Add-Member -Force rather than assignment: the vendor profile inherits
     # most of these keys and does not carry them itself, and assigning a
@@ -219,7 +219,7 @@ $paths = foreach ($m in $models) {
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 # A fresh temp output dir per run, so the one .gcode found afterwards is
 # certainly this run's; it is moved to $OutDir under a verified name.
-$work = Join-Path ([IO.Path]::GetTempPath()) ("opencane_slice_" + [guid]::NewGuid().ToString('N').Substring(0, 8))
+$work = Join-Path ([IO.Path]::GetTempPath()) ("waymark_slice_" + [guid]::NewGuid().ToString('N').Substring(0, 8))
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 
 Write-Host "Slicing $Plate$poleTag in $Material$(if ($Walls) { " at $Walls walls" })$(if ($wantSupport) { ' with support' }) ..." -ForegroundColor Cyan

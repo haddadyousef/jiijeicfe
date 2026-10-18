@@ -22,7 +22,8 @@
 //  ⚠ The key in the plist is the **publishable** (anon) key, which is meant to be shipped in a
 //  client. It is not a service-role key, and a service-role key must never go near this file: it
 //  would hand anyone who unzips the .ipa full write access to every walker's data. Row-level
-//  security in migration `opencane_05` is what bounds the anon key.
+//  security in migration `opencane_05` is what bounds the anon key (that is the migration's name
+//  in the Supabase project, an external contract).
 //
 //  Key invariants:
 //    · Timeouts are short (15 s request). A cane that cannot reach the network must fail fast and

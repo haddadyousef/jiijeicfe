@@ -1,5 +1,5 @@
 // =====================================================================
-// OpenCane - ROLLING BALL TIP
+// Waymark - ROLLING BALL TIP
 // =====================================================================
 // A printed rolling ball for the end of the shaft, so the user can feel
 // the difference between a crack and a joint by rolling over it instead

@@ -2,6 +2,49 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark everywhere: the leftover base-project name is gone (Sun Oct 18)
+
+- Code: the remaining `OpenCane*` Swift types became `Waymark*` (`WaymarkEvent`, `WaymarkEventType`, `WaymarkJSON`,
+  `WaymarkMark`, `WaymarkObstacle`, `WaymarkGeo`, `WaymarkSeverity`, `WaymarkLinks`, `WaymarkAccessory*`),
+  `TalkToOpenCaneIntent` → `TalkToWaymarkIntent`, `OpenCaneControls.swift` → `WaymarkControls.swift`, comments and
+  ios/README.md say Waymark, and ios/README.md's launch / log-pull commands use the real `<prefix>.waymark` bundle id.
+  The voice phrase "how is opencane doing" was dropped ("how is waymark doing" was already matched and tested).
+- Kept on purpose, each commented as a legacy key or external contract: the UserDefaults keys
+  `opencane_medical_profile`, `opencane_completed_trips_count`, `opencane_install_id` (renaming would wipe stored data
+  on phones), the Secrets.plist key names `OPENCANE_GROKBOT_WEBHOOK_URL / _KEY`, the external Grok Bot routine name and
+  its `caneID` value, and the Supabase migration names already applied in that project. None is ever shown in the app.
+- Docs: AGENTS.md, CLAUDE.md, CHANGELOG.md, docs/**, hardware/, scripts/*.ps1 now say Waymark and use the new code
+  names; the base-project attribution header in docs/README.md was removed; the default demo route is described as
+  the Ave in the U District. Mentions outside ios/ and waymark/ went from 351 to 24, all naming the legacy keys.
+- Repo root: archive/ holds the old hardware brief (now `archive/hardware-brief.html`), the stale graphify output and
+  old agent configs (previous commit); links point there.
+- Two workflow agents in their own worktrees (code, docs), each reviewed by a separate agent: code review 6 findings
+  (4 fixed: stale `com.aritro.canekit` commands in ios/README.md, shifted continuation lines, "an `WaymarkEvent`",
+  comment wraps; 2 rejected: the "how is waymark doing" test already exists, HazardTests had no shifted lines);
+  docs review 9 findings (6 fixed incl. a bulk-replace quote "How ca Waymark help?" → "How can Waymark help?", dead
+  archive links, graphify claims; rejected: renaming team members in historical records, waymark/** (Windows-owned)).
+- Mac: `make test` 1128 passed; `make gen`, `make sim` exit 0; built App Intents metadata has 0 "OpenCane"; `make uitest`
+  12 passed / 1 skipped / 1 failed (the Dynamic Island test, fixed separately in PR #9).
+- test on device: after installing this build, re-pick the Action button shortcut as "Talk to Waymark" (the intent
+  was renamed); Siri "How is Waymark doing" still answers.
+## Waymark judge demo 5b — island test green: Stop route was under the navigation bar (Sun Oct 18)
+
+- `CaneKitIslandTour.testDynamicIsland` failed at the "Start route reappears" assertion since UI v3. Cause, from a
+  screenshot plus `app.debugDescription` at each Stop tap (`island-diag1.log`): the swipe up that `scrollTo` uses to
+  reach "Simulate walk" leaves "Stop route" at y 50–126, under the translucent navigation bar (62–116). XCUITest
+  still calls it hittable, so `scrollTo` did nothing and both taps (0.58 s apart, well inside the 3 s window) landed
+  on the bar. The button still read "Tap twice to end" after the first tap: it never armed and the route never
+  stopped. Stopping the simulation first could not help because the scroll position was the same. The Live Activity
+  and `app.activate()` played no part.
+- Fix (test only; the app, the ⚠ labels and the two-tap Stop are unchanged): the island test's `scrollTo` counts an
+  element whose top edge is above the navigation bar's bottom edge as not tappable (`isTappable` /
+  `isUnderNavigationBar`). Such an element skips the swipes up and is swiped back down.
+- Evidence (logs `waymark/logs/mac/`, exit codes): `make test` 1128 passed exit 0; `make island` exit 0 (iPhone 18 Pro
+  Max, 40.1140,−88.2249; after-stop shot taken); `make sim` exit 0; `make uitest` same SIM / location exit 0, 13
+  passed, 1 skipped (Street View), 0 failed of 14. The other suites' `scrollTo` copies have the same blind spot but
+  pass today; left unchanged.
+- test on device: n/a (UI test harness only); on the phone, Stop route still needs two taps within 3 s.
+
 ## Waymark judge demo 4b — Where am I tile above the dock, neutral Profile (Sat Oct 17)
 
 - Guide (idle): the "Where am I / Describe what's ahead" tile was cut in half by the floating tab dock on a Pro Max
@@ -14,16 +57,16 @@ Build log for the hackathon. One entry per step; each ends with what to test on 
   walker" while the stored name is blank or the "Not set" default (`WaymarkProfileName`; the sentinel itself is
   unchanged because `EmergencyContactSeed` relies on it). "Announce Medical ID" says "Name not set." instead of "Not
   set." and never speaks the placeholder to a responder. Labels "Edit Medical ID" / "Announce Medical ID" unchanged.
-  The original author's name no longer appears anywhere under `ios/` code: comments neutralised and two test fixtures
-  renamed to "Alex" (same assertions). `ios/README.md` still names the base project's bundle id `com.aritro.canekit`
-  (a technical identifier, left as history).
+  No personal name appears anywhere under `ios/` code any more: comments neutralised and two test fixtures
+  renamed to "Alex" (same assertions). `ios/README.md` still names the frozen bundle id `com.aritro.canekit`
+  (a technical identifier, AGENTS.md hard rule 6).
 - `CaneKitVisualTour` adds a "profile" shot at the end, gated by "Edit Medical ID" existing.
 - Written by a workflow agent in its own worktree (red runs `j4-test-red.log`, `j4-test-red2.log`, `j4f-test-red.log`).
   Independent review (separate agent), all 7 fixed: M1 the idle cap ignored Dynamic Type (the AX disc stayed ~87 pt) →
   `textScale` / `square`; L the profile shot was ungated; L / L test and uitest counts misreported (corrected: Logic
   1074 → 1087 on that branch; uitest 12 / 1 skipped / 1 failed); L the disc popped 116 → 87 pt after a layout pass →
   computed in the same pass; L "Announce Medical ID" spoke "Not set."; L stale doc comment.
-- Known, not caused here (reproduced on the base GuideCard / VoiceTile): `CaneKitIslandTour.testDynamicIsland` fails at
+- Known, not caused here (reproduced on the existing GuideCard / VoiceTile): `CaneKitIslandTour.testDynamicIsland` fails at
   line 104 on the 18 Pro Max simulator (after Simulate walk and two Stop taps, "Start route" never appears), so `make
   uitest` exits 2 (12 passed, 1 skipped, 1 failed of 14). Investigated in task 5.
 - test on device: idle Guide on the 17 Pro Max shows the whole Where am I tile above the tab dock; Profile shows the
@@ -52,7 +95,7 @@ Build log for the hackathon. One entry per step; each ends with what to test on 
 - UI tests only: `WAYMARK_STORE_SUBDIR` (sanitised; honoured only with `CANEKIT_UITEST=1`) moves the store to a
   throwaway `Documents/wm-ui-<8>/`, so tours never touch the real beliefs.json; stale test folders are removed at load
   (UI tests only, never `waymark`).
-- Base-app fix found on the way: `Settings.bool` read a launch argument ("-waymarkEnabled NO" arrives as the string
+- Core-app fix found on the way: `Settings.bool` read a launch argument ("-waymarkEnabled NO" arrives as the string
   "NO") as unset, so the UI tests' off-mask silently did nothing. `StoredBool.parse` (tested) accepts Bool or
   yes/no/true/false/1/0.
 - Written by a workflow agent in its own worktree (Logic layer test-first here: `WaymarkLearningTests`, red in
@@ -545,7 +588,7 @@ GPS accuracy was 6.6–8.7 m the whole time: the phone stood still indoors, Core
 every ~6 s, and the retained fix went stale after 5 s (`NavigationHealth.maxFixAge`). So
 `markLocationUnavailable` said "GPS weak…" and the next fix said "GPS back.". Also at start: the
 190-character intro, "No headphones. Beacon paused until AirPods connect.", "Watch not reachable.
-Open OpenCane on the watch.", and later "Screen locked. Obstacle warnings are paused until you unlock.".
+Open Waymark on the watch.", and later "Screen locked. Obstacle warnings are paused until you unlock.".
 
 **Before → after** (`cd ios && scripts/cue_audit.py --speech-load <log>`). The same route is replayed
 through the new rules. The GPS lines come from a Python mirror of `GPSAnnouncer` fed by the log's `gps`
@@ -650,16 +693,16 @@ agent. The orchestrator must run `make sim uitest e2e`.
 - Profile → the contact is Aritro with the number; "emergency" → the prompt names Aritro → say "no".
 - `make audit` + `scripts/cue_audit.py --speech-load` on the walk log.
 
-## Step 67 — launch says only "OpenCane ready."; spoken destinations route on the phone (Sun Sep 13)
+## Step 67 — launch says only "Waymark ready."; spoken destinations route on the phone (Sun Sep 13)
 
-Owner, verbatim: "when it immediately pops up there's a lot of jargon. It should just be 'OpenCane
+Owner, verbatim: "when it immediately pops up there's a lot of jargon. It should just be 'Waymark
 ready' and then boom. When I say the location it doesn't even do it."
 
 **Evidence.** Phone log `canekit-2026-09-13T15-48-34Z.jsonl`:
 
 | t (s) | Record | What the walker got |
 |---|---|---|
-| 0.31 | `speech_dispatch` "OpenCane ready." + `voice_menu {menu: full}` | |
+| 0.31 | `speech_dispatch` "Waymark ready." + `voice_menu {menu: full}` | |
 | 1.71, 2.89, 3.56 | `describe {trigger: cameraControl}` ×3 | the hand gripping the phone hit Camera Control / volume |
 | 2.33 | `speech_dispatch` "Say route, where am I, describe, status, repeat, quiet, help, or emergency." | the eight-word menu (90 characters of speech before the mic opened) |
 | 2.91, 3.58 | `earcon busy` ×2 | two stacked busy taps |
@@ -670,7 +713,7 @@ ready' and then boom. When I say the location it doesn't even do it."
 | 19.18 | `conv_error {timeout: true, budget_ms: 4000}` + "No answer." | no route |
 
 **What changed**
-1. **Launch = "OpenCane ready." then the listening tone.** `VoiceMenu.menuLine`, `shortMenuLine` and
+1. **Launch = "Waymark ready." then the listening tone.** `VoiceMenu.menuLine`, `shortMenuLine` and
    `launchMenuLine(firstLaunch:)` are deleted (the first-install full menu too). `VoiceShellPolicy`
    gains `readyLine`, `noLidarLine`, `launchLine(lidarSupported:)`; `menuWaitCap` → `speechDrainCap`.
    `AppModel.speakMenuThenListen` → `listenAfterLaunchLine` (no `say`; the drain and the
@@ -707,7 +750,7 @@ ready' and then boom. When I say the location it doesn't even do it."
 
 | | Before | After |
 |---|---|---|
-| Speech before the launch listen | 90 characters (ready + 75-character menu); first launch after install the same | 15 characters ("OpenCane ready.") |
+| Speech before the launch listen | 90 characters (ready + 75-character menu); first launch after install the same | 15 characters ("Waymark ready.") |
 | Camera Control presses in the first 5 s | 3 descriptions queued, 2 busy taps, 1 unasked description spoken | 0 (3 × `describe_skipped {launch_grace}`) |
 | "I just wanna get from here to Granger library" | cloud → 2 ticks → error tone + "No answer." at 4.2 s | fast path, 0 network: "Finding a route to Grainger Engineering Library." |
 | Open cloud question | "No answer." at 4 s | answer or "No answer." by 8 s |
@@ -719,7 +762,7 @@ ready' and then boom. When I say the location it doesn't even do it."
 `noTravelIntentIsNotARoute` ("go to please" was a route to "Please"), `everyCampusPlaceAnswersToItsAliases`,
 `numbersArePinned`, `thinkingTicksAtOneAndAHalfAndFourSeconds`, `timeoutAtEightSeconds`,
 `theRecoveryLineSaysWhatIsOffAndThatGuidanceRemains`; the new-API tests (`CameraControlGateTests` (8),
-`launchSaysOnlyOpenCaneReady`) did not compile against HEAD. Green: `cd ios/Logic && swift test
+`launchSaysOnlyWaymarkReady`) did not compile against HEAD. Green: `cd ios/Logic && swift test
 --disable-xctest` → **900 tests in 23 suites passed, 1 known issue** (Step 66's early-arrival
 `withKnownIssue`), exit 0 (869 before; 880 before the review round below). Replaced: `menuLineIsTheEightWords` and
 `shortMenuLineIsThreeWordsAndTheFullMenuOnlyOnFirstLaunch` → `theOnlyMenuIsTheOneTheWalkerAsksFor`;
@@ -741,7 +784,7 @@ each checked by hand):
   stay nil). Pinned by `travelIntentReviewCases` (red: 4 issues before these fixes, then green).
 - Fixed 10 — `noLidarLine` was not prefetched: added to `commonLines`.
 - Fixed 11 — the launch listen's "already listening" exit logged nothing: `voice_launch {reason: already_listening}`.
-- Rejected 5 (speak a first-launch hint): the owner's directive is "It should just be 'OpenCane ready'
+- Rejected 5 (speak a first-launch hint): the owner's directive is "It should just be 'Waymark ready'
   and then boom"; "help" / "menu" / "options" remain, and handsfree §0 says so.
 - Rejected 6 (a sound for a refused press): the brief is to stop the stacked busy earcons; a sound per
   refused grip press is the same noise under another name. The log records every refusal.
@@ -762,7 +805,7 @@ type-checked by reading only. No `speech` record e2e asserts on was added or rem
 automation (`SpeechQueue.muted`) the old launch sequence returned before speaking the menu, so e2e
 never saw it, and route / waypoint / arrival lines are untouched.
 
-test on device: open the app → only "OpenCane ready." + the rising tone; squeeze the phone / press
+test on device: open the app → only "Waymark ready." + the rising tone; squeeze the phone / press
 Camera Control in the first 5 s → nothing; say "I just wanna get from here to Granger library" →
 "Finding a route to Grainger Engineering Library."; ask a slow question → answer before 8 s.
 
@@ -854,7 +897,7 @@ the loading etc — make it nice, maybe a little tap or bell and then it release
 over-stimulate the blind person too much or else they won't listen."
 
 **Evidence.** Phone log `canekit-2026-09-13T08-51-14Z.jsonl`, `speech_dispatch` records: before the
-launch listen opened (11 s) the walker heard "OpenCane ready." (15), the eight-word menu (76) and
+launch listen opened (11 s) the walker heard "Waymark ready." (15), the eight-word menu (76) and
 "Still describing the previous scene." (36) = **126 characters**; around one question ("Yo yo yo",
 11–34 s) the description, "One moment." (11), "Still describing the previous scene." (36) and "That is
 taking too long. Ask again in a moment." (47) = **175 characters**, 94 of them about waiting.
@@ -863,7 +906,7 @@ taking too long. Ask again in a moment." (47) = **175 characters**, 94 of them a
 
 | Moment | Before | After |
 |---|---|---|
-| Launch (not the first after install) | 126 chars: ready + 76-char menu + busy line | **46 chars**: "OpenCane ready." + "Say route, where am I, or help." (31); busy → two soft taps; rising two-note as the mic opens |
+| Launch (not the first after install) | 126 chars: ready + 76-char menu + busy line | **46 chars**: "Waymark ready." + "Say route, where am I, or help." (31); busy → two soft taps; rising two-note as the mic opens |
 | First launch after install | 91 chars | 91 chars (the full menu once; then the flag `heardFullVoiceMenu`) |
 | One question | 175 chars (94 waiting words) | **91 chars** (the answer + "No answer."): tap, tick, busy taps, error double tap |
 | First 51 s of the walk | 394 chars | 230 chars |
@@ -972,7 +1015,7 @@ code was checked by reading only (no xcodebuild this round: an e2e run owned the
    tightened it: the recent fix (≤ 30 m, ≤ 20 s) must lie within the exit's `radiusM`, not 60 m.
    `forcedRecentDistanceM` is removed. Tests `handoverForcedIsImmediateWithARecentUsableFix` (25 m),
    `handoverForcedWithoutAFixWaitsForGPS` (26 m), `handoverForcedNeedsTheRecentFixInsideTheRadius`.
-9. **Lows.** (a) `opencane://guide` has no tab binding (`ContentView`'s tab is private `@State`), so
+9. **Lows.** (a) `waymark://guide` has no tab binding (`ContentView`'s tab is private `@State`), so
    the `onOpenURL` comment now says it opens on whatever tab was showing. (b) A nil CMPedometer update
    logs `indoor {action: pedometer_nil, source}` at most once per 10 s per source (`ActionRateLimit`),
    walking and recording. (c) `NavActivityAttributes.init` caps `routeName` at
@@ -1000,7 +1043,7 @@ code was checked by reading only (no xcodebuild this round: an e2e run owned the
   `info: path: CaneKit/Info.plist` + `properties:` ("XcodeGen writes these keys into
   CaneKit/Info.plist on every generate"), and Info.plist is tracked. The hunk is the generated
   output: reverting it would reappear on the next `gen.sh`, and until then it would drop the
-  `opencane://` scheme the widgets open.
+  `waymark://` scheme the widgets open.
 - **Muse M10** (clear voice listening / thinking in `beginWarmup` / `request`). The flags are not
   stale. `AppModel.observeVoiceForIsland` re-arms on every change of `isListening || isStarting` and
   `isProcessing`, and `setVoicePhase` stores each change. A route started by voice opens as
@@ -1011,11 +1054,11 @@ test on device: lock the phone mid indoor walk and walk out of the ISR doors →
 activity and turns warming / walking; "stop" during Add landmark stops the route; Finish at the exit
 indoors → "No GPS fix…".
 
-## Step 64 — The island says OpenCane, and never "Path clear" while obstacle detection is paused (Sun Sep 13)
+## Step 64 — The island says Waymark, and never "Path clear" while obstacle detection is paused (Sun Sep 13)
 
 **Why.** Owner: "the island looks kind of bad… just a location icon thing; make it better, more
 robust, more unique." The Step 64 audit (`make island` pictures + phone trip logs) found: the Live
-Activity existed only while a route guided, so nothing OpenCane showed during the warm-up, voice or
+Activity existed only while a route guided, so nothing Waymark showed during the warm-up, voice or
 after Stop; the compact island (bare `figure.walk` + metres + a green check) read as a system glyph;
 the expanded instruction was cut at two lines; and a **safety bug** — with the screen locked,
 `scenePhaseChanged(.background)` paused depth but the GPS glance fell back to `.clear`, so the lock
@@ -1036,11 +1079,11 @@ screen and island said "Path clear" exactly while obstacle warnings were off.
   coalescer floor. `setVoicePhase(listening:thinking:)` (AppModel voice observation) and
   `setIndoor(stepIndex:stepCount:say:)` (wired from `IndoorGuide.perform` / `teardown`).
   `scenePhaseChanged(.background)` keeps GPS while `indoor.isActive` (Step 62 handover).
-- **Look:** `OpenCaneMark` — static contour rings from the voice tile's ring math, moved to
+- **Look:** `WaymarkMark` — static contour rings from the voice tile's ring math, moved to
   `ios/Shared/Brand/ContourRingGeometry.swift` (VoiceTile now uses it too) — in compact leading,
   minimal, expanded and the lock screen; `.keylineTint` by level; compact trailing progress ring
   (check only when live, pause glyph when paused); expanded instruction 3 lines at ≥ 85 %, "1 of 6",
-  `.numericText()`; `widgetURL(opencane://guide)` (scheme registered in project.yml); StandBy layout
+  `.numericText()`; `widgetURL(waymark://guide)` (scheme registered in project.yml); StandBy layout
   (`isActivityFullscreen`); `.supplementalActivityFamilies([.small])` Smart Stack card; new lock-screen
   card with a sensing badge. design.md §6.7 rewritten with every state.
 - **Alerts:** `IslandAlertThrottle` — escalation only, ≤ 1 per level per 30 s, never on de-escalation or
@@ -1048,9 +1091,9 @@ screen and island said "Path clear" exactly while obstacle warnings were off.
   building: depth pauses in the background, so sensing is `paused` and no obstacle reaches the island
   there — alerts can only fire while the app is `.inactive` (Notification / Control Center over it).
   Kept as the path for a future background depth mode; not a warning channel.
-- **Extras:** Control Center / Lock Screen / Action button control "Talk to OpenCane" (`TalkControl`,
+- **Extras:** Control Center / Lock Screen / Action button control "Talk to Waymark" (`TalkControl`,
   `TalkControlIntent` in `Shared/Intents`, the app's copy toggles push-to-talk) and a lock-screen
-  accessory widget with the mark (`opencane://talk` → `CaneKitApp.onOpenURL`). No buttons inside the
+  accessory widget with the mark (`waymark://talk` → `CaneKitApp.onOpenURL`). No buttons inside the
   Live Activity (design.md §6.7). No idle "guarding" activity (it would be false in the background).
 
 **Tests (written first, red before green).** `IslandPolicyTests.swift`: `walkingForegroundIsLive`,
@@ -1077,7 +1120,7 @@ reviews, `make uitest`, `make e2e`.
 test on device: start the CIF route and lock the phone during the warm-up — island shows the ring mark
 and a countdown, then the walk; with the screen locked the pill says "Obstacles paused — unlock", never
 a green check; unlock, walk, lock at a hazard; press Stop and go home — "Stopped" card for 10 s; add
-the "Talk to OpenCane" control and the lock-screen widget and tap each; StandBy on a charger.
+the "Talk to Waymark" control and the lock-screen widget and tap each; StandBy on a charger.
 
 ## Step 62 — Indoors first: "take me from ISR to CIF" walks a step script out of the building, then hands over to the GPS route (Sun Sep 13)
 
@@ -1158,16 +1201,16 @@ test on device: Profile → Privacy off reads "Medical ID, family contacts and w
 - `SpeechQueue.prefetch` no longer clears `voiceError` while latched.
 - `SceneDescribePolicy.maySpeak` + `SceneDescriber.cancelForBackground()`: generation bump + cancel; a cancelled run is silent (CancellationError is not "Scene description failed."). Caller: `scenePhaseChanged(.background)`, next to `conversation.cancelForBackground()`. `aLockGenerationDropsThePreLockScene`.
 
-**Rejected / not this commit.** A launch GET `/v1/user/subscription` probe before "OpenCane ready." would catch a *first* dead-key session with a warm cache, at the cost of delaying the first line and a new network path. Persist covers the restart the owner reported. First session after quota dies still mixes until the first miss, then persists.
+**Rejected / not this commit.** A launch GET `/v1/user/subscription` probe before "Waymark ready." would catch a *first* dead-key session with a warm cache, at the cost of delaying the first line and a new network path. Persist covers the restart the owner reported. First session after quota dies still mixes until the first miss, then persists.
 
 **Verification.** `make test` 770 / 770; `make sim` green.
 
-test on device: with the empty account, quit and relaunch — every line including "OpenCane ready." is Apple's, `voice_backend {by: persisted}` in the trip log, Haptics card still shows the refused-key line; lock mid "Where am I" — no pre-lock sentence after unlock. Settings → Voice → System → Natural still retries after a top-up.
+test on device: with the empty account, quit and relaunch — every line including "Waymark ready." is Apple's, `voice_backend {by: persisted}` in the trip log, Haptics card still shows the refused-key line; lock mid "Where am I" — no pre-lock sentence after unlock. Settings → Voice → System → Natural still retries after a top-up.
 
 ## Step 61 — First launch in Apple's voice: the ElevenLabs account is out of credit; a refused key is now one voice, not two (Sun Sep 13)
 
 **Why.** Owner: "when I restarted and started up for the first time it's still using the Apple voice."
-Trip log `canekit-2026-09-13T08-51-14Z`: "OpenCane ready." played from the cache (`elevenlabs /
+Trip log `canekit-2026-09-13T08-51-14Z`: "Waymark ready." played from the cache (`elevenlabs /
 cached`); the menu line's fetch failed after 71 ms (`speech_engine {race_failed}`), the breaker opened,
 and every uncached line after it was `system / breaker_open` — so old lines came out in ElevenLabs and
 new ones in Apple's voice for the whole session. A direct request with the app's key returned
@@ -1271,7 +1314,7 @@ local state change. The live project had already been reduced to seven product t
 new consent-gated app work still contained writers for the retired detail tables.
 
 **What changed.** Reconciled the privacy opt-in with the MVP schema. With cloud sharing enabled,
-OpenCane mirrors only `walkers`, `devices`, `medical_profiles`, `family_contacts`, `trips`,
+Waymark mirrors only `walkers`, `devices`, `medical_profiles`, `family_contacts`, `trips`,
 `hazards` (plus capped `hazard-photos`) and `family_alerts`. Detailed JSONL, route geometry,
 settings, posts, conversation transcripts, launch recovery and daily mobility remain on the phone.
 The compatibility callbacks are intentional no-ops, so an old call site cannot recreate a removed
@@ -1441,7 +1484,7 @@ to 5–10° → card "good", head tiles read; wall at 1 m → torso ≈ head ≈
 `bands: metric` on every `lanes` after the first second, `depth_geometry` present, `share_head_cover`
 ≈ 0 at 45° / ≈ 1 re-angled.
 
-## Step 55 — OpenCane never answers its own voice (Sun Sep 13)
+## Step 55 — Waymark never answers its own voice (Sun Sep 13)
 
 **Why.** The first cane-mounted walk logged `conv_error query: "Head height"`: the walker was
 dictating, "Head height." (`.safety`) broke through the voice hold as designed, the microphone has no
@@ -1570,12 +1613,12 @@ UserDefaults key with the picker squeezed into the Cues card.
 **Reviews.** Pending (orchestrator gate).
 
 test on device: Settings → Voice → System: every line in Apple's voice, `voice_backend {by: settings}`;
-back to Natural. Details → Scene engine → Voice row reads "Natural voice · cached" after "OpenCane ready."
+back to Natural. Details → Scene engine → Voice row reads "Natural voice · cached" after "Waymark ready."
 
 ## Steps 56–59 (part 1: logic + surface) — the voice shell: eight words on the phone, a 4 s budget, emergency by voice, a giant microphone (Sun Sep 13)
 
 **Why.** The first cane-mounted walk (`canekit-2026-09-13T04-36-32Z.jsonl`) showed a sighted app
-strapped to a cane: a 108 pt "Talk to OpenCane" tile among eleven buttons, one utterance at a time,
+strapped to a cane: a 108 pt "Talk to Waymark" tile among eleven buttons, one utterance at a time,
 cloud turns of 6–17 s with no bound, a second question dropped ("Still working on your last
 question." ×N). Owner decisions 2026-09-13: launch = a giant round microphone dead-centre; words
 primary, digits as aliases; "route" alone = the CIF demo route, "take me to …" = any place.
@@ -1614,7 +1657,7 @@ launch menu + listen, follow-up window, `commonLines` — is part 2).**
   named constants the clause functions return). `DescribeTrigger.voice` ("the voice menu").
 - UI: `VoiceTile` (new) — the microphone inside ~40 seeded contour rings (`Canvas`), ≥ 60 % of the
   page height, one button → `toggleVoiceInput()`, ripple while listening / breathe while speaking /
-  still when idle or under Reduce Motion, labels "Talk to OpenCane" / "Listening…" / "Starting…" /
+  still when idle or under Reduce Motion, labels "Talk to Waymark" / "Listening…" / "Starting…" /
   "Thinking…". `GuideCard`: the two-up Where am I / Talk row became the tile + a compact row (idle
   Where am I | Start route to CIF; navigating Repeat | Next | Stop route); every hard-rule-9 label
   byte-identical. `scrollTo(_:)` added to `CaneKitUITests`, `CaneKitVisualTour`, `CaneKitIslandTour`
@@ -1891,7 +1934,7 @@ arrival; `RouteProgressBar`) sits under the pills, as in the Google Maps card.
 
 ### B. Guide — the two-up pair is a pair
 
-**Why.** "The where am I is kind of weird … the talk to OpenCane is weirdly shaped compared to where
+**Why.** "The where am I is kind of weird … the talk to Waymark is weirdly shaped compared to where
 am I." Cause, from the code and the tour picture: both were `CKBigButton` rows in one `HStack`, and
 `ViewThatFits` kept the short title in a row while it stacked the long one — one pair, two shapes.
 
@@ -2162,14 +2205,14 @@ mid-walk and relaunch, and confirm that walk reads `abandoned`.
 
 ## Step 45 — Everything the phone knows, mirrored into Supabase (Sat Sep 12)
 
-**Why:** Every piece of state OpenCane held lived in exactly one place, on one phone, and died with
+**Why:** Every piece of state Waymark held lived in exactly one place, on one phone, and died with
 it: settings in `UserDefaults`, the walk in `Documents/canekit-*.jsonl`, the hazard map in
 `Documents/hazards/*.geojson`, posts in `posts.json`, the Medical ID in a `UserDefaults` blob. A
 family could not see a walk, a city could not see the potholes, and a reinstall erased the lot. The
 owner asked for all of it in Supabase, with the family email list tracked, and for the tables to
 read well in a demo.
 
-**What changed — the database** (project `ppmuqgswuyniwiwsdnto`, migrations `opencane_01`…`_06`):
+**What changed — the database** (project `ppmuqgswuyniwiwsdnto`, migrations `opencane_01`…`_06`, names in the live database):
 - 16 tables: `walkers`, `devices`, `family_contacts`, `medical_profiles`, `device_settings`,
   `routes`, `route_waypoints`, `trips`, `trip_events`, `hazards`, `posts`, `family_alerts`,
   `family_alert_recipients`, `conversation_turns`, `app_launches`, `mobility_days`. Every table and
@@ -2182,7 +2225,7 @@ read well in a demo.
   device + settings), `save_family_contacts` (replaces the list; survivors keep their id and alert
   history), `hazards_near` (every walker's mapped hazards within a radius).
 - RLS enabled on all 16 tables with explicit anon policies; `hazard-photos` storage bucket.
-- Advisors: zero findings on the OpenCane tables (the remaining warnings are PostGIS's own
+- Advisors: zero findings on the Waymark tables (the remaining warnings are PostGIS's own
   `spatial_ref_sys` and `st_estimatedextent`, which ship with the extension).
 
 **What changed — the app:**
@@ -2228,7 +2271,7 @@ removed. Nothing from it was lost:
 - Its `@Sendable` fix in `MedicalProfileStore.refreshMobilityStats` is kept as-is.
 - `SUPABASE_PUBLISHABLE_KEY` is now accepted alongside `SUPABASE_ANON_KEY`, so an existing local
   `Secrets.plist` keeps working either way.
-Both clients already shared the `opencane_install_id` key, so they resolve to the same walker and
+Both clients already shared the `opencane_install_id` key (legacy key, kept for stored data), so they resolve to the same walker and
 no history is split.
 
 **Verified:** `make test` (555 tests, exit 0), `make sim` (exit 0), `make e2e SCENARIO=clean`
@@ -2282,11 +2325,11 @@ the `hazard-photos` bucket.
   - Live Supabase verification: verified live sync of `mobility_days` (`2026-09-12`: 6,567 steps, 4,710 m).
   - `graphify update .`: updated knowledge graph (4,020 nodes, 9,423 edges, 205 communities).
 
-test on device: open OpenCane on iPhone 17 Pro Max; verify the Guide tab features full-width buttons with clear subtitles ("Campus Demo" vs "Live GPS"), open the Profile tab to view the custom circular profile avatar and verified emergency card details.
+test on device: open Waymark on iPhone 17 Pro Max; verify the Guide tab features full-width buttons with clear subtitles ("Campus Demo" vs "Live GPS"), open the Profile tab to view the custom circular profile avatar and verified emergency card details.
 
 ## Historical note — Step 45 (initial backend) — Supabase cloud backend integration for Medical ID, mobility stats, hazard map, and family alert feeds (Sat Sep 12)
 
-**Why:** The user provided Supabase project credentials (`https://ppmuqgswuyniwiwsdnto.supabase.co` with publishable and secret keys) to connect OpenCane to its dedicated cloud database backend.
+**Why:** The user provided Supabase project credentials (`https://ppmuqgswuyniwiwsdnto.supabase.co` with publishable and secret keys) to connect Waymark to its dedicated cloud database backend.
 
 **What changed:**
 - `Secrets.plist` (git-ignored) & `Secrets.example.plist`:
@@ -2294,7 +2337,7 @@ test on device: open OpenCane on iPhone 17 Pro Max; verify the Guide tab feature
   - Secrets stay strictly outside git per AGENTS.md Hard Rule 4.
 - `SupabaseClient.swift` (`ios/CaneKit/Trip/SupabaseClient.swift`):
   - Created native Swift URLSession PostgREST client (zero 3rd party SDKs, AGENTS.md Hard Rule 2).
-  - `resolveWalkerID(displayName:caneID:)`: finds or creates walker record in `walkers` table, caching the UUID in `UserDefaults` (`"opencane_supabase_walker_id"`).
+  - `resolveWalkerID(displayName:caneID:)`: finds or creates walker record in `walkers` table, caching the UUID in `UserDefaults` (that key has since been removed).
   - `syncMedicalProfile(_ profile:)`: live cloud sync for the emergency Medical ID card to `medical_profiles` table via merge-duplicates upsert.
   - `syncMobilityStats(_ stats:date:)`: live sync of daily steps, walking distance (m), active duration (s), and cadence to `mobility_days` table.
   - `recordHazard(...)`: logs detected obstacles, curbs, drop-offs, and vision signs to `hazards` table in real time for the web hazard map view.
@@ -2313,12 +2356,12 @@ test on device: open OpenCane on iPhone 17 Pro Max; verify the Guide tab feature
   - `make sim`: full clean simulator compilation.
   - Live REST verified: confirmed `HTTP 200/201` upsert on `medical_profiles`, `mobility_days`, `hazards`, `family_alerts`, and `walker_dashboard`.
 
-test on device: open OpenCane; verify profile edits in the Profile tab sync seamlessly, check that today's steps update the cloud dashboard, and confirm that family alert test events and hazards populate the Supabase tables in real-time.
+test on device: open Waymark; verify profile edits in the Profile tab sync seamlessly, check that today's steps update the cloud dashboard, and confirm that family alert test events and hazards populate the Supabase tables in real-time.
 
 ## Step 44 — Medical ID Profile tab, mobility fitness tracking, streamlined Guide buttons, Dynamic Island indicator fix, and Grok Bot webhook integration (Sat Sep 12)
 
 **Why:** The user requested:
-1. "WHY THERE THERE SOMANY OF THE SAME BUTTON THING lets make it a little bit mote simple": GuideCard stacked 6 vertical buttons on top of each other (Where am I, Talk to OpenCane, Start route to CIF, Navigate to CIF from here, Simulate walk to CIF, Destination search + Go) — including 3 separate buttons saying "... to CIF".
+1. "WHY THERE THERE SOMANY OF THE SAME BUTTON THING lets make it a little bit mote simple": GuideCard stacked 6 vertical buttons on top of each other (Where am I, Talk to Waymark, Start route to CIF, Navigate to CIF from here, Simulate walk to CIF, Destination search + Go) — including 3 separate buttons saying "... to CIF".
 2. "also also the dynamic island thing is still there... when I try to hold it usually the dynamic island gets bigger and there's more information but for me it's just like not doing anything": In `LocationService.init()`, `let orphan = CLBackgroundActivitySession(); orphan.invalidate()` was instantiating a background activity session on every app launch, causing iOS locationd to display the system background navigation indicator (cyan arrow) in the Dynamic Island while idle. Because it was a system location indicator rather than an active Live Activity, holding/expanding did nothing.
 3. "also the 4th button thing after settings should be your profile thing include like basic information such as your medical card, like you know how Apple ID has that medical card... name, height, weight, birthday, where you live... and track fitness stuff": Add a 4th root tab "Profile" with an Apple Health-style Emergency Medical ID Card (white cane / legally blind safety alert banner, blood type, allergies, medications, emergency contacts with tap-to-call, home address, cane specs, announce medical ID button, edit sheet) and daily Mobility & Fitness tracking (today's steps, distance walked, completed trips, average pace via CMPedometer and TripTracker).
 4. Configured real Grok Bot webhook credentials (`OPENCANE_GROKBOT_WEBHOOK_URL` and `OPENCANE_GROKBOT_WEBHOOK_KEY`) in `Secrets.plist` for family alerts.
@@ -2327,7 +2370,7 @@ test on device: open OpenCane; verify profile edits in the Profile tab sync seam
 - `LocationService.swift`:
   - Removed `CLBackgroundActivitySession` instantiation from `init()`. Scoped `CLBackgroundActivitySession` and `manager.showsBackgroundLocationIndicator` strictly to `isNavigating == true`. When idle, no background activity session exists and the Dynamic Island location pill is completely clear.
 - `GuideCard.swift`:
-  - Streamlined idle button layout: paired `Where am I` and `Talk to OpenCane` into a clean 2-column `HStack(spacing: CKSpacing.md)`; kept `Start route to CIF` as the full-width primary hero button; paired `Navigate to CIF from here` and `Simulate walk` into an `HStack(spacing: CKSpacing.md)`.
+  - Streamlined idle button layout: paired `Where am I` and `Talk to Waymark` into a clean 2-column `HStack(spacing: CKSpacing.md)`; kept `Start route to CIF` as the full-width primary hero button; paired `Navigate to CIF from here` and `Simulate walk` into an `HStack(spacing: CKSpacing.md)`.
   - Preserved all exact test contract accessibility labels (`"Start route to CIF"`, `"Navigate to CIF from here"`, `"Where am I"`, `"Go"`, `"Destination"`).
 - `TabBar.swift`:
   - Added `RootTab.profile` (case 3, title: `"Profile"`, icon: `"person.crop.circle"`, hint: `"Medical ID card, emergency identification and mobility fitness"`).
@@ -2338,7 +2381,7 @@ test on device: open OpenCane; verify profile edits in the Profile tab sync seam
   - Made `pageScroll` internal for shared use by `ProfilePage`.
 - `MedicalProfileStore.swift` (`ios/CaneKit/Trip/MedicalProfileStore.swift`):
   - Created `@MainActor @Observable` store with `CKMedicalProfile` and `CKMobilityStats`.
-  - Pre-seeded with a complete profile for the original demo owner, persisted to `UserDefaults.standard` under `"opencane_medical_profile"` (historical; current defaults are privacy-safe).
+  - Pre-seeded with a complete profile for the original demo owner, persisted to `UserDefaults.standard` under `"opencane_medical_profile"` (legacy key, kept for stored data; historical; current defaults are privacy-safe).
   - Integrates `CMPedometer` querying from midnight to now for real-time daily steps, distance, and walking cadence.
 - `ProfilePage.swift` (`ios/CaneKit/UI/ProfilePage.swift`):
   - Emergency Medical ID Card: prominent `"WHITE CANE USER / BLIND"` emergency banner, medical vitals grid (DOB, blood type, height, weight, allergies, medications, residence, cane specs), tap-to-call emergency contact button, `"Announce Medical ID"` button via speech queue.
@@ -2355,7 +2398,7 @@ test on device: open OpenCane; verify profile edits in the Profile tab sync seam
   - `make uitest`: all 11 XCUITests passing on iPhone 17 Pro Max simulator (0 unexpected failures).
   - `make run`: generated, built, signed, installed, and launched cleanly on Aritro's physical iPhone 17 Pro Max (`00008150-001A698C1108401C`).
 
-test on device: open OpenCane on your iPhone; verify Dynamic Island is completely clean when idle (no blue location arrow). Tap the 4th tab "Profile": verify Emergency Medical ID card displays your info, blind user safety alert, tap-to-call button, and today's mobility steps. Tap Edit to change any fields or tap Announce Medical ID to hear it read aloud. Return to Guide tab: verify streamlined buttons (Where am I & Talk side-by-side, Start route to CIF hero button, Navigate to CIF & Simulate walk side-by-side).
+test on device: open Waymark on your iPhone; verify Dynamic Island is completely clean when idle (no blue location arrow). Tap the 4th tab "Profile": verify Emergency Medical ID card displays your info, blind user safety alert, tap-to-call button, and today's mobility steps. Tap Edit to change any fields or tap Announce Medical ID to hear it read aloud. Return to Guide tab: verify streamlined buttons (Where am I & Talk side-by-side, Start route to CIF hero button, Navigate to CIF & Simulate walk side-by-side).
 
 ## Step 43 — Falls, weapons, trip bookends, and a spam guard on the webhook buttons (Sat Sep 12)
 
@@ -2397,7 +2440,7 @@ blind relative may be being robbed:
 
 It is checked on the **raw** reply, before `HazardWatchPolicy` decides whether to speak: that policy
 drops repeats to keep the soundscape calm, which is right for a kerb and wrong for a gun. The event
-quotes the camera ("OpenCane's camera described: …") rather than asserting a weapon, because that
+quotes the camera ("Waymark's camera described: …") rather than asserting a weapon, because that
 is genuinely all the app knows. The walker is told too — a blind person walking toward what the
 camera thinks is a knife should hear about it. Rate-limited to one per two minutes.
 
@@ -2417,7 +2460,7 @@ down again and confirm a second; point the camera at a picture of a knife with h
 **Why:** The user reported:
 1. "also siri started to talk and now its saying obstacle detection is not ready please look at all logs and stuff please CAN WE FIX THIS": In live trip log `canekit-2026-09-13T00-38-07Z.jsonl` pulled from the user's phone, the device was flat on a desk (`tilt: 88.95°`), keeping ARKit tracking in `.limited(initializing)` / `.limited(insufficientFeatures)`. The strict 5.0 s timeout previously aborted the entire route with "Obstacle detection is not ready. Route did not start." — violating AGENTS.md Rule 6 ("Never trade guidance away for a stricter check — a refused camera warns loudly but still guides").
 2. "nope its till very vry there": The blue navigation arrow in the Dynamic Island persisted after launch because stale ActivityKit sessions from previous debug runs or crashes lingered in `locationd` without explicit immediate dismissal, and `manager.showsBackgroundLocationIndicator` was not explicitly false when idle.
-3. "the middle one can just be Details or smth and you can make all 3 bigger... maybe it's like open cane centered. And the next one is like information and the next one was like settings": The navigation bar title needed centered prominence and the middle tab needed to be titled "Details".
+3. "the middle one can just be Details or smth and you can make all 3 bigger... maybe it's like Waymark centered. And the next one is like information and the next one was like settings": The navigation bar title needed centered prominence and the middle tab needed to be titled "Details".
 4. "dead ass, just set up a whole like simulation and things where we can start testing it because I don't think it's still very perfect": An on-device simulation mode on the real iPhone so the user can test walking routes, turn-by-turn spoken instructions, Dynamic Island distance countdowns, and Apple Watch taps directly indoors without physically walking to CIF.
 
 **What changed:**
@@ -2443,18 +2486,18 @@ down again and confirm a second; point the camera at a picture of a knife with h
 - Review:
   - Ran Muse adversarial review (`muse exec`). Verified and addressed findings: generation counter guarding against rapid restart races, speed clamping (`[0.8, 8.0] m/s`), mid-route index resume, removing `endAllOrphanedActivities()` from `init()`, and Dynamic Type compliance.
 
-test on device: open OpenCane on phone; verify navigation bar displays large bold centered titles ("OpenCane", "Details", "Settings"). Verify Dynamic Island has no persistent blue arrow while idle. On the Guide tab, tap "Simulate walk to CIF" from your desk: observe route starts with "Route started. ISR Townsend Hall to CIF", coordinates advance, turn cues announce ("In 45 meters, turn right..."), Dynamic Island displays turn arrow and distance countdown, and tapping Stop route ends simulation cleanly.
+test on device: open Waymark on phone; verify navigation bar displays large bold centered titles ("Waymark", "Details", "Settings"). Verify Dynamic Island has no persistent blue arrow while idle. On the Guide tab, tap "Simulate walk to CIF" from your desk: observe route starts with "Route started. ISR Townsend Hall to CIF", coordinates advance, turn cues announce ("In 45 meters, turn right..."), Dynamic Island displays turn arrow and distance countdown, and tapping Stop route ends simulation cleanly.
 
 ## Step 41 — Enriched sidewalk hazard telemetry for Grok Bot, anti-flapping filters, and dynamic navigation titles (Sat Sep 12)
 
 **Why:** The user reported:
 1. "so what can you make sure that all this is making sense? Like this needs to be a log. I feel like this we can make this a lot better. I feel like this log can be fed into our Grok Bot later that will come... Maybe add the m location, add what it saw, etcetera": The existing `hazards-*.geojson` only recorded flat coordinates and spoken text. At `00:26:29Z` in `hazards-2026-09-13T00-25-04Z.geojson`, rapid sensor classification flapping between `pothole` and `dropOff` at the exact same location wrote 5 duplicate features in a single second.
-2. "also another thing here, like I'm not sure if this settings module actually does anything. And then also for all the different tabs, it says the same thing, open cane. Can we make it a little bit nicer? Maybe it's like open cane centered. And the next one is like information and the next one was like settings": The navigation bar title in `ContentView` was statically pinned to "OpenCane" on all tabs.
+2. "also another thing here, like I'm not sure if this settings module actually does anything. And then also for all the different tabs, it says the same thing, Waymark. Can we make it a little bit nicer? Maybe it's like Waymark centered. And the next one is like information and the next one was like settings": The navigation bar title in `ContentView` was statically pinned to "Waymark" on all tabs.
 
 **What changed:**
 - `Hazards.swift` (`CaneKitLogic`):
   - Enriched `HazardRecord` with `distanceM`, `heightM`, `direction`, `headingDeg`, `speedMps`, `routeName`, `instruction`, `source`, `whatItSaw`, `severity`.
-  - Added `asGrokBotEvent(user:caneID:) -> OpenCaneEvent` to bridge hazard detections directly into Tejas's Grok Bot webhook routine.
+  - Added `asGrokBotEvent(user:caneID:) -> WaymarkEvent` to bridge hazard detections directly into Tejas's Grok Bot webhook routine.
   - Added `isDepression`, `isElevation`, and `isSameFamily(as:)` to `GroundHazardKind`.
   - In `GroundHazardPolicy.shouldAnnounce`, added `l.kind.isSameFamily(as: h.kind)` check to eliminate rapid kind-toggling between `pothole` and `dropOff` at the same world anchor.
   - Enriched `HazardGeoJSON.encode` with RFC 7946 feature properties (`distance_m`, `height_m`, `direction`, `heading_deg`, `speed_mps`, `route_name`, `instruction`, `source`, `what_it_saw`, `severity`).
@@ -2464,20 +2507,20 @@ test on device: open OpenCane on phone; verify navigation bar displays large bol
 - `AppModel.swift`:
   - Wired live distance, vertical delta, heading, speed, route name, instruction, source, and severity into `recordHazard` calls from `groundHazardFound` and `wireHazards`.
 - `ContentView.swift`:
-  - Dynamic navigation title: "OpenCane" on Guide, "Sense" on Sense, "Settings" on Settings.
+  - Dynamic navigation title: "Waymark" on Guide, "Sense" on Sense, "Settings" on Settings.
   - Set `.navigationBarTitleDisplayMode(.inline)` to center titles cleanly across all tabs.
 - `LocationService.swift`:
   - Added startup invalidation of temporary `CLBackgroundActivitySession` in `init()` to tear down any stale orphaned navigation session assertions from previous crashes.
 - Tests:
   - Added 3 unit tests in `HazardTests.swift`: `enrichedHazardRecordSerializesAllProperties`, `hazardRecordMapsToGrokBotEvent`, and `groundHazardPolicySuppressesDepressionFlapping`. 513/513 Logic tests passing.
 
-test on device: open Settings (nav title reads "Settings" centered); switch to Sense ("Sense") and Guide ("OpenCane"). Walk toward a curb or depression: observe single clear announcement without pothole/drop-off flapping. Check Files > OpenCane > hazards: open GeoJSON in geojson.io to see distance_m, height_m, direction, heading_deg, and route properties.
+test on device: open Settings (nav title reads "Settings" centered); switch to Sense ("Sense") and Guide ("Waymark"). Walk toward a curb or depression: observe single clear announcement without pothole/drop-off flapping. Check Files > Waymark > hazards: open GeoJSON in geojson.io to see distance_m, height_m, direction, heading_deg, and route properties.
 
 ## Step 40 — Dynamic Island: clean idle state (session scoped to active route), real-time obstacle radar pill and ActivityKit coalescing (Sat Sep 12)
 
 **Why:** The user reported:
 1. "the app has having the navigation thing ever since I downloaded": A persistent blue navigation arrow in the Dynamic Island / status bar since app launch, even when idle and not navigating.
-2. Dynamic Island split presentation in screenshots: the system background location indicator claimed the elongated pill, shoving OpenCane's Live Activity into the minimal detached circular bubble (`↑`).
+2. Dynamic Island split presentation in screenshots: the system background location indicator claimed the elongated pill, shoving Waymark's Live Activity into the minimal detached circular bubble (`↑`).
 3. Sighted spotters and blind users needed a richer Dynamic Island: glanceable obstacle clearance, sunlight-legible badges, and clear VoiceOver sentences.
 
 **Root cause:**
@@ -2517,18 +2560,18 @@ test on device: open Settings (nav title reads "Settings" centered); switch to S
 - `make run`: deployed to iPhone 17 Pro Max (`00008150-001A698C1108401C`), running PID 6129 with widget PIDs 6127 & 6128.
 - Audited with two independent rounds of Muse (`--reasoning-effort high`).
 
-test on device: open OpenCane while idle — no persistent blue navigation arrow in Dynamic Island. Start route to CIF — OpenCane owns the full Dynamic Island with turn countdown on the left and live obstacle clearance radar on the right. Stop route — Live Activity and background session dismiss immediately.
+test on device: open Waymark while idle — no persistent blue navigation arrow in Dynamic Island. Start route to CIF — Waymark owns the full Dynamic Island with turn countdown on the left and live obstacle clearance radar on the right. Stop route — Live Activity and background session dismiss immediately.
 
 ## Step 39 — Cane events reach the family: the Grok Bot webhook client (Sat Sep 12)
 
-OpenCane can now tell someone. Cane detections become one JSON event POSTed to the Grok Bot
-routine **"OpenCane cane events"** (folder `opencane-cane-events`), which owns the alerting
+Waymark can now tell someone. Cane detections become one JSON event POSTed to the Grok Bot
+routine **"OpenCane cane events"** (folder `opencane-cane-events`; external contract, the routine's name on the Grok Bot side), which owns the alerting
 decision and the SMS. Same split as the VLM path: the wire schema and every threshold are pure and
 unit-tested in `CaneKitLogic`, the app owns only transport and keys.
 
 **New in `ios/Logic` (28 new tests, 383 total green):**
 
-- `GrokBotEvent.swift` — `OpenCaneEvent` and friends. The `CodingKeys` **are** the contract
+- `GrokBotEvent.swift` — `WaymarkEvent` and friends. The `CodingKeys` **are** the contract
   (`accuracy_m`, `speed_mps`, `cane_id`, `battery_pct`, `obstacle.distance_m`, `lng` never `lon`),
   so they are asserted as bytes: a rename fails silently at run time (HTTP 200, bot parses nothing,
   no SMS), which is the worst way for this to break. A nil field is omitted, never null, because the
@@ -2607,7 +2650,7 @@ street or an injury, telling the family what to do. Those bans are pinned by a t
   bot decides who to text afterwards. `GrokBotResult.accepted`, the spoken line and the Settings row
   are all worded that way on purpose.
 
-Keys live only in the git-ignored `Secrets.plist` (`OPENCANE_GROKBOT_WEBHOOK_URL` / `_KEY`, hard
+Keys live only in the git-ignored `Secrets.plist` (`OPENCANE_GROKBOT_WEBHOOK_URL` / `_KEY`, legacy key names kept for existing plists; hard
 rule 4), read from the process environment first so an e2e run can point at a throwaway endpoint.
 Documented with a curl example in `ios/README.md §4.1`.
 
@@ -2796,7 +2839,7 @@ held sideways: the back picture and the front inset are both upright each time.
 ## Step 36 — Cue detail (Quiet / Standard / Detailed) × Place (Outdoors / Indoors); names off by default (Sat Sep 12)
 
 **Why:** cue design v2 §3.3 / §3.5 and the owner's "overstimulating" report. The walker picks how
-much OpenCane volunteers, and indoor clutter gets quieter. **Speech only in this step:** haptics are
+much Waymark volunteers, and indoor clutter gets quieter. **Speech only in this step:** haptics are
 identical at every level until Step 40.
 
 **What changed**
@@ -3090,14 +3133,14 @@ here**: requeue now carries `immediate` (a cut answer used to lose its fetch-ski
 resume), the egress clause is conditional (weak GPS is not proof of indoors), and two
 stale `1,722` budget comments now read `1,718`. No safety or routing-contract blockers.
 
-test on device: reinstall; "Talk to OpenCane → how is my battery" must answer fast, in one
+test on device: reinstall; "Talk to Waymark → how is my battery" must answer fast, in one
 voice, with no instruction talking over you; "set location to Sift" → "Walking to the
 Siebel Center…"; start a route indoors → exit-first clause; walk it blindfolded to
 Grainger — trip log must show `voice_toggle`, `conv_turn` latencies, no `field_kind`.
 
 ## Step 30 — Speech holds while the walker talks + auditory-load research (Sat Sep 12)
 
-**Device report:** pressing Talk to OpenCane did not stop the instructions — route and
+**Device report:** pressing Talk to Waymark did not stop the instructions — route and
 obstacle lines kept playing over the dictation. Root cause: voice input muted the beacon
 but never touched `SpeechQueue`, so the speech channel kept speaking (and the recogniser
 could hear the app's own voice in the mic).
@@ -3115,7 +3158,7 @@ and the answer all speak after the release, so they play at once.
 **Research (docs/auditory-load.md):** blind-navigation literature says emit discontinuously
 and only on critical events (PMC 10781372), headphone audio masks traffic/echolocation
 (MDPI 2026), and the walker should control the amount per situation (Springer 2025).
-Checked OpenCane against each point: people lines only speak inside scene answers (never
+Checked Waymark against each point: people lines only speak inside scene answers (never
 automatic), signs are per-phrase once-a-minute, hazard watch is off by default, every
 channel has a toggle. Deliberately **not** done: a global sign cap (could eat "SIDEWALK
 CLOSED"). Open: tune the 7 s calm window from trip logs with a blind/O&M-trained tester.
@@ -3130,15 +3173,15 @@ route/obstacle line may speak over you; have someone trigger a head-height cue (
 `.safety`) to confirm it still breaks through; stop talking — the answer speaks first,
 then at most one still-valid held line.
 
-## Step 29 — Action Button opens OpenCane for real + distance-first warnings (Sat Sep 12)
+## Step 29 — Action Button opens Waymark for real + distance-first warnings (Sat Sep 12)
 
-**Why the Action Button "still isn't working" (root cause).** `TalkToOpenCaneIntent` was a plain
+**Why the Action Button "still isn't working" (root cause).** `TalkToWaymarkIntent` was a plain
 `AppIntent`, never registered in `CaneKitShortcuts` — so it never appeared in Settings → Action
-Button → Shortcut, and Step 24's device-test line ("open Settings → … → Talk to OpenCane")
+Button → Shortcut, and Step 24's device-test line ("open Settings → … → Talk to Waymark")
 described a picker entry that did not exist. Fixed by registering it as an App Shortcut
-("Talk to OpenCane", Siri: "Talk to OpenCane" / "Speak to OpenCane"). The ten-slot list stays
+("Talk to Waymark", Siri: "Talk to Waymark" / "Speak to Waymark"). The ten-slot list stays
 full by demoting `NavigateToCIFIntent` to a plain intent: same destination as "Take me to CIF
-in OpenCane" (the gazetteer CIF entry *is* route WP9), Guide card button and Shortcuts-app
+in Waymark" (the gazetteer CIF entry *is* route WP9), Guide card button and Shortcuts-app
 action unchanged. `toggleVoiceInput(source:)` now logs `voice_toggle {source}` so an unanswered
 press is visible in the trip log.
 
@@ -3166,7 +3209,7 @@ is fixed in this step. Two skeptic-flagged spots were **rejected with evidence**
 on past walks — rewriting them would falsify measurement history, not fix a doc.
 
 test on device: from a normal terminal `cd ios && make run`; then Settings → Action Button →
-Shortcut → Talk to OpenCane (if missing, open the Shortcuts app once to re-index, then retry);
+Shortcut → Talk to Waymark (if missing, open the Shortcuts app once to re-index, then retry);
 press → tick → "how is my battery" → press again → answer; walk past a doorway and confirm the
 order is "N meters ahead, door"; check the trip log for `voice_toggle {source: actionButton}`.
 ## Step 28 — Sound recognition fails safe across its whole microphone lifetime (Sat Sep 12)
@@ -3393,7 +3436,7 @@ edges:
 - `routeStartWaiting` is observable, and Guide now exposes **Cancel route start** with an explicit
   spoken/watch confirmation while depth is warming. No queued request can be stranded behind a
   disabled Stop button.
-- Current docs, route labels, test counts and the OpenCane/CaneKit name split were synchronized;
+- Current docs, route labels, test counts and the Waymark/CaneKit name split were synchronized;
   historical verification claims are marked historical rather than presented as current.
 - No screenshot-tour state was added: the cancel control exists only during a LiDAR camera warm-up,
   which the no-LiDAR simulator cannot reproduce; the Guide layout remains covered by the existing
@@ -3420,7 +3463,7 @@ Fixed physical-device voice-input crash paths:
 - Made the Action Button toggle listening on/off with tactile confirmation and coordinated playback
   restoration with the optional sound watcher.
 
-test on device: open Settings → Action Button → Shortcut → Talk to OpenCane; press Action Button,
+test on device: open Settings → Action Button → Shortcut → Talk to Waymark; press Action Button,
 feel the haptic tick, speak “set a post here”, then press Action Button again to submit.
 
 Additional details: the Core Audio tap isolation, microphone format guard, audio-engine reuse, Action
@@ -3434,7 +3477,7 @@ Hands-free voice assistant mode designed specifically for blind white-cane users
 - **Fast-path intent classifier (`FastPathIntentClassifier.swift`)**: Sub-millisecond, zero-token, zero-network deterministic parser handling settings (beacon, drop-offs, hazard watch, silence cane), status queries (battery, GPS accuracy, AirPods connection), route controls (stop, distance remaining), UIUC campus destinations (`CampusPlaces`), marker/post drops, and trip metrics (steps, distance walked).
 - **Post & breadcrumb marker dropping (`WalkMarker`)**: Users can speak "set a post here", "mark Townsend entrance", or "drop a pin". Markers capture GPS coordinate, custom name, altitude, and timestamp, accessible both during navigation and retrospectively.
 - **Rolling conversational context & anti-slop guard (`ConversationModels.swift`, `ConversationPrompt.swift`)**: 6-turn rolling memory (`ConversationHistory`) with tool execution tracking. Anti-slop prompt (< 25 words per response, zero pleasantries) and `ConversationResponseParser` with `CloudSceneGate` safety filters that strictly strip hallucinated "all clear" reassurance.
-- **Hardware triggers**: Wired into the physical iPhone Action Button via `TalkToOpenCaneIntent: AppIntent` (with `requestValueDialog: "How can OpenCane help?"`), plus accessible push-to-talk in `GuideCard.swift`.
+- **Hardware triggers**: Wired into the physical iPhone Action Button via `TalkToWaymarkIntent: AppIntent` (with `requestValueDialog: "How can Waymark help?"`), plus accessible push-to-talk in `GuideCard.swift`.
 - **Speech priority hierarchy & double-speak elimination**: Spoken conversational replies are strictly `.scene` priority (lowest band, priority 3). Route instructions (`.nav`), obstacle alerts (`.obstacle`), and head-height warnings (`.head` / `.safety`) immediately interrupt any conversational reply. Actions that already announce themselves out loud (`setHapticsSilenced`, `setOption`, `stopRoute`, `navigate(to:)`) skip the coordinator's spoken repetition to prevent echoing.
 - **Muse adversarial audit (rounds 1 & 2)**: Addressed all findings: (1) `cloudPrimary` routing on `VLMClient` avoiding on-device prompt drops; (2) off-main thread JPEG encoding via detached task; (3) weak `appModel` across async gaps; (4) beacon state save and restoration across voice sessions; (5) eliminated fast-path and tool double-speaking; (6) fixed sticky `.error` state and guarded stale recognition callbacks against unlistening states; (7) reentrancy guards on `handleQuery`.
 - **Historical upstream verification**: 359/359 unit tests green (`make test`), simulator build clean (`make sim`), 10/10 XCUITests + visual tour green (`make uitest`). Deployed and installed on physical iPhone 17 Pro Max (`00008150-001A698C1108401C`, build sequence 2308); rerun after the current merge with Xcode 27. **Rerun done in Step 27:** the
@@ -3597,7 +3640,7 @@ all four are blocked by the defects above.
 
 Clarity and usability enhancement for the Townsend Hall to CIF walk:
 - **Button rename**: Renamed primary route action in `GuideCard.swift` from "Start demo route" to "Start route to CIF", clarifying that it is the live, pre-surveyed route from Townsend Hall (dorm) to CIF rather than a simulation.
-- **Siri App Shortcut**: Added "Start route to CIF in OpenCane" to `AppShortcutsProvider` in `AppIntents.swift` while retaining legacy phrases for backwards compatibility.
+- **Siri App Shortcut**: Added "Start route to CIF in Waymark" to `AppShortcutsProvider` in `AppIntents.swift` while retaining legacy phrases for backwards compatibility.
 - **Contract & documentation sync**: Updated test contracts across `AGENTS.md` (Rule 9), `docs/CODE_REFERENCE.md`, `docs/design.md`, `CaneKitUITests.swift`, and `CaneKitVisualTour.swift`.
 - **Adversarial review with Muse**: Muse confirmed 1:1 label pairing, accessibility contract preservation, strict concurrency invariance, and clean naming split.
 - **Verification**: 348/348 unit tests pass (`make test`), simulator build clean (`make sim`), 10/10 UITests pass (`make uitest`), and deployed to physical iPhone 17 Pro Max (`00008150-001A698C1108401C`).
@@ -3736,7 +3779,7 @@ go on any free machine now; it depends on neither `pole_d` nor `dt_clear`.
 
 All six mount parts on one plate, sliced clean in Creality Print 7.2 against
 `0.20mm Standard @SPARKX i7 0.4 nozzle`: **4 h 31 min, 101.94 g, 34.18 m**. Project saved
-as `hardware/mount_screwless/opencane_mount_plate.3mf` (gitignored).
+as a six-part `.3mf` in `hardware/mount_screwless/` (ignored by version control; retired, see that folder's README).
 
 Support is **on, build-plate-only**. That combination is deliberate. The cradle stands on
 its dovetail block and needs support under the back plate; the socket's ball cavity must
@@ -3892,11 +3935,11 @@ that caught the v2 tip on the mask boundary (fixed by the 0.88 scale). Final pro
 content pixels in the mask cut zone; masked 180 px + 60 px renders confirm tip intact and
 cane legible. agy also confirmed asset wiring (both sets, RGB, no alpha) and squircle safety.
 
-test on device: OpenCane icon on the Home Screen after install; red tip intact inside the
+test on device: Waymark icon on the Home Screen after install; red tip intact inside the
 squircle at small sizes (check a folder view too).
 
 Installed 2026-09-12 ~01:25 via `make run` (build + `actool` icon compile + devicectl install
-all green, incl. the 10 Siri phrases training under the OpenCane name). Auto-launch refused:
+all green, incl. the 10 Siri phrases training under the Waymark name). Auto-launch refused:
 phone was locked — unlock and tap the icon by hand.
 
 Re-installed ~01:45 with the v3 icon (`AppIcon60x60@2x.png` emplaced in the build log):
@@ -3910,7 +3953,7 @@ built since is lost:
 - Emergency (`cane-wt-emergency`): siren gate 0.50 → 0.60 with three agreeing windows,
   `.emergency` urgency → `.nav` band (never `.safety`), `best(of:)` so traffic noise cannot
   shadow a siren, `speechTTL` per kind. `SoundAlerts.swift` + `SoundAlertsTests.swift` copied
-  verbatim (main never touched them); `SoundWatcher` + `AppModel` merged keeping every OpenCane
+  verbatim (main never touched them); `SoundWatcher` + `AppModel` merged keeping every Waymark
   rename. Verified: API fully additive (`labels`, `candidateLabels`, `kind(for:)` retained;
   `SensorProbe` only uses `candidateLabels`), `best(of:)` fallback preserves the policy's
   below-gate reset, no force-unwraps, `.nav` exists on `SpeechPriority`.
@@ -3918,7 +3961,7 @@ built since is lost:
   `HandsFreeIntents.swift` + `QuestionPrompt` / `StatusSummary` + tests + `docs/handsfree.md`
   copied; `AppIntents` shortcuts block, `VLMClient.cloudPrimary` contract, `SceneDescriber`
   question path and the `describe_result` question field merged. Two corrections while merging:
-  spoken strings say OpenCane (the branch predates the rename), and main's newer 18/25 s cloud
+  spoken strings say Waymark (the branch predates the rename), and main's newer 18/25 s cloud
   timeouts kept over the branch's 8/12 s. Verified: all four `AppModel` methods the intents call
   exist (as an extension in the intents file), every member they touch exists, sources are globs
   so no `project.yml` change needed. A 4-agent verification wave over the integrated tree
@@ -3928,7 +3971,7 @@ built since is lost:
   only to retire them.
 
 test on device: siren needs ~1.5 s of continuous siren before "Siren. Do not start crossing.";
-horns stay passive; "How is OpenCane doing" answers in the fixed six-clause order; "Ask OpenCane
+horns stay passive; "How is Waymark doing" answers in the fixed six-clause order; "Ask Waymark
 about the scene" answers the question asked, never a generic description.
 
 ### Antigravity review of Step 16 (7 findings — 4 fixed, 1 instrumented, 2 rejected with evidence)
@@ -3944,7 +3987,7 @@ about the scene" answers the question asked, never a generic description.
 3. **Siri invocation may kill the mic permanently — INSTRUMENTED, unproven.** `SoundWatcher` had
    no interruption observer (confirmed by reading the file). No lifecycle change without device
    proof; added a log-only `interruption_began/ended` observer so the trip log can correlate the
-   next death. Repro: sirens on → "Ask OpenCane about the scene" → check switch + log.
+   next death. Repro: sirens on → "Ask Waymark about the scene" → check switch + log.
 4. **"SetOption announces on before async validation" — FIXED the overclaim, real.** The
    read-back is synchronous; the 0.25 s format settle can refuse after. Comment now states that;
    behavior kept (the failure line corrects within ~a second).

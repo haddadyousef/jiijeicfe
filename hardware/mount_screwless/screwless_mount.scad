@@ -1,5 +1,5 @@
 // =====================================================================
-// OpenCane / CaneKit - SCREWLESS phone-to-cane mount
+// Waymark / CaneKit - SCREWLESS phone-to-cane mount
 // =====================================================================
 // Zero bought hardware. No screws, no nuts, no heat-set inserts, no
 // magnets, no wires, no glue. Four printed parts in PETG, assembled by

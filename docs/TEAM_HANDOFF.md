@@ -1,6 +1,6 @@
 # Team handoff: read this first after you pull
 
-State of OpenCane / CaneKit at **Step 51** (Sun 2026-09-13): the Step 51 adversarial safety
+State of Waymark / CaneKit at **Step 51** (Sun 2026-09-13): the Step 51 adversarial safety
 hardening is in the working tree on top of the last committed main. Written for Aritro,
 Aarav, Tejas, Sagar and Tommy, and for AI agents picking the work up. It says what exists, what is
 proven, what is not, what is open, and which decisions are already made so nobody re-litigates them
@@ -31,7 +31,7 @@ gates after every merge; the device-only checks below remain open until a physic
 4. **Aarav:** read §6 (what is on and off; obstacle names are now **off** by default) and the D2 /
    D11 tests in `stress_test_plan.md`; you will feel the haptic patterns and wear the watch.
 5. **Anyone changing code:** read `AGENTS.md` (hard rules + "How we engineer"), then
-   `docs/CODE_REFERENCE.md`, then ask the graph where things live: `graphify query "…"`.
+   `docs/CODE_REFERENCE.md`, then `git grep` for where things live.
 6. Stuck? The symptom → fix tables are in `docs/devices_setup.md` and the gotchas in `ios/README.md` §6.
 
 ## 1. The one-paragraph version
@@ -45,7 +45,7 @@ direction to walk and speak the instructions, and an Apple Watch taps turns and 
 wrist. The phone UI is four icon-only tabs: **Guide**, **Sense** (nav title "Details": depth
 status, Scene engine, Obstacles, Hazards), **Settings** (Cues, Haptics, Watch, Mount, Family alerts,
 This phone) and **Profile** (Emergency Medical ID + Mobility & Fitness, Step 44). Voice control runs
-through Siri App Shortcuts and "Talk to OpenCane" on the Action Button. Since Step 35 one line of work
+through Siri App Shortcuts and "Talk to Waymark" on the Action Button. Since Step 35 one line of work
 is **cue design v2** (making the cane calmer, because the owner found the voice choppy and
 overstimulating); Steps 39–47 added a second line — family alerts through the Grok Bot webhook, fall
 and threat detection, the Medical ID tab, the Supabase mirror and the Dynamic Island redesign.
@@ -96,7 +96,7 @@ Step 40; "Step 43 — Medical ID Profile tab" is Step 44): read the CHANGELOG he
 | 26 | Team credits: software is Aritro, Aarav and Tejas; hardware is Sagar and Tommy (docs only) | `1724a74`, `2f4e37d` |
 | 27 | Three icon-only root tabs (`CKTabBar`, `ios/CaneKit/UI/TabBar.swift`); `make test` compile fix for `#expect` + `mutating` | `e1c2c93` / `a4b4ed0`, `073fc5e` |
 | 28 | Sound recognition ("Listen for sirens and horns", off by default) fails safe across its whole microphone lifetime (`SoundRecognitionGuard`) | `a428d66` |
-| 29 | "Talk to OpenCane" registered as an App Shortcut, so the Action Button can pick it; warnings lead with distance ("Two meters ahead, door") | `6bac446` |
+| 29 | "Talk to Waymark" registered as an App Shortcut, so the Action Button can pick it; warnings lead with distance ("Two meters ahead, door") | `6bac446` |
 | 30 | Speech holds while the walker talks (`SpeechQueue.setVoiceHold`); `.safety` still speaks through; `docs/auditory-load.md` | `6bac446` |
 | 31 | Instant system-voice answers, "set location / destination" phrases, Sift / Granger aliases, exit-first clause on a weak fix | `6bac446` |
 | 32 | Flashlight toggle; why both cameras pause obstacle detection | `6bac446` |
@@ -176,7 +176,7 @@ In the order it unblocks the most. Each item is the "test on device" line of its
    stays; Head tracking without AirPods is refused and spoken. Trip log: `speech_dispatch` for the
    refusal lines and `torch {action: confirmed(on: true)}`. The 2 s settle deadline is a hypothesis
    to confirm here.
-6. **Older device items.** Unticked in `todo.md` → "TONIGHT": Action Button → Talk to OpenCane
+6. **Older device items.** Unticked in `todo.md` → "TONIGHT": Action Button → Talk to Waymark
    (`voice_toggle {source: actionButton}`), distance-first warnings on a walk, the 7 s speech calm
    window, voice hold (Step 30), the blindfold walk to Grainger / Siebel (Step 31), flashlight with a
    route and inside Both cameras (Step 32). Only in the `test on device` lines of their CHANGELOG
@@ -280,7 +280,7 @@ To put it on the phone (full list: [`ios/README.md` §1](../ios/README.md#1-day-
    the app. Never commit it. With no keys everything still works: the system voice speaks and
    "Where am I" runs on the phone. A build from a git worktree gets an **empty** Secrets.plist.
 5. `make run`. On the phone: Settings → General → VPN & Device Management → trust the developer
-   app, then open OpenCane again.
+   app, then open Waymark again.
 6. If watch signing or pairing fights you, unblock the phone first: `WATCH=0 scripts/gen.sh`, then
    `make build install launch` (phone-only), and add the watch later ([`ios/README.md`](../ios/README.md)).
 7. Follow [`devices_setup.md`](devices_setup.md) for AirPods, the watch, Guided Access and warming
@@ -330,8 +330,8 @@ so a crash loop clears it back to off.
 | Mirror left / right (Settings → Mount) | off | Turn on if a left obstacle buzzes as right (bench test D1) |
 | 60 fps camera (warmer) (Settings → Mount) | off | Heat untested over a long walk |
 | Audio beacon while navigating (Settings → Mount) | on | Plays only into headphones |
-| Write trip log (Settings → Mount) | on | Every test needs a log; Files → On My iPhone → OpenCane |
-| **Send cane events to family** (Settings → Family alerts) | **off** (Step 39) | Opt-in: posts falls, close obstacles, low battery and a breadcrumb every few minutes to the Grok Bot webhook, which decides whether to text anyone. Disabled (with the reason on the card) until `OPENCANE_GROKBOT_WEBHOOK_URL` / `_KEY` are in `Secrets.plist`. ⚠ An HTTP 200 means the routine started a run, never that family was texted |
+| Write trip log (Settings → Mount) | on | Every test needs a log; Files → On My iPhone → Waymark |
+| **Send cane events to family** (Settings → Family alerts) | **off** (Step 39) | Opt-in: posts falls, close obstacles, low battery and a breadcrumb every few minutes to the Grok Bot webhook, which decides whether to text anyone. Disabled (with the reason on the card) until `OPENCANE_GROKBOT_WEBHOOK_URL` / `_KEY` (legacy key names, kept for existing plists) are in `Secrets.plist`. ⚠ An HTTP 200 means the routine started a run, never that family was texted |
 | Detect the cane falling (Settings → Family alerts) | **on** (Step 43) | `FallWatcher` (CoreMotion, 20 Hz): free fall → impact → still and tilted. The hint says it: "Thresholds are not tuned yet, so turn this off if it cries wolf" — the numbers are a guess shipped on, to be re-derived from dropped-cane logs (`todo.md` Step 43). Disabled on a phone without a motion sensor; only reaches the family while the switch above is on |
 | Add AI context (Settings → Family alerts) | **on** (Step 43) | One sentence for the family from a cheap text model (`ALERT_MODEL`, effort `minimal`); the facts go either way. Disabled with the caption "No model key, so alerts carry facts only." when no provider key is set |
 | **Detect drop-offs** (Sense → Hazards) | **off** | Untuned on a real cane |
@@ -403,16 +403,12 @@ first thing** (stress plan D17): it should name what is there.
 
 ## 9. How to find anything
 
-- **Install the graph tool once:** `uv tool install graphifyy` (or `pipx install graphifyy`); the
-  command is `graphify`. The graph is committed in `graphify-out/`, so queries work right after a
-  pull. The committed `graphify-out/GRAPH_REPORT.md` was rebuilt at Step 47 (Sat 2026-09-12
-  evening): 4,681 nodes, 10,872 edges, 216 communities (Step 49), so it knows every Step 47 file
-  (`SceneEngineSummary`, `TorsoHapticPolicy`, `CaneKitIslandTour`). Compare it with
-  `git rev-parse HEAD` and run `graphify update .` after any code change.
-- **Ask the knowledge graph first:** from the repo root, `graphify query "how does a curb warning reach
-  the speech queue"`, `graphify path "HazardScanner" "SpeechQueue"`, `graphify explain "TurnSettle"`.
-  Communities are listed in `graphify-out/GRAPH_REPORT.md`; `graphify-out/graph.html` opens in a
-  browser.
+- **Where something lives:** [`CODE_REFERENCE.md`](CODE_REFERENCE.md) first, then `git grep`.
+- **The old knowledge graph (archived, stale):** `archive/graphify-out/` is a snapshot built at Step 47
+  (Sat 2026-09-12 evening: 4,681 nodes, 10,872 edges, 216 communities), before the Waymark changes. The
+  `graphify` commands (`graphify query`, `graphify update .`) by default read and write `./graphify-out/` at the repo
+  root, not this folder, so they do not use the snapshot. To use a graph, build a fresh one locally and do
+  not commit the root `graphify-out/` it creates.
 - **Every file, type and function:** [`CODE_REFERENCE.md`](CODE_REFERENCE.md).
 - **Every doc and when to read it:** [`docs/README.md`](README.md).
 - **What landed when, and each step's device test list:** [`CHANGELOG.md`](../CHANGELOG.md).
@@ -436,7 +432,7 @@ checklist version for picking up the next cue v2 step.
 3. This file, then `docs/todo.md` → "Cue design v2" for the step you are taking, and its research
    in `docs/cue_design_v2.md` (§3 is the design, §4 the ranked list with the test names it expects).
 4. The newest `CHANGELOG.md` entries (top of file; newest first), for what the last step deferred.
-5. `graphify update .`, then `graphify query "…"` to find every caller of what you change.
+5. `git grep` (and `CODE_REFERENCE.md`) to find every caller of what you change.
 
 ### 10.2 Measure first
 
@@ -470,7 +466,7 @@ constant moves in `CaneKitLogic`, move it in `cue_audit.py` too.
 5. **Same commit:** code, tests, `docs/CODE_REFERENCE.md` (every file header, type and function doc
    comment), `CHANGELOG.md` (why, what changed, review, verification, a `test on device:` line),
    `docs/design.md` when a cue or UI changes, `docs/todo.md` ticked, AGENTS.md rule 9 when an
-   accessibility label changes, and `graphify update .`.
+   accessibility label changes.
 6. **Commit message ends with `test on device: …`.** New untuned behaviour ships **off by
    default** (or behind a level that defaults to today). Never trade guidance away for a stricter
    check, and never speak something the sensors did not see.
@@ -502,7 +498,7 @@ constant moves in `CaneKitLogic`, move it in `cue_audit.py` too.
   fall mid-bin). ADA ramps (≤ 8.3 %) stay quiet in tests.
 - The screen is exposed on the cane: use Guided Access so a brush cannot hit Stop. To arm it
   (Settings → Accessibility → Guided Access on, passcode set), triple-click the side button in
-  OpenCane → Options: **Touch Off, Side Button Off, Volume Buttons Off, Keyboards Off, Motion On** →
+  Waymark → Options: **Touch Off, Side Button Off, Volume Buttons Off, Keyboards Off, Motion On** →
   Start. While armed the watch (Repeat / Next / Describe / Recenter) is the only input. "Where am I"
   from the Action button may be blocked too (it is a hardware button; stress plan D16 records
   whether it works), so use the watch's Describe.

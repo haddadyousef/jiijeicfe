@@ -1,23 +1,23 @@
-# Driving OpenCane without looking at the screen
+# Driving Waymark without looking at the screen
 
 The phone is clamped to the cane. You cannot see it and usually cannot reach it. Everything below
 is done by **speaking**, or by **one press of the Action button**. Nothing here needs the screen.
 
-> The app is **OpenCane** on the phone and in every spoken phrase; the code, the Xcode project and
+> The app is **Waymark** on the phone and in every spoken phrase; the code, the Xcode project and
 > the build product are still called CaneKit (AGENTS.md, "The name split"). Siri phrases interpolate
-> the *display* name, so what you say is "… in OpenCane".
+> the *display* name, so what you say is "… in Waymark".
 
-If you only read one thing: say **"How is OpenCane doing"** to hear whether the app is actually
-working, and set the **Action button** to **Talk to OpenCane** (steps at the bottom).
+If you only read one thing: say **"How is Waymark doing"** to hear whether the app is actually
+working, and set the **Action button** to **Talk to Waymark** (steps at the bottom).
 
 ---
 
-## 0. The voice shell — talking to OpenCane itself
+## 0. The voice shell — talking to Waymark itself
 
-Siri needs the app's name in every phrase. Inside the app you do not: OpenCane has its own short
+Siri needs the app's name in every phrase. Inside the app you do not: Waymark has its own short
 phone menu (Steps 56–59).
 
-- **Open the app.** It says "OpenCane ready." and then a soft rising two-note: the microphone is
+- **Open the app.** It says "Waymark ready." and then a soft rising two-note: the microphone is
   open. That is all (Step 67 — no menu at launch, not even on the first launch). Say a word from the
   list below, a question, or where you want to go. "help", "menu" or "options" reads the list.
 - **Say where you want to go, in your own words** (Step 67). "I want to go to Grainger", "how do I
@@ -27,7 +27,7 @@ phone menu (Steps 56–59).
   CIF" with a real starting place walks the indoor script first (§1c). "Grainger please" alone is not
   enough — say a travel verb.
   Everyday verbs — "go to", "get to", "walk to", "going to", "how do I get to" — only work for the
-  campus places OpenCane knows (CIF, ISR / Townsend, Grainger, the Union, Siebel, the Main Library,
+  campus places Waymark knows (CIF, ISR / Townsend, Grainger, the Union, Siebel, the Main Library,
   the ARC…), so "I need to get to class" or "I have to go to work" never starts a route. Anywhere else
   needs a navigation verb: "take me to Green Street", "navigate to Target", "directions to …", "walk
   me to …", "bring me to …", "get me to …" (review round Steps 67–68).
@@ -39,7 +39,7 @@ phone menu (Steps 56–59).
   launch, not while the microphone is open, and not within 2 seconds of the last description they
   started; three presses within 1.5 seconds are a grip and do nothing — a hand gripping the phone used
   to set off descriptions nobody asked for (Step 67). One press during the launch is not lost: the
-  description starts once "OpenCane ready." and the listen are over, unless you said something
+  description starts once "Waymark ready." and the listen are over, unless you said something
   meanwhile (review round Steps 67–68).
 - **Tap the middle of the screen to talk.** The Guide page is one giant microphone surrounded by
   rings (at least 60 % of the page). The rings ripple while it listens and breathe while it speaks.
@@ -78,7 +78,7 @@ phone menu (Steps 56–59).
 | **repeat** | five | Says the current instruction again. |
 | **quiet** | six | Quiet cues ("Quiet cues."). "standard" and "detailed" switch back. |
 | **help** | seven | Reads the list: "One, route. Two, where am I. … Eight, emergency. Or say stop to end the route." |
-| **emergency** | eight | Asks first: "Say yes to call <name> at <number>." Only **yes** within 8 seconds calls (the phone leaves OpenCane). "no", "cancel" or silence → "Emergency canceled." It never calls on one word. |
+| **emergency** | eight | Asks first: "Say yes to call <name> at <number>." Only **yes** within 8 seconds calls (the phone leaves Waymark). "no", "cancel" or silence → "Emergency canceled." It never calls on one word. |
 
 Also: **next** (skip a waypoint), **stop** (end the route — exact phrases only: "stop", "stop route",
 "stop navigating", "end route", "cancel route"). Homophones are deliberately not commands: "won",
@@ -90,7 +90,7 @@ GPS does not work inside a building, so the walk out of it is a short spoken ste
 the phone's pedometer, and the outdoor GPS route takes over once you are outside.
 
 - **Say "take me from ISR to CIF"** (also "from Townsend to CIF", "go from the lab to CIF", "take me
-  to CIF from ISR"). If the place you start from has an indoor route, OpenCane reads its first step
+  to CIF from ISR"). If the place you start from has an indoor route, Waymark reads its first step
   ("Start in the Townsend first floor south corridor. …"). A route nobody has walked yet begins with
   "Draft route. Use your cane."
   A starting place with no indoor route is an ordinary "take me to CIF".
@@ -132,17 +132,17 @@ shortcuts, not ours. Several wordings work for each command; the first one liste
 
 | Say this | What happens |
 |---|---|
-| **"Where am I in OpenCane"** — or "OpenCane describe the scene" | One sentence about what the camera sees: what is there, and whether it is on the left, in the centre or on the right. A measured LiDAR distance is added in front if the sensor has one. |
-| **"Ask OpenCane about the scene"** — or "Ask OpenCane a question" | Siri asks **"What do you want to know?"** Say your question ("is there a bench on my left", "what does that sign say"). One sentence back. |
-| **"How is OpenCane doing"** — or "OpenCane status", "Is OpenCane working", "Check OpenCane" | The spoken version of the whole screen: obstacle detection, GPS, AirPods, cane haptics, route, battery. Always in that order. |
-| **"Take me somewhere in OpenCane"** | Siri asks where; say any place ("Starbucks on Green Street"). |
-| **"Talk to OpenCane"** — or "Speak to OpenCane" | Opens the app and starts listening. Ask anything below, or "Take me to the Ave and NE 50th", "How is my battery?", "What is in front of me?". This is also the Action button target (section 3). |
-| **"Start my route in OpenCane"** — or the legacy phrase "Start the demo route in OpenCane" | The demo route: The Ave, NE 42nd → NE 50th (the original UIUC route only under `WAYMARK_DEMO_ROUTE=isr_cif`). |
-| **"Repeat in OpenCane"** — or "OpenCane say that again" | Says the current instruction again. |
-| **"Next waypoint in OpenCane"** | Skips to the next instruction. |
-| **"Stop the route in OpenCane"** — or "Stop navigating in OpenCane" | Ends guidance, and cancels a destination search still running. |
-| **"Silence the cane in OpenCane"** — or "Silence haptics in OpenCane" | Stops the cane buzzing, and tells you where obstacle cues go instead (the watch, or spoken). Stand still for a few seconds after: the confirmation speaks first and spoken obstacle cues queue behind it. |
-| **"Turn cane haptics on in OpenCane"** | Buzzing back on. |
+| **"Where am I in Waymark"** — or "Waymark describe the scene" | One sentence about what the camera sees: what is there, and whether it is on the left, in the centre or on the right. A measured LiDAR distance is added in front if the sensor has one. |
+| **"Ask Waymark about the scene"** — or "Ask Waymark a question" | Siri asks **"What do you want to know?"** Say your question ("is there a bench on my left", "what does that sign say"). One sentence back. |
+| **"How is Waymark doing"** — or "Waymark status", "Is Waymark working", "Check Waymark" | The spoken version of the whole screen: obstacle detection, GPS, AirPods, cane haptics, route, battery. Always in that order. |
+| **"Take me somewhere in Waymark"** | Siri asks where; say any place ("Starbucks on Green Street"). |
+| **"Talk to Waymark"** — or "Speak to Waymark" | Opens the app and starts listening. Ask anything below, or "Take me to the Ave and NE 50th", "How is my battery?", "What is in front of me?". This is also the Action button target (section 3). |
+| **"Start my route in Waymark"** — or the legacy phrase "Start the demo route in Waymark" | The demo route: The Ave, NE 42nd → NE 50th (the original UIUC route only under `WAYMARK_DEMO_ROUTE=isr_cif`). |
+| **"Repeat in Waymark"** — or "Waymark say that again" | Says the current instruction again. |
+| **"Next waypoint in Waymark"** | Skips to the next instruction. |
+| **"Stop the route in Waymark"** — or "Stop navigating in Waymark" | Ends guidance, and cancels a destination search still running. |
+| **"Silence the cane in Waymark"** — or "Silence haptics in Waymark" | Stops the cane buzzing, and tells you where obstacle cues go instead (the watch, or spoken). Stand still for a few seconds after: the confirmation speaks first and spoken obstacle cues queue behind it. |
+| **"Turn cane haptics on in Waymark"** | Buzzing back on. |
 
 Since Step 68 a route start is short: "Starting.", then "Route to <place>." and the first instruction.
 It says a status line only when it changes what you do (the cane cannot buzz, so obstacle cues move to
@@ -156,7 +156,7 @@ centre tile turns red) you hear "Close." once.
 ### Three more commands, in the Shortcuts app
 
 These exist but do not have a Siri phrase of their own — Apple allows an app only **ten** automatic
-phrases and the list above uses all ten. They are in the **Shortcuts** app under OpenCane, and you
+phrases and the list above uses all ten. They are in the **Shortcuts** app under Waymark, and you
 can put any of them on the Action button (section 3) by first making a one-step shortcut around it:
 
 - **Recenter the beacon** — sets the way you are facing now as the beacon's "straight ahead". The
@@ -171,13 +171,13 @@ can put any of them on the Action button (section 3) by first making a one-step 
   is never announced as on.
 - **Directions from here** (was "Navigate to CIF from here") — walking directions to the end of the demo route (The Ave and NE 50th; the CIF east entrance under `WAYMARK_DEMO_ROUTE=isr_cif`), wherever you start
   (the Guide card button does the same thing). It has no Siri phrase since its shortcut slot went to
-  "Talk to OpenCane" (the campus "Take me to CIF" phrase was removed by the Waymark UIUC gate).
+  "Talk to Waymark" (the campus "Take me to CIF" phrase was removed by the Waymark UIUC gate).
 
 ---
 
 ## 2. What the status answer means
 
-"How is OpenCane doing" always answers in the same order, so you can stop listening once your clause
+"How is Waymark doing" always answers in the same order, so you can stop listening once your clause
 has gone by:
 
 1. **Obstacle detection** — "Obstacle detection on, 9 frames per second." If it says *"running but
@@ -197,7 +197,7 @@ the obstacle warnings speak for the ground in front of you.
 
 ---
 
-## 3. Putting OpenCane on the Action button
+## 3. Putting Waymark on the Action button
 
 The Action button is the long ridged button above the volume buttons on the left edge of an iPhone
 15 Pro or later. Holding it runs one thing. This is the most reliable hands-free trigger on the
@@ -210,39 +210,42 @@ the pavement.
 2. **Action Button**
 3. Swipe left or right through the list of actions until you reach **Shortcut**
 4. Tap **Choose a Shortcut**
-5. Pick **OpenCane** → **Talk to OpenCane**
+5. Pick **Waymark** → **Talk to Waymark**
 
 That is the whole path.
 (Apple Support, ["Run shortcuts with the Action button"](https://support.apple.com/guide/shortcuts/run-shortcuts-with-the-action-button-apdfea15680b/ios).)
 
-Press once: OpenCane opens and starts listening (you feel the tick). Ask ("Take me to CIF",
+Press once: Waymark opens and starts listening (you feel the tick). Ask ("Take me to CIF",
 "How is my battery?", "What is in front of me?"). Press again — or just stop talking — and it
-answers. "Talk to OpenCane" is an App Shortcut, so it is in the picker with no setup.
+answers. "Talk to Waymark" is an App Shortcut, so it is in the picker with no setup.
 
-**Which one to bind: "Talk to OpenCane."** It covers everything the other shortcuts do —
+**Which one to bind: "Talk to Waymark."** It covers everything the other shortcuts do —
 status, scene questions, places, posts — conversationally, with no wake word and no screen.
 "Where am I" is the second choice if you want one fixed command that never needs the
 microphone: it is useful at every moment of a walk, with or without a route running.
 
-All ten OpenCane shortcuts appear in that picker with no setup, because they are App Shortcuts.
+All ten Waymark shortcuts appear in that picker with no setup, because they are App Shortcuts.
 The Shortcuts-app-only actions (Recenter, Turn a feature on or off, Directions from here)
 do **not** appear there directly — to put one of those on the Action button, first make a
 one-step shortcut in the Shortcuts app that runs it, then choose that shortcut in step 5.
 
-If **Talk to OpenCane** is missing from the picker after reinstalling: open the Apple Shortcuts
+If **Talk to Waymark** is missing from the picker after reinstalling: open the Apple Shortcuts
 app once (this forces iOS to re-index the app's shortcuts), then repeat step 5. A phone restart
-is the last resort — the shortcut list is cached by the system, not by OpenCane.
+is the last resort — the shortcut list is cached by the system, not by Waymark.
+
+After installing the build that renamed this shortcut to **Talk to Waymark** (Oct 2026), an Action
+button set to the shortcut under its old name may stop working: repeat steps 1–5 once.
 
 ### ⚠ The Action button and the lock screen
 
-**A press on a locked phone will ask you to unlock first.** Every OpenCane intent opens the app —
+**A press on a locked phone will ask you to unlock first.** Every Waymark intent opens the app —
 it has to, because obstacle warnings only run while the app is in front — and Apple requires the
 device to be unlocked before any app is brought to the foreground, whatever the shortcut is
 (Apple DTS, [developer forums 779977](https://developer.apple.com/forums/thread/779977): *"`openAppWhenRun`
 requires the customer to unlock the device, because the app is being brought to the foreground."*).
 
 That matters on a cane, because Face ID is looking at the sky, not at you. **So: unlock the phone
-and leave OpenCane open before you start walking.** While it is running and frontmost, the Action
+and leave Waymark open before you start walking.** While it is running and frontmost, the Action
 button answers in about a second. The app keeps the screen awake during guidance, and the demo
 checklist in `docs/devices_setup.md` has the Guided Access setup that keeps it there.
 
@@ -273,7 +276,7 @@ Worth knowing so you do not waste time on it:
 
 ## 5. Asking a question — what it will and will not do
 
-"Ask OpenCane about the scene" sends one camera frame and your question to the vision model and
+"Ask Waymark about the scene" sends one camera frame and your question to the vision model and
 speaks **one sentence**. It is deliberately not a conversation: there are no follow-up questions and
 nothing is remembered between asks.
 

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Render every OpenCane printable to STL.
+    Render every Waymark printable to STL.
 
 .DESCRIPTION
     One command, no arguments needed:

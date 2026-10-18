@@ -567,7 +567,7 @@ private func denseGround(_ profile: (Float) -> Float) -> [GroundSample] {
     #expect(props?["severity"] as? String == "warn")
 }
 
-/// HazardRecord directly converts into OpenCaneEvent for Grok Bot webhook processing.
+/// HazardRecord directly converts into WaymarkEvent for Grok Bot webhook processing.
 @Test func hazardRecordMapsToGrokBotEvent() {
     let r = HazardRecord(
         kind: "dropOff",

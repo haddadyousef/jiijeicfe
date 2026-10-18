@@ -490,7 +490,7 @@ struct SetOptionIntent: AppIntent {
 /// Why it is an App Shortcut at all (Step 29): as a plain `AppIntent` it never appeared in the
 /// Action button's picker, so "the Action button still isn't working" was literally true;
 /// `NavigateToCIFIntent` gave up its slot for it.
-struct TalkToOpenCaneIntent: AppIntent {
+struct TalkToWaymarkIntent: AppIntent {
     /// Shown in Shortcuts and the Action button picker.
     static let title: LocalizedStringResource = "Talk to Waymark"
     /// Subtitle in Shortcuts.

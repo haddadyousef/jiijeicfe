@@ -29,7 +29,7 @@ struct VoiceShellPolicyTests {
     /// menu before the microphone opened; owner: "It should just be 'Waymark ready' and then boom").
     /// A phone without LiDAR says that instead, because obstacle warnings cannot work. The listening
     /// tone follows (`launchListen`).
-    @Test func launchSaysOnlyOpenCaneReady() {
+    @Test func launchSaysOnlyWaymarkReady() {
         #expect(VoiceShellPolicy.readyLine == "Waymark ready.")
         #expect(VoiceShellPolicy.launchLine(lidarSupported: true) == "Waymark ready.")
         #expect(VoiceShellPolicy.noLidarLine == "Waymark. This phone has no LiDAR.")

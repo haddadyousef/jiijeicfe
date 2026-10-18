@@ -1,6 +1,6 @@
 <!-- waymark:begin -->
 ## Waymark (read first)
-This fork adds "sidewalk memory". Before any change: read `waymark/docs/WAYMARK_PLAN.md`, then `waymark/docs/WAYMARK_DESIGN.md`, then `waymark/docs/DECISIONS.md`. Check `waymark/docs/STATUS_W.md` and `STATUS_M.md` for the other side's newest entry and compare the repo hash. Waymark Swift code lives in `ios/Logic/Sources/CaneKitLogic/Waymark/` and `ios/CaneKit/Waymark/`. Mac owns `ios/**`; Windows owns `waymark/**` except `STATUS_M.md` and `M_NOTES.md`. Commits start with `waymark:`. Waymark never speaks at `.safety` or `.nav` priority and never delays a base-app safety cue.
+Waymark adds "sidewalk memory". Before any change: read `waymark/docs/WAYMARK_PLAN.md`, then `waymark/docs/WAYMARK_DESIGN.md`, then `waymark/docs/DECISIONS.md`. Check `waymark/docs/STATUS_W.md` and `STATUS_M.md` for the other side's newest entry and compare the repo hash. Sidewalk-memory Swift code lives in `ios/Logic/Sources/CaneKitLogic/Waymark/` and `ios/CaneKit/Waymark/`. Mac owns `ios/**`; Windows owns `waymark/**` except `STATUS_M.md` and `M_NOTES.md`. Commits start with `waymark:`. Sidewalk memory never speaks at `.safety` or `.nav` priority and never delays a core-app safety cue.
 <!-- waymark:end -->
 
 # CaneKit — Claude Code project rules
@@ -16,7 +16,7 @@ shipped code is the truth: when a doc and the code disagree, fix the doc in the 
 - Keys only in git-ignored `ios/CaneKit/Resources/Secrets.plist`. Never regenerate `CaneKit.xcodeproj`
   unless `ios/project.yml` or the file list changed.
 - To find where something lives or what touches it, ask the graph first: `graphify query "<question>"`
-  (communities in `graphify-out/GRAPH_REPORT.md`); `graphify update .` after code changes.
+  (communities in the archived snapshot `archive/graphify-out/GRAPH_REPORT.md`); `graphify update .` after code changes.
 - Automated runs are silent: the app mutes itself under `CANEKIT_MUTE=1` / `CANEKIT_UITEST=1`.
 - Measure before tuning a cue: `cd ios && make audit` (`ios/scripts/cue_audit.py` on a trip log; a
   handheld log must not tune a distance). Cue research and plan: `docs/cue_design_v2.md`,

@@ -1,10 +1,10 @@
 # Docs index
 
-> **Waymark docs are in [`waymark/docs/`](../waymark/docs/)** (plan, design, decisions, status, provenance); start at the root
-> [`README.md`](../README.md). **The documents in this folder are inherited from the base project, OpenCane**
-> (pre-existing; github.com/aritroBh/OpenCane at `fe86e10`, see [`../waymark/docs/PROVENANCE.md`](../waymark/docs/PROVENANCE.md)). They still describe how the base app is built
-> and tested, and the engineering rules in `AGENTS.md` apply to all of it. Where they mention the UIUC demo route,
-> ISR or CIF, that is the base project's demo; Waymark's demo is the Ave route in Seattle.
+> **Sidewalk-memory docs are in [`waymark/docs/`](../waymark/docs/)** (plan, design, decisions, status); start at the root
+> [`README.md`](../README.md). The documents in this folder describe how the core app (guidance, obstacle
+> warnings, voice, watch, mount) is built and tested, and the engineering rules in `AGENTS.md` apply to all of it.
+> Where they mention the UIUC route, ISR or CIF, that is the first campus test route; the current demo is the Ave
+> route in Seattle's U District.
 
 Every document in the repo, with when to read it. New here, or just pulled? Read these in order:
 [`TEAM_BRIEF.md`](TEAM_BRIEF.md) (2 minutes), [`TEAM_HANDOFF.md`](TEAM_HANDOFF.md), the root
@@ -15,8 +15,8 @@ of writing Step 46 is commit `891f558` and Step 47 is the entry above it, Sat 20
 pin goes stale every push, so trust the file, not this sentence).
 
 **AI agents:** `AGENTS.md` first (hard rules + "How we engineer"), then `TEAM_HANDOFF.md` §10 ("How an
-agent resumes"), then `CODE_REFERENCE.md`, then ask the knowledge graph (`graphify query "<question>"`,
-see the last row of "Where do I find…"). Every status block names the date or commit it was written
+agent resumes"), then `CODE_REFERENCE.md`, then `git grep` (the old knowledge graph is archived and stale; see the last
+row of "Where do I find…"). Every status block names the date or commit it was written
 at; the top of `CHANGELOG.md` and the code are the newest truth, and the block at the top of
 `docs/todo.md` is headed "Historical (Fri 2026-09-11)" for that reason.
 
@@ -29,19 +29,19 @@ screen layout and button labels, where the shipped code (and the tests that pin 
 ## Every doc
 
 Tracked Markdown (`git ls-files "*.md"`: 31 files) plus the one other hand-written doc in the repo
-(`opencane-hardware-brief.html`). Nothing else in the repo is documentation; source files document
+(`archive/hardware-brief.html`). Nothing else in the repo is documentation; source files document
 themselves in their headers (AGENTS.md "How we engineer" 7).
 
 ### Repo root
 
 | Doc | Read it when |
 |---|---|
-| [`README.md`](../README.md) | You want what Waymark is, the demo, how it works, honest status, the OpenCane disclosure, the repo map and the quick start. |
+| [`README.md`](../README.md) | You want what Waymark is, the demo, how it works, honest status, the repo map and the quick start. |
 | [`AGENTS.md`](../AGENTS.md) | **Before your first edit, human or AI.** It has the hard rules (concurrency, iOS 26 APIs only, logic lives in `ios/Logic`, secrets, frozen bundle IDs, audio session, speech priorities (rule 8), accessibility-label contract (rule 9), per-commit gate (rule 10)), "How we engineer", the commands, the two false-green traps, the OpenSCAD traps and the "looks wrong but is deliberate" list. It wins every conflict. |
 | [`CLAUDE.md`](../CLAUDE.md) | You are Claude Code. It is the short version of `AGENTS.md`, loaded automatically. |
 | [`CHANGELOG.md`](../CHANGELOG.md) | You need to know what landed in each build step, why, how it was reviewed and verified, and its "test on device" list. Newest first. Step numbers 15, 16, 17, 21, 22 and 25 each appear twice, on purpose (see the note under Step 27). Steps 38–46 also share their digits with the cue-v2 *plan* items in `docs/todo.md`, which are written "cue-v2 #38" … "#45" for that reason — a CHANGELOG "Step 41" is hazard telemetry, "cue-v2 #41" is torso haptics (shipped in Step 47). |
-| [`.jules/bolt.md`](../.jules/bolt.md) | You are touching SwiftUI views that observe the 30 Hz depth stream. One learning (Step 21): keep high-frequency observed properties in leaf views, not in `ContentView.body`. |
-| [`opencane-hardware-brief.html`](../opencane-hardware-brief.html) | You want the one-page hardware brief in a browser (added in the Step 21 bore-ring commit). For current print instructions use `hardware/3d_print_files/README.md` instead. |
+| [`archive/agents/jules/bolt.md`](../archive/agents/jules/bolt.md) (archived) | You are touching SwiftUI views that observe the 30 Hz depth stream. One learning (Step 21): keep high-frequency observed properties in leaf views, not in `ContentView.body`. |
+| [`archive/hardware-brief.html`](../archive/hardware-brief.html) | You want the one-page hardware brief in a browser (added in the Step 21 bore-ring commit). For current print instructions use `hardware/3d_print_files/README.md` instead. |
 
 ### iOS app
 
@@ -60,8 +60,8 @@ themselves in their headers (AGENTS.md "How we engineer" 7).
 | [`docs/CODE_REFERENCE.md`](CODE_REFERENCE.md) | You need to find or change code. It maps every file, type and function by module, with the data-flow diagram and the ⚠ invariants that tests pin. **Update the module's section in the same commit as the code change.** |
 | [`docs/design.md`](design.md) | You are changing UI, colours or type, or how a cue feels, sounds or shows. §5 maps every cue to its haptic, speech and screen output (§5.1 is speech priorities and the Step 37 talk floor). §6 describes the shipped four-tab layout (Guide / Sense / Settings / Profile; §6.8 is the Profile tab, §6.5 has the Family alerts card). §9 is the accessibility-label contract table. |
 | [`docs/UX.md`](UX.md) | **Before adding a control of any kind.** Why the interface is a conversation and not a screen: what a button costs a blind walker on a cane-mounted phone (§1), the thesis and its five real failure modes (§2), ten checkable rules (§3), the design — one screen, the two-tier grammar, voice-only mode, input redundancy (§4), what would disprove it (§5). `design.md` still wins on tokens and layout; this wins on *whether a thing should be a button at all*. |
-| [`docs/cue_design_v2.md`](cue_design_v2.md) | **Before changing when OpenCane buzzes or speaks.** The Step 35 research (4 researchers + 4 fact-checkers, 74 kept findings): what blind travellers need (§1), where OpenCane violated it (§2), the proposed v2 (§3), the ranked change list (§4), open questions for a blind tester (§5), sources, and an addendum measured on the first field log. Numbers marked **[H]** are hypotheses. The approved plan (items cue-v2 #35–#45 — plan numbers, not CHANGELOG steps) is in `docs/todo.md` → "Cue design v2". |
-| [`docs/auditory-load.md`](auditory-load.md) | You are adding or tuning any automatic sound. The Step 30 short research note on blind auditory overload, what OpenCane does about each point, and the open questions for tester walks. `cue_design_v2.md` is the later, fuller research. |
+| [`docs/cue_design_v2.md`](cue_design_v2.md) | **Before changing when Waymark buzzes or speaks.** The Step 35 research (4 researchers + 4 fact-checkers, 74 kept findings): what blind travellers need (§1), where Waymark violated it (§2), the proposed v2 (§3), the ranked change list (§4), open questions for a blind tester (§5), sources, and an addendum measured on the first field log. Numbers marked **[H]** are hypotheses. The approved plan (items cue-v2 #35–#45 — plan numbers, not CHANGELOG steps) is in `docs/todo.md` → "Cue design v2". |
+| [`docs/auditory-load.md`](auditory-load.md) | You are adding or tuning any automatic sound. The Step 30 short research note on blind auditory overload, what Waymark does about each point, and the open questions for tester walks. `cue_design_v2.md` is the later, fuller research. |
 | [`docs/handsfree.md`](handsfree.md) | **You are the walker, or setting the phone up for one.** Every spoken command, what the status answer means, the Settings path for the Action button (and why a locked phone asks to unlock first), what the AirPods stem and Back Tap cannot do, asking a question, and what still needs the screen. |
 | [`docs/devices_setup.md`](devices_setup.md) | Before touching the AirPods or the Apple Watch, and before the untethered demo: pairing, Spatial Audio off, the watch app, the voice cache, Guided Access, on-device vision and a symptom → fix table. |
 | [`docs/route_isr_cif.md`](route_isr_cif.md) | You are editing `route_isr_cif.json` or re-recording the route on foot. It covers the evidence for every waypoint, OSM node IDs, and which points are still unverified. |
@@ -88,7 +88,7 @@ themselves in their headers (AGENTS.md "How we engineer" 7).
 
 | Doc | Read it when |
 |---|---|
-| [`graphify-out/GRAPH_REPORT.md`](../graphify-out/GRAPH_REPORT.md) | You want to know which parts of the repo cluster together, or what a `graphify query` answer is built on. Generated by graphify, never hand-edited. Its "Graph Freshness" line names the commit it was built from (rebuilt at Step 47, Sat 2026-09-12 evening: 4,681 nodes, 10,872 edges, 216 communities); run `graphify update .` after code changes. |
+| [`archive/graphify-out/GRAPH_REPORT.md`](../archive/graphify-out/GRAPH_REPORT.md) | You want to know which parts of the repo cluster together, or what a `graphify query` answer is built on. Generated by graphify, never hand-edited. Its "Graph Freshness" line names the commit it was built from (rebuilt at Step 47, Sat 2026-09-12 evening: 4,681 nodes, 10,872 edges, 216 communities). Archived and stale: it predates the Waymark changes, and the `graphify` commands read `./graphify-out/` at the repo root, not this copy. |
 
 ### Outside Markdown
 
@@ -117,11 +117,11 @@ themselves in their headers (AGENTS.md "How we engineer" 7).
 | **Testing** | See [`ios/README.md` §5](../ios/README.md#5-testing). Logic tests are in `ios/Logic/Tests/CaneKitLogicTests/` (`make test`; 654 `@Test` annotations in 53 files at Step 51; recount before quoting). UI tests, the screenshot tour and the Dynamic Island tour are in `ios/CaneKitUITests/` (`make uitest` runs all 12, `make tour` and `make island` one suite each). GPS-replay end-to-end runs through `ios/scripts/e2e.py` (`make e2e`). Automation is silent under `CANEKIT_MUTE=1` / `CANEKIT_UITEST=1`. |
 | **Accessibility labels the tests depend on** | `AGENTS.md` rule 9 lists them. The details are in `CODE_REFERENCE.md` → module `ui-tests-build` and `design.md` §9. |
 | **UI tokens and components** | `ios/CaneKit/UI/Theme.swift` (`CKColor`, `CKFont`, `CKBigButton`, …) and `ios/CaneKitWatch/WatchTheme.swift`. The spec is [`design.md`](design.md), which wins on token values. |
-| **Trip log (what happened on a walk)** | `ios/CaneKit/Trip/TripLogger.swift` writes `canekit-<stamp>.jsonl` to the app's Documents folder. Get it with the Files app (On My iPhone → OpenCane), with `cd ios && make audit` (pulls the newest log off the phone in `local.mk` and measures its cue load), or with the `xcrun devicectl … --domain-type appDataContainer --domain-identifier com.aritro.canekit` commands in [`ios/README.md` §5](../ios/README.md#5-testing). |
+| **Trip log (what happened on a walk)** | `ios/CaneKit/Trip/TripLogger.swift` writes `canekit-<stamp>.jsonl` to the app's Documents folder. Get it with the Files app (On My iPhone → Waymark), with `cd ios && make audit` (pulls the newest log off the phone in `local.mk` and measures its cue load), or with the `xcrun devicectl … --domain-type appDataContainer --domain-identifier com.aritro.canekit` commands in [`ios/README.md` §5](../ios/README.md#5-testing). |
 | **Cue-load numbers for a walk** | `ios/scripts/cue_audit.py` (`make audit`, or `make audit LOG=path`): mounted vs handheld, head band wall vs overhang, cues and spoken lines per minute, replays and resumes. |
 | **Hazards (drop-offs, signs, hazard watch, hazard map)** | Decisions: `ios/Logic/Sources/CaneKitLogic/Hazards.swift` (tested in `HazardTests.swift`). App side: `ios/CaneKit/Depth/GroundSampler.swift`, `ios/CaneKit/Scene/HazardScanner.swift`, `OnDeviceVision.swift`, `ios/CaneKit/Trip/HazardLog.swift`, `ios/CaneKit/UI/HazardsCard.swift`. |
 | **Mount angle** | `MountTilt` in `ios/Logic/Sources/CaneKitLogic/LaneReport.swift`; live on the Mount card; derivation in `hardware/mount/DESIGN.md`. |
 | **Street View mock** | `ios/CaneKit/Depth/FrameReplay.swift`, `ios/scripts/streetview/`, `ios/scripts/vision_probe.swift`, `ios/scripts/sign_probe.swift`, `make uitest-streetview`, `make e2e SCENARIO=streetview`. Not the app: `ios/scripts/streetview_stim.py` (commit `d775d4b`, run by hand) is a stand-alone visualiser over the same frames with its own approximate navigation and template narration. |
 | **Project / targets / Info.plist / entitlements** | `ios/project.yml` (XcodeGen). Regenerate with `make gen` only when `project.yml` or the file list changed. Never hand-edit `CaneKit.xcodeproj`. |
 | **What's left to do** | [`todo.md`](todo.md) (the "Cue design v2 — items cue-v2 #35–#45" section is the live plan; the "## Step N" blocks near the end hold each shipped step's unticked device checks). The latest `CHANGELOG.md` entry lists its device checks; older entries keep their historical test notes. |
-| **The knowledge graph** | `graphify-out/` at the repo root (`GRAPH_REPORT.md` lists the communities; `graph.html` opens in a browser; `graph.json` is the data). Ask it from the repo root with `graphify query "<question>"`, `graphify path "A" "B"` or `graphify explain "X"`. After code changes, refresh it with `graphify update .` (code only) or `/graphify . --update` in Claude Code. Install once with `uv tool install graphifyy` (the build Mac has graphifyy 0.9.44). |
+| **The knowledge graph** | `archive/graphify-out/` is an archived, stale snapshot from Step 47, before the Waymark changes (`GRAPH_REPORT.md` lists the communities; `graph.html` opens in a browser; `graph.json` is the data). The `graphify` commands (`graphify query`, `graphify update .`) by default read and write `./graphify-out/` at the repo root, not this copy. To use a graph, build a fresh one locally (`uv tool install graphifyy`) and do not commit the root `graphify-out/` it creates. For where something lives, use `CODE_REFERENCE.md` and `git grep`. |

@@ -48,6 +48,8 @@ final class FamilyAlerts {
     /// Who is walking / which cane, attached to every event so the bot's text can name them.
     /// `nil` simply omits the field.
     var user: String?
+    /// "opencane-01" is an external contract: the Grok Bot routine and the cloud rows (`register_cane`)
+    /// already carry this value, so it stays as it is.
     var caneID: String? = "opencane-01"
 
     /// Let a cheap model add one family-facing sentence (`extra.ai_context`). Default on, but it
@@ -73,7 +75,7 @@ final class FamilyAlerts {
     /// detections, the "Send test event" button and nothing else. `registerContacts` deliberately
     /// does NOT go through `deliver`, so a family email list can never reach the alert feed.
     /// The event handed over is the final one, `ai_context` included.
-    @ObservationIgnored var onDelivered: (@MainActor (OpenCaneEvent, GrokBotResult) -> Void)?
+    @ObservationIgnored var onDelivered: (@MainActor (WaymarkEvent, GrokBotResult) -> Void)?
 
     /// Every number lives here (CaneKitLogic).
     @ObservationIgnored private var policy = FamilyAlertPolicy()
@@ -224,7 +226,7 @@ final class FamilyAlerts {
 
     /// Fire-and-forget: a cue must never wait on a POST, nor on the summary. The result only
     /// updates `lastStatus`.
-    private func send(_ event: OpenCaneEvent) {
+    private func send(_ event: WaymarkEvent) {
         guard let client else {
             lastStatus = GrokBotResult.notConfigured.summary
             return
@@ -240,7 +242,7 @@ final class FamilyAlerts {
 
     /// Attaches who / which cane and everything the phone knew, and builds the model's prompt.
     /// Main-actor and synchronous on purpose (see `send`).
-    private func prepare(_ event: OpenCaneEvent) -> (OpenCaneEvent, String) {
+    private func prepare(_ event: WaymarkEvent) -> (WaymarkEvent, String) {
         let context = contextProvider?() ?? AlertContext()
         var out = event.taggedWith(user: user, caneID: caneID)
         // Caller-set keys win: a detector that already described something knows better than the
@@ -259,7 +261,7 @@ final class FamilyAlerts {
     /// `ai_context` and nothing else — it is never a reason not to send.
     /// The single funnel every send passes through, so `onDelivered` (the cloud mirror) sees the
     /// final event and its result exactly once.
-    private func deliver(_ event: OpenCaneEvent, prompt: String,
+    private func deliver(_ event: WaymarkEvent, prompt: String,
                          client: GrokBotClient) async -> GrokBotResult {
         var toSend = event
         if aiContextEnabled, let summarizer, let line = await summarizer.summarize(prompt: prompt) {
@@ -271,9 +273,9 @@ final class FamilyAlerts {
     }
 }
 
-private extension OpenCaneEvent {
+private extension WaymarkEvent {
     /// Adds who / which cane without overwriting a value the caller already set.
-    func taggedWith(user: String?, caneID: String?) -> OpenCaneEvent {
+    func taggedWith(user: String?, caneID: String?) -> WaymarkEvent {
         var copy = self
         if copy.user == nil { copy.user = user }
         if copy.caneID == nil { copy.caneID = caneID }

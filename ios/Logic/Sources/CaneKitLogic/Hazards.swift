@@ -747,9 +747,9 @@ public struct HazardRecord: Sendable, Equatable, Codable {
         self.severity = severity
     }
 
-    /// Converts this record directly to an `OpenCaneEvent` for Grok Bot webhook processing.
-    public func asGrokBotEvent(user: String? = nil, caneID: String? = nil) -> OpenCaneEvent {
-        let sev: OpenCaneSeverity?
+    /// Converts this record directly to a `WaymarkEvent` for Grok Bot webhook processing.
+    public func asGrokBotEvent(user: String? = nil, caneID: String? = nil) -> WaymarkEvent {
+        let sev: WaymarkSeverity?
         switch severity {
         case "critical": sev = .critical
         case "warn": sev = .warn
@@ -757,8 +757,8 @@ public struct HazardRecord: Sendable, Equatable, Codable {
         default: sev = nil
         }
         let isoTime = ISO8601DateFormatter().string(from: Date(timeIntervalSince1970: time))
-        let obs = OpenCaneObstacle(kind: kind, distanceM: distanceM, direction: direction)
-        var extra: [String: OpenCaneJSON] = [:]
+        let obs = WaymarkObstacle(kind: kind, distanceM: distanceM, direction: direction)
+        var extra: [String: WaymarkJSON] = [:]
         if let whatItSaw { extra["what_it_saw"] = .string(whatItSaw) }
         if let photo { extra["photo"] = .string(photo) }
         if let routeName { extra["route_name"] = .string(routeName) }
@@ -769,7 +769,7 @@ public struct HazardRecord: Sendable, Equatable, Codable {
         let validHeading = (headingDeg != nil && headingDeg!.isFinite && headingDeg! >= 0) ? headingDeg : nil
         let validSpeed = (speedMps != nil && speedMps!.isFinite && speedMps! >= 0) ? speedMps : nil
 
-        return OpenCaneEvent(
+        return WaymarkEvent(
             type: .obstacle,
             severity: sev,
             timestamp: isoTime,

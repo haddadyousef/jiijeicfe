@@ -5,8 +5,8 @@
 //  Widget extension entry: hosts the navigation Live Activity (Dynamic Island + lock screen).
 //
 //  Implements the extension side of docs/design.md §6.7. No home-screen widgets: the bundle
-//  contains `NavLiveActivity`, and since Step 64 the lock-screen accessory `OpenCaneAccessoryWidget`
-//  and the Control Center control `TalkControl` (OpenCaneControls.swift).
+//  contains `NavLiveActivity`, and since Step 64 the lock-screen accessory `WaymarkAccessoryWidget`
+//  and the Control Center control `TalkControl` (WaymarkControls.swift).
 //
 //  Why it exists: ActivityKit renders a Live Activity only from a WidgetKit extension, so the
 //  app (`LiveActivityController`) cannot draw its own Dynamic Island. Added in Steps 8–9.
@@ -34,8 +34,8 @@ struct CaneKitWidgetBundle: WidgetBundle {
     /// Every widget of the extension. Add a new one here, not a second `@main`.
     var body: some Widget {
         NavLiveActivity()
-        // Step 64: the brand when no route runs (OpenCaneControls.swift).
-        OpenCaneAccessoryWidget()
+        // Step 64: the brand when no route runs (WaymarkControls.swift).
+        WaymarkAccessoryWidget()
         TalkControl()
     }
 }

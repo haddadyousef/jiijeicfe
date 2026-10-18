@@ -1,10 +1,10 @@
-# OpenCane Speech Load Design
+# Waymark Speech Load Design
 
 **Status:** Approved for implementation by the user's explicit request to fix the overload while preserving the safety channel.
 
 ## Problem
 
-OpenCane currently has two different kinds of voice output sharing one queue:
+Waymark currently has two different kinds of voice output sharing one queue:
 
 1. Guidance and safety output that a walker must hear: route, crossing, arrival, veer, head-height, ground hazards, and explicit channel-state failures.
 2. Optional environmental narration: mesh obstacle names and the detail in a scene description.

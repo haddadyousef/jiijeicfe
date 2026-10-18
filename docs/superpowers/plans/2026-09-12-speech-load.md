@@ -1,8 +1,8 @@
-# OpenCane Speech Load Implementation Plan
+# Waymark Speech Load Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Reduce truthful but excessive OpenCane narration while preserving every safety, route, and explicit-request speech path.
+**Goal:** Reduce truthful but excessive Waymark narration while preserving every safety, route, and explicit-request speech path.
 
 **Architecture:** Add a Foundation-only `SpeechLoadPolicy` to `CaneKitLogic`. `SpeechQueue` remains the one AVFoundation owner and invokes the policy only for explicitly tagged optional obstacle-name requests. Tighten scene fact selection at the existing `SceneVocabulary` / on-device VLM boundary, and route conversational scene questions through the already-grounded scene describer.
 
@@ -14,7 +14,7 @@
 - Decisions with numeric thresholds live in `ios/Logic`; effects stay in `ios/CaneKit`.
 - `.playback` remains the normal audio session; no new audio-session calls.
 - `.safety`, `.head`, route guidance, directional fallback cues, and explicit user responses are never suppressed.
-- User-facing strings say OpenCane; code/module/target/bundle naming stays CaneKit.
+- User-facing strings say Waymark; code/module/target/bundle naming stays CaneKit.
 - No new dependency; all tests use Swift Testing and real pure logic.
 - Preserve the existing uncommitted hands-free/audio WIP and do not stage it.
 
@@ -96,4 +96,4 @@
 - [ ] **Step 2: Implement the minimal fail-closed rejection and run focused plus full Logic tests.**
 - [ ] **Step 3: Run independent agent review, Muse, and Antigravity against a scratch copy; verify every finding against the source and tests before changing code.**
 - [ ] **Step 4: Run fresh `make test`, `make sim`, and where available `make uitest` / `make tour`; record device-only gates honestly.**
-- [ ] **Step 5: Refresh `graphify-out` with `graphify update .` and ensure the speech boundary is queryable.**
+- [ ] **Step 5: Refresh the knowledge graph with `graphify update .` and ensure the speech boundary is queryable.** (Historical step: the graph from this time is now archived, stale, in `archive/graphify-out/`; `graphify update .` writes `./graphify-out/` at the repo root.)

@@ -12,7 +12,7 @@
 //  audit and the `make island` pictures found:
 //    · Nothing said Waymark: a bare `figure.walk` + metres and a lone green check read as Fitness
 //      or a system indicator. Every presentation now carries the contour-ring mark
-//      (`OpenCaneMark`, ios/Shared/Brand) and the island keyline is tinted by alert level.
+//      (`WaymarkMark`, ios/Shared/Brand) and the island keyline is tinted by alert level.
 //    · ⚠ SAFETY: the green "Path clear" showed on the lock screen while depth was paused. The
 //      glance now draws clear only when `state.sensing.showsClear(isStale:)` (sensing `.live`, not
 //      stale); paused says "Obstacles paused — unlock", unknown says "Sensing unknown".
@@ -218,7 +218,7 @@ struct NavLiveActivity: Widget {
                              isStale: context.isStale)
                 .activityBackgroundTint(IslandPalette.ink)
                 .foregroundStyle(IslandPalette.ivory)
-                .widgetURL(OpenCaneLinks.guide)
+                .widgetURL(WaymarkLinks.guide)
         } dynamicIsland: { context in
             let state = context.state
             let isStale = context.isStale
@@ -230,7 +230,7 @@ struct NavLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     VStack(alignment: .leading, spacing: 1) {
                         HStack(spacing: 6) {
-                            OpenCaneMark().stroke(keyline, lineWidth: 1.4).frame(width: 22, height: 22)
+                            WaymarkMark().stroke(keyline, lineWidth: 1.4).frame(width: 22, height: 22)
                             Image(systemName: look.symbol)
                                 .font(.system(size: 22, weight: .bold))
                                 .foregroundStyle(look.tint)
@@ -298,7 +298,7 @@ struct NavLiveActivity: Widget {
                 }
             } compactLeading: {
                 HStack(spacing: 5) {
-                    OpenCaneMark().stroke(keyline, lineWidth: 1.2).frame(width: 17, height: 17)
+                    WaymarkMark().stroke(keyline, lineWidth: 1.2).frame(width: 17, height: 17)
                     Image(systemName: look.symbol)
                         .font(.system(size: 13, weight: .bold))
                         .foregroundStyle(look.tint)
@@ -316,13 +316,13 @@ struct NavLiveActivity: Widget {
                     .accessibilityHidden(true)
             } minimal: {
                 // The brand mark, tinted by what matters (alert > paused > phase).
-                OpenCaneMark()
+                WaymarkMark()
                     .stroke(glance.isAlert ? glance.tint : keyline, lineWidth: 1.5)
                     .frame(width: 18, height: 18)
                     .accessibilityLabel(Self.summary(state, routeName: context.attributes.routeName, isStale: isStale))
             }
             .keylineTint(keyline)
-            .widgetURL(OpenCaneLinks.guide)
+            .widgetURL(WaymarkLinks.guide)
             .contentMargins(.horizontal, 14, for: .expanded)
         }
         .supplementalActivityFamilies([.small])
@@ -402,7 +402,7 @@ struct NavLiveActivity: Widget {
 
 /// Deep links the widget opens. The scheme is registered in ios/project.yml (`CFBundleURLTypes`);
 /// the app needs no handler — opening the app on the Guide is the whole action.
-enum OpenCaneLinks {
+enum WaymarkLinks {
     /// The Guide.
     static let guide = URL(string: "waymark://guide")!
     /// Talk to Waymark (accessory widget).
@@ -629,7 +629,7 @@ private struct LockScreenCard: View {
         let keyline = NavLiveActivity.keyline(state, glance: glance)
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                OpenCaneMark().stroke(keyline, lineWidth: 1.3).frame(width: 18, height: 18)
+                WaymarkMark().stroke(keyline, lineWidth: 1.3).frame(width: 18, height: 18)
                 Text(routeName.isEmpty ? "Waymark" : "Waymark · \(routeName)")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(IslandPalette.ivoryDim)
@@ -722,7 +722,7 @@ private struct StandByCard: View {
                         .lineLimit(1)
                 }
                 Spacer(minLength: 0)
-                OpenCaneMark().stroke(band, lineWidth: 2).frame(width: 44, height: 44)
+                WaymarkMark().stroke(band, lineWidth: 2).frame(width: 44, height: 44)
             }
             .padding(20)
             Rectangle().fill(band).frame(height: 8)
@@ -740,7 +740,7 @@ private struct SmallCard: View {
         let glance = Glance(state: state, isStale: isStale)
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                OpenCaneMark().stroke(NavLiveActivity.keyline(state, glance: glance), lineWidth: 1.2)
+                WaymarkMark().stroke(NavLiveActivity.keyline(state, glance: glance), lineWidth: 1.2)
                     .frame(width: 16, height: 16)
                 Image(systemName: look.symbol).font(.system(size: 18, weight: .bold)).foregroundStyle(look.tint)
                 TrailingFigure(state: state, isStale: isStale)
