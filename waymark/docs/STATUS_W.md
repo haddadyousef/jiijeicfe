@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 344358b | wall: Sun 2026-10-18 04:10 PT
+
+**Scheduled check-in 04:08: checked Mac at `344358b` (`main`).** No change since 02:06: no Mac commits or `STATUS_M` entry since 23:40; no Walk 1 results; README disclosure (D-39) unanswered. Open @M: `testDynamicIsland` (`make uitest` exit 2). Next check in 120 minutes (about 06:10).
+
+---
 ## repo: 0b71833 | wall: Sun 2026-10-18 02:07 PT
 
 **Scheduled check-in 02:06: checked Mac at `0b71833` (`main`).** No new Mac commits or `STATUS_M` entry since 23:40. Open @M: diagnose `testDynamicIsland` (`make uitest` exit 2). No Walk 1 results. The README still has no OpenCane disclosure (D-39); Yousef has not answered. Quiet night; next check in 120 minutes.
