@@ -9,8 +9,9 @@
 //
 //  Breaks these catch: a fuzzy or partial alias match that routes "Grainger Street" to the library
 //  (partial names must fall through to MapKit); a gazetteer entrance that drifts from the route
-//  file's own first / last waypoint; a renamed place id that silently breaks the Siri
-//  `CampusDestination` AppEnum; MapKit's first result winning again (the phone bug: a Grainger
+//  file's own first / last waypoint; a renamed place id that silently breaks a campus row's
+//  `DestinationSuggestion.placeId` (waymark: the Siri `CampusDestination` AppEnum that also used the
+//  ids was removed, 2026-10-17); MapKit's first result winning again (the phone bug: a Grainger
 //  supply store across town); a 40 km "nearest" result instead of "not found"; a confirmation
 //  line that says "0 meters" or drops the weak-GPS exit-first clause (Step 31).
 //  Callers of the pinned code: `RouteSource` (`CampusPlaces.match`, `DestinationPicker.pick`),
@@ -21,8 +22,10 @@
 //      move a point by metres, so picker distances are exact rather than hand-computed.
 //    · The gazetteer's CIF and ISR entries must equal the route file's last / first waypoint
 //      (read through #filePath, like `shippedRouteFileIsConsistent`).
-//    · The place ids are also the raw values of the app's `CampusDestination` AppEnum (Siri
-//      "Take me to Grainger in Waymark"); `campusPlaceIdsArePinned` guards that contract.
+//    · The place ids are pinned by `campusPlaceIdsArePinned`: they are a campus row's
+//      `DestinationSuggestion.placeId` (they were also the raw values of the app's `CampusDestination`
+//      AppEnum, removed by waymark 2026-10-17). The app reaches the gazetteer only through
+//      `CampusGate` (open under `WAYMARK_DEMO_ROUTE=isr_cif`).
 //
 
 import Foundation
@@ -124,7 +127,8 @@ private func east(_ m: Double) -> Coordinate {
     }
 }
 
-/// The ids are the app's `CampusDestination` raw values (AppIntents.swift): change both together.
+/// The ids are pinned: a campus row's `DestinationSuggestion.placeId` resolves through `place(id:)`
+/// (waymark: the `CampusDestination` AppEnum that used them as raw values was removed).
 @Test func campusPlaceIdsArePinned() {
     #expect(CampusPlaces.all.map(\.id) == ["cif", "isr", "grainger", "illiniUnion", "siebel", "mainLibrary", "arc"])
     for p in CampusPlaces.all { #expect(CampusPlaces.place(id: p.id) == p) }

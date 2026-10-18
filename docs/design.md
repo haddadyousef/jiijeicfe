@@ -720,16 +720,16 @@ An empty field shows "Type a destination first"; with Location off for OpenCane 
 fix yet. Try again outside."; nothing within 3 km: "Could not find "…" within walking distance".
 
 Every control here is also a Siri phrase, because the walker this card is for cannot see it
-(`AppIntents.swift`): "Start route to CIF / Take me to Grainger / Take me
+(`AppIntents.swift`): "Start route / Take me
 somewhere / Repeat the last instruction / Next waypoint / Stop the route **in OpenCane**", plus "Where am I
 in OpenCane" and "Talk to OpenCane". Seven of the ten App Shortcuts an app may register (`TakeMeToIntent` carries both the "Take me to" and "Take me somewhere" phrases; the other three slots are Status, Ask and Cane haptics, `HandsFreeIntents.swift`), all `.foreground(.immediate)` — ARKit
 obstacle warnings only run with the app frontmost, so guidance must never start in the background.
-("Navigate to CIF from here" stays a Guide card button and a Shortcuts-app action, but its Siri
-phrase moved to "Take me to CIF in OpenCane" — same route-file waypoint via the gazetteer — when
-its shortcut slot went to "Talk to OpenCane" for the Action button.)
-App Shortcut phrases can only interpolate an `AppEnum`/`AppEntity`, so the phrase form carries the seven
-gazetteer places (`CampusDestination`); any other place goes through "Take me somewhere in OpenCane" and
-Siri asks "Where do you want to go?" for the free text.
+("Directions from here" — was "Navigate to CIF from here" — stays a Guide card button and a
+Shortcuts-app action with no Siri phrase; its shortcut slot went to "Talk to OpenCane" for the Action
+button.) Waymark UIUC gate: the campus `AppEnum` (`CampusDestination`) and its three "Take me to
+<campus place>" phrases were removed so no UIUC name ships in Siri / Shortcuts; every place goes through
+"Take me somewhere in OpenCane" and Siri asks "Where do you want to go?" for the free text. The campus
+gazetteer itself is reachable only under `WAYMARK_DEMO_ROUTE=isr_cif` (`CampusGate`).
 
 **Not built**: the route cards (Recorded route RECOMMENDED / Any destination), the search sheet, "Use this
 route".

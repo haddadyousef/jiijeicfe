@@ -25,8 +25,9 @@
 //    · `DestinationSuggestions` (Logic), `DestinationSearch` and `DestinationField` —
 //      `CampusPlaces.all` / `normalize` / `place(id:)` / `center` for the as-you-type list.
 //    · `FastPathIntentClassifier` (Logic) — "take me to …" matched against `all` by alias.
-//    · The app's `CampusDestination` AppEnum (AppIntents.swift) uses the place ids as raw values;
-//      `TakeMeToIntent` resolves a case with `CampusPlaces.place(id:)`.
+//    · waymark (2026-10-17): the app reaches every caller above only through `CampusGate`
+//      (CampusGate.swift), open only under `WAYMARK_DEMO_ROUTE=isr_cif`; the app's
+//      `CampusDestination` AppEnum (the Siri campus phrases) was removed.
 //
 //  Key invariants:
 //    · Foundation only (no MapKit / CoreLocation): candidates arrive as `PlaceCandidate`.
@@ -37,8 +38,8 @@
 //      (`gazetteerEndpointsAreTheRouteFileEntrances`). The other entrances are OSM entrance nodes
 //      queried 2026-09-11 and have NOT been walked: verify on site.
 //    · Every `name` is itself an alias (`everyCampusPlaceNameRoundTripsThroughMatch`, Step 62).
-//    · ⚠ The ids are the raw values of the app's `CampusDestination` AppEnum
-//      (`campusPlaceIdsArePinned`): rename both together.
+//    · ⚠ The ids are pinned (`campusPlaceIdsArePinned`): they were the raw values of the app's
+//      `CampusDestination` AppEnum (removed, waymark) and are still `DestinationSuggestion.placeId`.
 //  Tests: CampusPlacesTests.swift.
 //
 
@@ -46,7 +47,8 @@ import Foundation
 
 /// One campus destination: a spoken name, the entrance to walk to and the names people use.
 public struct CampusPlace: Sendable, Equatable, Identifiable {
-    /// Stable key; also the raw value of the app's `CampusDestination` AppEnum (Siri phrases).
+    /// Stable key; also a campus row's `DestinationSuggestion.placeId` (waymark: the
+    /// `CampusDestination` AppEnum that used it as a raw value was removed).
     public let id: String
     /// Spoken / shown name ("Grainger Engineering Library"); becomes the route name
     /// "To <name>" and the arrival line "Arrived at <name>."
@@ -154,8 +156,8 @@ public enum CampusPlaces {
         return all.first { place in place.aliases.contains { normalize($0) == key } }
     }
 
-    /// The entry with this id (the app's `CampusDestination.rawValue`), or nil. Callers:
-    /// `TakeMeToIntent.perform`, `DestinationField` (a tapped campus row), `DestinationSuggestions.mapRows`.
+    /// The entry with this id, or nil. Callers: `DestinationField` (a tapped campus row),
+    /// `DestinationSuggestions.mapRows` (waymark: `TakeMeToIntent`'s campus parameter was removed).
     public static func place(id: String) -> CampusPlace? {
         all.first { $0.id == id }
     }

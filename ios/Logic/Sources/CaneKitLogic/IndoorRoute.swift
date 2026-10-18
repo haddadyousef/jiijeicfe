@@ -781,7 +781,8 @@ public enum IndoorScriptCatalog {
     }
 
     /// A file-safe script id: lower-cased; every character other than a–z, 0–9, `_` and `-` becomes
-    /// `_`; blank → `defaultRecordingID`. Caller: `IndoorGuide.saveRecording`.
+    /// `_`; blank → `defaultRecordingID`. Caller: `CampusGate.sanitizedRecordingID` (waymark; from
+    /// `IndoorGuide.saveRecording` and the Save hint), which picks the blank id by the gate.
     /// - Parameter raw: what the teammate typed.
     public static func sanitizedID(_ raw: String) -> String {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()

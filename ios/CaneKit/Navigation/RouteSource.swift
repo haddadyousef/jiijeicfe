@@ -25,7 +25,7 @@
 //      `RouteBuilder` (Waypoint.swift). ⚠ Do not change the converter contract without
 //      re-running `mapKitStepsBecomeWaypoints` (RouteTests).
 //    · A destination text is resolved in this order: the campus gazetteer
-//      (`CampusPlaces.match`), then MKLocalSearch in a 3 km radius around the walker
+//      (`CampusPlaces.match`; waymark: only under `WAYMARK_DEMO_ROUTE=isr_cif`, `uiucDemo`), then MKLocalSearch in a 3 km radius around the walker
 //      (`regionPriority = .required`, points of interest and addresses), choosing the nearest
 //      reasonable result with `DestinationPicker` — never MapKit's first result. ⚠ Pinned by
 //      `CampusPlacesTests`; keep `searchRadiusM` equal to `DestinationPicker.maxDistanceM`.
@@ -68,6 +68,17 @@ enum RouteSource {
     /// side; results outside `DestinationPicker.maxDistanceM` (the same 3 km) are rejected anyway.
     static let searchRadiusM: Double = 3000
 
+    /// waymark (owner, 2026-10-17): the one switch for every UIUC string — the ISR → CIF demo route,
+    /// the campus gazetteer (typed / spoken destinations, suggestions, the completer's no-fix centre)
+    /// and the voice fast path's campus routes. True only under `WAYMARK_DEMO_ROUTE=isr_cif` (the
+    /// XCUITests and e2e.py set it); read once at first use (`CampusGate.enabled`, CampusGateTests).
+    static let uiucDemo: Bool = CampusGate.enabled(environment: ProcessInfo.processInfo.environment)  // waymark:
+
+    /// waymark: the default demo route's first waypoint, the completer's centre while there is no fix
+    /// in the default build (`CampusGate.searchCentre`; the UIUC build keeps `CampusPlaces.center`).
+    /// Nil when the route file is missing or empty. Read once at first use.
+    static let demoStart: Coordinate? = (try? bundled())?.waypoints.first?.coordinate  // waymark:
+
     /// The demo route every "Start route" path walks (the Guide button, Siri, the voice "route", the
     /// `CANEKIT_DEMO_ROUTE` hook, Simulate walk when idle).
     /// waymark (owner + D-35, 2026-10-17): the Seattle Ave walk (`aveSeattle()`) by default;
@@ -84,7 +95,7 @@ enum RouteSource {
         if let path = ProcessInfo.processInfo.environment["CANEKIT_ROUTE_FILE"], !path.isEmpty {
             return try Route.load(from: Data(contentsOf: URL(fileURLWithPath: path)))
         }
-        if ProcessInfo.processInfo.environment["WAYMARK_DEMO_ROUTE"] == "isr_cif" { return try isrCif() }  // waymark:
+        if uiucDemo { return try isrCif() }  // waymark:
         return try aveSeattle()  // waymark: default demo route
     }
 
@@ -127,7 +138,8 @@ enum RouteSource {
 
     /// Walking directions from `origin` to the place the text `destination` names.
     /// 1. `CampusPlaces.match` (CIF, ISR, Grainger, Illini Union, Siebel, Main Library, ARC):
-    ///    straight to that entrance, no search.
+    ///    straight to that entrance, no search. waymark: only when `uiucDemo` (`CampusGate.match`);
+    ///    the default build always searches MapKit.
     /// 2. Otherwise MKLocalSearch restricted to a 3 km radius around `origin` (points of interest
     ///    and addresses) and `DestinationPicker.pick` — the nearest result in range, preferring
     ///    names that contain every word typed. MapKit's "no results" becomes
@@ -136,7 +148,7 @@ enum RouteSource {
     ///    (Step 13, `DestinationPicker`).
     /// Then `directions(to:name:from:)`. A result with no `name` is spoken as the typed text.
     static func mapKit(to destination: String, from origin: CLLocationCoordinate2D) async throws -> PlannedRoute {
-        if let place = CampusPlaces.match(destination) {
+        if let place = CampusGate.match(destination, campusEnabled: uiucDemo) {  // waymark:
             return try await directions(to: mapItem(at: place.coordinate), name: place.name, from: origin)
         }
         let search = MKLocalSearch.Request()

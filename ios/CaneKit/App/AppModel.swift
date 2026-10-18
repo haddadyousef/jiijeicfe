@@ -3449,9 +3449,9 @@ final class AppModel {
         buildRoute(to: .query(text), searchLine: "Finding a route to \(text).")
     }
 
-    /// Walking route from the current fix to a gazetteer entrance, no search (Siri "Take me to
-    /// Grainger in Waymark" → `TakeMeToIntent` with a `CampusDestination`; a tapped CAMPUS row in
-    /// `DestinationField`). Puts `place.name` in the destination field.
+    /// Walking route from the current fix to a gazetteer entrance, no search (a tapped CAMPUS row in
+    /// `DestinationField`, offered only under `WAYMARK_DEMO_ROUTE=isr_cif`; waymark: the Siri
+    /// `CampusDestination` path was removed). Puts `place.name` in the destination field.
     /// - Parameter place: a `CampusPlaces` entry; its entrance coordinate is used as-is.
     func navigate(to place: CampusPlace) {
         destinationQuery = place.name

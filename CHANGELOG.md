@@ -2,6 +2,36 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark judge demo 4a — no University of Illinois in the default build (Sat Oct 17)
+
+- One switch, `CampusGate` (CaneKitLogic, tests first: `CampusGateTests`): the UIUC content — the campus gazetteer,
+  the ISR indoor script, the ISR → CIF route — stays in the code and its tests, reachable only under
+  `WAYMARK_DEMO_ROUTE=isr_cif` (the XCUITests and e2e.py set it; behaviour there is unchanged). The indoor half also
+  opens under `CANEKIT_INDOOR_ROUTE=1`. `FastPathIntentClassifier` and every existing Logic test are untouched.
+- Voice: a campus fast-path route ("take me to the Union", "go to the ARC") becomes a MapKit search in the walker's
+  own words ("Union", "ARC"), never the UIUC name; logged `conv_campus_gated {query, rewritten}`. "take me from A to
+  B" passes unchanged.
+- Destination box: no campus rows, "Campus" badge or "On campus"; with no fix the completer is centred on the demo
+  route's start, not Urbana. `RouteSource.mapKit` checks the gazetteer only under `isr_cif`.
+- Siri / Shortcuts: removed the `CampusDestination` AppEnum, `TakeMeToIntent.campusPlace` and the three "Take me to
+  <campus place>" phrases; "Take me somewhere in Waymark" stays; neutral description. Built app's App Intents
+  metadata searched: no UIUC word.
+- Indoor: the bundled `indoor_isr.json` is not loaded by default; recorded scripts still are, except old ones saved
+  under the ISR id / outdoorPlaceID "isr" (`indoor {action: campus_skipped}`); new recordings default to
+  `indoor_route` with outdoorPlaceID ""; after an indoor walk a named destination is a MapKit route to the words
+  said; neutral card hints. Preview text "Goodwin Avenue" → "NE 45th Street".
+- Written by a subagent in its own worktree (f02771d + 977ddcb), merged here. Independent review (another agent):
+  no blocker / high; fixed M1 (campus aliases were dropped to the cloud / "I need a network model" line → MapKit in
+  the walker's words), M2 (old ISR recordings still loaded), L3 (`CANEKIT_INDOOR_ROUTE=1` alone dropped "from ISR to
+  CIF"), L4 (stale `CampusDestination` comments / docs: CODE_REFERENCE, design.md §6, handsfree.md, AGENTS.md).
+  Accepted residual: the UIUC route / indoor JSON files still ship in the bundle (never read without the switch);
+  the App Intent type name `NavigateToCIFIntent` is an identifier only (title "Directions from here"); live MapKit
+  results are not filtered (3 km around the walker, so a UIUC name appears only if the walker is in Urbana).
+- Agent's checks: `make test` 1059 passed exit 0, `make gen` exit 0, `make sim` BUILD SUCCEEDED exit 0 (no
+  simulator runs there; the merged tree is re-verified here).
+- test on device: type "un" in Where to? → no campus rows; say "take me to the union" → "Walking to …" a Seattle
+  place or "Could not find"; Settings → Testing tools → Record an indoor route shows no ISR text.
+
 ## Waymark judge demo 2 — map of reports, coloured and shaped by confidence (Sat Oct 17)
 
 - `WaymarkMapView` (Apple MapKit only): the bundled Project Sidewalk labels within 25 m of the route

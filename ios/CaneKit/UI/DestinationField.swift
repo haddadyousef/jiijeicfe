@@ -11,7 +11,8 @@
 //  targets, radius) with the tokens in Theme.swift. Suggestions come from
 //  `DestinationSearch` (MKLocalSearchCompleter, debounced) merged with the campus gazetteer by
 //  `CaneKitLogic.DestinationSuggestions`; the ranking, the caps and the debounce are pure logic
-//  with tests, not decisions made here.
+//  with tests, not decisions made here. waymark: campus rows (the "Campus" badge, "On campus")
+//  exist only under `WAYMARK_DEMO_ROUTE=isr_cif` (`CampusGate.suggestions` in `DestinationSearch`).
 //
 //  Accessibility contract — this view is used by people who never see it (AGENTS.md rule 9):
 //    ⚠ test contract: the button labelled "Go" (testDestinationFieldRejectsEmptyQuery) and the

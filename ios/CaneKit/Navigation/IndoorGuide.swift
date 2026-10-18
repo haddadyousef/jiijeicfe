@@ -12,7 +12,8 @@
 //    · Walking: `start(script:destination:source:)` feeds CMPedometer (or synthetic steps) into
 //      `IndoorProgress`, speaks every `.say` at `.nav` ttl 20 through `AppModel.speech`, forwards
 //      every GPS fix to `IndoorHandover`, and on the handover starts the outdoor leg
-//      (`IndoorScriptCatalog.outdoorLeg`: the CIF demo route, else `navigate(to:)`).
+//      (`IndoorScriptCatalog.outdoorLeg`: the CIF demo route, else `navigate(to:)`; waymark: through
+//      `CampusGate.outdoorLeg`, see below).
 //    · Recording: CMPedometer + CMDeviceMotion (`xArbitraryZVertical`, 10 Hz, unwrapped by
 //      `IndoorYawUnwrapper`) into `IndoorRecorder`; "Add landmark" arms a one-shot transcript hook
 //      (`takeTranscript`) and opens push-to-talk; "Finish at the exit" averages fixes
@@ -31,6 +32,13 @@
 //      indoors) replaces the pedometer with floor(rate·t) steps; at the exit the simulation feeds
 //      fixes at the exit coordinate through `LocationService.ingest`, so the handover and the
 //      outdoor route run in the simulator too.
+//    · waymark (owner, 2026-10-17): the UIUC indoor content — the bundled `indoor_*.json` (the ISR
+//      draft), the hand-over to the ISR → CIF route and the ISR recording id — only when
+//      `campusIndoor` (`WAYMARK_DEMO_ROUTE=isr_cif` or `CANEKIT_INDOOR_ROUTE=1`, `CampusGate.indoorEnabled`).
+//      Otherwise only Documents/indoor scripts load (minus any under the ISR id or ISR outdoor place,
+//      `CampusGate.loadsRecorded`, logged `campus_skipped`), a named outdoor leg is always a MapKit
+//      route to the words said and no destination is `RouteSource.bundled()` (`CampusGate.outdoorLeg`),
+//      and a new recording is "indoor_route" with no campus outdoor place.
 //
 //  Owner: `AppModel.indoor` (attached in `AppModel.start()`). Callers: `AppModel+Indoor.swift`
 //  (voice, next / repeat / Stop route / simulate hooks), `AppModel.wireNavigation` (`ingest`),
@@ -101,7 +109,7 @@ final class IndoorGuide {
     /// Last recording line shown on the card (what was also spoken), nil before any.
     private(set) var recordingStatus: String?
     /// The file id a recording is saved under (typed on the card; sanitized at Save).
-    var recordingID = IndoorScriptCatalog.defaultRecordingID
+    var recordingID = CampusGate.defaultRecordingID(campusEnabled: IndoorGuide.campusIndoor)  // waymark:
 
     // MARK: - Private
 
@@ -150,6 +158,9 @@ final class IndoorGuide {
     static let environmentSimRate = IndoorSimSteps.rate(
         from: ProcessInfo.processInfo.environment["CANEKIT_INDOOR_SIM_STEPS_PER_S"])
 
+    /// waymark: the UIUC indoor content is reachable (see the file header). Read once at first use.
+    static let campusIndoor = CampusGate.indoorEnabled(environment: ProcessInfo.processInfo.environment)  // waymark:
+
     /// TTL of every indoor line, seconds (spec: a script line waits behind warnings up to 20 s).
     private static let lineTTL: TimeInterval = 20
 
@@ -196,20 +207,31 @@ final class IndoorGuide {
 
     // MARK: - Catalog
 
-    /// Re-reads bundled `indoor_*.json` and Documents/indoor/*.json; invalid or unreadable files are
+    /// Re-reads bundled `indoor_*.json` (waymark: only when `campusIndoor`) and Documents/indoor/*.json; invalid or unreadable files are
     /// skipped and remembered as `indoor {action: load_failed, file, problems}`. Callers: `init`,
     /// `saveRecording`.
     func reloadScripts() {
         loadProblems = []
-        let bundledURLs = (Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? [])
+        // waymark: the bundled ISR draft only when `campusIndoor`; recorded scripts always load.
+        let bundledURLs = (Self.campusIndoor ? (Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []) : [])  // waymark:
             .filter { $0.lastPathComponent.hasPrefix("indoor_") }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
         let recordedURLs = ((try? FileManager.default.contentsOfDirectory(at: Self.recordedDirectory,
                                                                          includingPropertiesForKeys: nil)) ?? [])
             .filter { $0.pathExtension == "json" }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
+        // waymark (review of f02771d): a recording under the ISR id / ISR outdoor place carries the
+        // Townsend name and exit line — skipped unless `campusIndoor` (`CampusGate.loadsRecorded`).
+        let recorded = recordedURLs.compactMap(load).filter { script in  // waymark:
+            guard CampusGate.loadsRecorded(script, campusEnabled: Self.campusIndoor) else {  // waymark:
+                loadProblems.append(["action": "campus_skipped", "id": script.id])  // waymark:
+                model?.logger.event("indoor", ["action": "campus_skipped", "id": script.id])  // waymark: (after attach)
+                return false  // waymark:
+            }  // waymark:
+            return true  // waymark:
+        }  // waymark:
         scripts = IndoorScriptCatalog.merged(bundled: bundledURLs.compactMap(load),
-                                             recorded: recordedURLs.compactMap(load))
+                                             recorded: recorded)  // waymark:
     }
 
     /// One file → a valid script, or nil (and a remembered problem).
@@ -265,9 +287,10 @@ final class IndoorGuide {
         // Review round item 3: the island for the whole trip, before the first `setIndoor`. Its
         // static name is the trip's, because the outdoor leg reuses this activity after the handover.
         let tripName: String
-        switch IndoorScriptCatalog.outdoorLeg(destination: destination) {
-        // waymark: the ISR script hands over to the UIUC route, whatever the default demo route is.
-        case .demoRoute: tripName = (try? RouteSource.isrCif().name) ?? script.name
+        switch CampusGate.outdoorLeg(destination: destination, campusEnabled: Self.campusIndoor) {  // waymark:
+        // waymark: the ISR script hands over to the UIUC route only when `campusIndoor`, else to the
+        // default demo route.
+        case .demoRoute: tripName = (try? (Self.campusIndoor ? RouteSource.isrCif() : RouteSource.bundled()).name) ?? script.name  // waymark:
         case .navigate(let text): tripName = "To \(text)"
         }
         model.liveActivity.beginIndoor(name: tripName, say: p.currentSay, stepIndex: p.index,
@@ -494,13 +517,15 @@ final class IndoorGuide {
         guard let model else { return }
         let target = destination
         let wasSimulating = isSimulating
-        let leg = IndoorScriptCatalog.outdoorLeg(destination: target)
+        let leg = CampusGate.outdoorLeg(destination: target, campusEnabled: Self.campusIndoor)  // waymark: "CIF" → MapKit when closed
         log("handover", ["by": trigger, "destination": target ?? ""])
         teardown()
         switch leg {
         case .demoRoute:
-            // waymark: the ISR script hands over to the UIUC route, not the default (Seattle) demo route.
-            if wasSimulating { model.startSimulatedWalk(load: RouteSource.isrCif) } else { model.startDemoRoute(RouteSource.isrCif) }
+            // waymark: the ISR script hands over to the UIUC route when `campusIndoor`, else to the
+            // default (Seattle) demo route.
+            let load: @MainActor () throws -> Route = Self.campusIndoor ? RouteSource.isrCif : RouteSource.bundled  // waymark:
+            if wasSimulating { model.startSimulatedWalk(load: load) } else { model.startDemoRoute(load) }  // waymark:
         case .navigate(let text):
             model.navigate(to: text)
         }
@@ -711,13 +736,14 @@ final class IndoorGuide {
             recordingSay("Tap Finish at the exit before saving.")
             return
         }
-        let id = IndoorScriptCatalog.sanitizedID(recordingID)
+        let id = CampusGate.sanitizedRecordingID(recordingID, campusEnabled: Self.campusIndoor)  // waymark:
         let base = scripts.first { $0.id == id }
         let date = Date().formatted(.iso8601.year().month().day())
         guard let script = recorder.script(
             id: id, name: base?.name ?? "Recorded indoor route",
             fromAliases: base?.fromAliases ?? [id.replacingOccurrences(of: "_", with: " ")],
-            outdoorPlaceID: base?.outdoorPlaceID ?? "isr", recordedAt: date,
+            outdoorPlaceID: base?.outdoorPlaceID ?? CampusGate.recordingOutdoorPlaceID(campusEnabled: Self.campusIndoor),  // waymark:
+            recordedAt: date,
             exitSay: base?.exit.say ?? IndoorRecorder.defaultExitSay,
             radiusM: base?.exit.radiusM ?? IndoorScript.defaultRadiusM) else {
             recordingSay("Nothing was recorded. Walk some steps, then finish at the exit.")

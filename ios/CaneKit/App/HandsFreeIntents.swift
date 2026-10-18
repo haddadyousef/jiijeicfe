@@ -28,8 +28,9 @@
 //       places, posts) with no wake word and no screen.
 //  What did NOT get a slot, and why: Recenter (the watch has it, and the app re-zeroes itself
 //  after three straight-walking fixes), the hazard switches (configuration, set before the
-//  walk, not during it), and "Directions from here" (the Guide card button is unchanged
-//  and "Take me to CIF in Waymark" reaches the same route-file waypoint by Siri). All are
+//  walk, not during it), and "Directions from here" (the Guide card button is unchanged;
+//  waymark: the "Take me to <campus place>" phrases were removed, so by Siri it is "Take me
+//  somewhere in Waymark" → a place name). All are
 //  still reachable hands-free — as plain `AppIntent`s, which the Shortcuts app lists as actions
 //  and which can be put on the Action button by building a one-step shortcut around them. Only
 //  the automatic, phrase-driven kind is capped at ten.
@@ -358,7 +359,8 @@ struct StatusIntent: AppIntent {
 ///
 /// The question is a `String` parameter and not part of the phrase, because an App Shortcut phrase
 /// can only interpolate an `AppEnum` / `AppEntity` — the same reason "Take me somewhere in Waymark"
-/// exists beside "Take me to Grainger in Waymark". Siri therefore asks "What do you want to know?"
+/// takes its place as a String (waymark: the `CampusDestination` enum phrases were removed). Siri
+/// therefore asks "What do you want to know?"
 /// and runs the intent again with the answer.
 struct AskSceneIntent: AppIntent {
     /// Shown in Shortcuts and the Action button picker.

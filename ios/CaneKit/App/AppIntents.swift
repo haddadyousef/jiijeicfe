@@ -3,7 +3,7 @@
 //  CaneKit
 //
 //  Voice control for a walker who cannot see the screen: Siri phrases (and the Action button /
-//  Shortcuts) for everything the Guide card's buttons do. "Hey Siri, take me to Grainger in
+//  Shortcuts) for everything the Guide card's buttons do. "Hey Siri, take me somewhere in
 //  Waymark", "Next waypoint in Waymark", "Stop the route in Waymark".
 //
 //  Purpose: seven App Intents — Where am I / Start route / Directions from here /
@@ -32,16 +32,17 @@
 //      the spoken word follows the home-screen name automatically. The *code* is still called
 //      CaneKit on purpose (AGENTS.md → "The name split"), so do not "fix" the mismatch here.
 //      What the walker must actually say today: "… in Waymark".
-//    · Phrases can only interpolate AppEnum / AppEntity parameters, never a String: "Take me to
-//      Grainger" uses the `CampusDestination` enum; any other place goes through "Take me
-//      somewhere in Waymark", where Siri asks "Where do you want to go?" for the String.
-//    · ⚠ `CampusDestination` raw values are `CampusPlaces` ids (CaneKitLogic,
-//      `campusPlaceIdsArePinned`): add a gazetteer place in both, same id.
+//    · Phrases can only interpolate AppEnum / AppEntity parameters, never a String, so every place
+//      goes through "Take me somewhere in Waymark", where Siri asks "Where do you want to go?" for
+//      the String. waymark (owner, 2026-10-17): the `CampusDestination` AppEnum ("Take me to
+//      Grainger in …", seven UIUC buildings) and its three phrases are gone — App Intents metadata
+//      is extracted at compile time, so it would show the University of Illinois in Siri,
+//      Shortcuts and Spotlight in every build. The free text reaches the campus gazetteer only
+//      under `WAYMARK_DEMO_ROUTE=isr_cif` (`RouteSource.mapKit`, `CampusGate.match`).
 //
 //  Tests: no automated test runs an intent (Siri and the Action button cannot be driven from
-//  XCUITest). What is pinned: the gazetteer ids behind `CampusDestination`
-//  (`CampusPlacesTests.campusPlaceIdsArePinned`) and the model methods the intents forward to,
-//  through the on-screen buttons that share them (`ios/CaneKitUITests/CaneKitUITests.swift`).
+//  XCUITest). What is pinned: the model methods the intents forward to, through the on-screen
+//  buttons that share them (`ios/CaneKitUITests/CaneKitUITests.swift`).
 //  After editing phrases, verify on the phone (Shortcuts app re-index; say the phrase).
 //
 
@@ -96,8 +97,8 @@ struct StartDemoRouteIntent: AppIntent {
 /// ⚠ Plain `AppIntent`, not an App Shortcut: the ten shortcut slots are full and the Action
 /// button needed "Talk to Waymark" more (see `CaneKitShortcuts`). Still in the Shortcuts app
 /// as an action (a one-step shortcut around it goes on the Action button), and the Guide card
-/// button is unchanged. For CIF, "Take me to CIF in Waymark" (`TakeMeToIntent` + the gazetteer)
-/// still reaches the CIF entrance whatever the demo route is.
+/// button is unchanged. waymark: under `WAYMARK_DEMO_ROUTE=isr_cif`, "Take me somewhere in Waymark"
+/// → "CIF" (`TakeMeToIntent` + the gazetteer) still reaches the CIF entrance.
 struct NavigateToCIFIntent: AppIntent {
     /// Shown in Shortcuts.
     static let title: LocalizedStringResource = "Directions from here"
@@ -115,64 +116,33 @@ struct NavigateToCIFIntent: AppIntent {
     }
 }
 
-/// The campus places Siri can hear inside a phrase ("Take me to Grainger in Waymark").
-/// ⚠ Raw values are `CampusPlaces` ids (CaneKitLogic, pinned by `campusPlaceIdsArePinned`);
-/// `CampusPlaces.place(id:)` turns a case into the entrance coordinate.
-enum CampusDestination: String, AppEnum {
-    // One case per gazetteer place (raw value = `CampusPlace.id`): `cif` the Campus Instructional
-    // Facility east entrance (the bundled route's last waypoint), `isr` Townsend Hall / ISR (the
-    // route's start), `grainger` Grainger Engineering Library, `illiniUnion` the Illini Union,
-    // `siebel` Siebel Center, `mainLibrary` the Main Library, `arc` the Activities and Recreation
-    // Center. Entrances other than CIF / ISR are OSM entrance nodes, not yet walked (AGENTS.md).
-    case cif, isr, grainger, illiniUnion, siebel, mainLibrary, arc
+// waymark (owner, 2026-10-17): `enum CampusDestination: AppEnum` (the seven UIUC buildings Siri could
+// hear inside "Take me to <campus place> in Waymark") was removed; see the file header.
 
-    /// Parameter type name in Shortcuts.
-    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Campus place"
-    /// What Siri matches: the title and the synonyms (the common spoken names; the gazetteer
-    /// aliases cover the typed field).
-    static let caseDisplayRepresentations: [CampusDestination: DisplayRepresentation] = [
-        .cif: DisplayRepresentation(title: "CIF", synonyms: ["Campus Instructional Facility", "the CIF"]),
-        .isr: DisplayRepresentation(title: "ISR", synonyms: ["Townsend Hall", "Townsend", "Illinois Street Residence Halls"]),
-        .grainger: DisplayRepresentation(title: "Grainger", synonyms: ["Grainger Library", "Grainger Engineering Library"]),
-        .illiniUnion: DisplayRepresentation(title: "the Illini Union", synonyms: ["Illini Union", "the Union"]),
-        .siebel: DisplayRepresentation(title: "Siebel", synonyms: ["Siebel Center", "the Siebel Center"]),
-        .mainLibrary: DisplayRepresentation(title: "the Main Library", synonyms: ["Main Library", "Main Stacks"]),
-        .arc: DisplayRepresentation(title: "the ARC", synonyms: ["ARC", "Activities and Recreation Center"]),
-    ]
-}
-
-/// Siri "Take me to <place>": a walking route from here. A campus place said in the phrase
-/// ("Take me to Grainger in Waymark") goes straight to its gazetteer entrance; anything else
-/// ("Take me somewhere in Waymark" → Siri asks "Where do you want to go?") is free text for
-/// `AppModel.navigate(to:)` — the gazetteer, then the nearest reasonable Apple Maps result.
+/// Siri "Take me to <place>": a walking route from here. "Take me somewhere in Waymark" → Siri asks
+/// "Where do you want to go?" → free text for `AppModel.navigate(to:)` — the nearest reasonable
+/// Apple Maps result (the campus gazetteer first only under `WAYMARK_DEMO_ROUTE=isr_cif`).
+/// waymark: the `campusPlace` parameter and its phrases were removed (file header).
 /// Either way the app says "Walking to <place>, N meters." before guidance starts.
 struct TakeMeToIntent: AppIntent {
     /// Shown in Shortcuts.
     static let title: LocalizedStringResource = "Take me to a place"
     /// Subtitle in Shortcuts.
-    static let description = IntentDescription("Walking directions from where you are to a campus building or any place nearby.")
+    static let description = IntentDescription("Walking directions from where you are to any place nearby.")  // waymark:
     /// Foreground, like every intent here (ARKit obstacle warnings need the app frontmost).
     static let supportedModes: IntentModes = .foreground(.immediate)
 
-    /// Free-text destination ("Starbucks on Green Street"); Siri asks for it when neither
-    /// parameter was given.
+    /// Free-text destination ("a coffee shop on University Way"); Siri asks for it when it was not
+    /// given.
     @Parameter(title: "Place", requestValueDialog: "Where do you want to go?")
     var place: String?
 
-    /// A campus place named in the phrase itself; wins over `place`.
-    @Parameter(title: "Campus place")
-    var campusPlace: CampusDestination?
-
-    /// Waits for the model, then `navigate(to: CampusPlace)` for a campus place, else
-    /// `navigate(to: String)` for the free text. Neither → `needsValueError`, so Siri asks
-    /// "Where do you want to go?" and runs the intent again with the answer.
+    /// Waits for the model, then `navigate(to: String)` for the free text. None →
+    /// `needsValueError`, so Siri asks "Where do you want to go?" and runs the intent again with
+    /// the answer.
     @MainActor
     func perform() async throws -> some IntentResult {
         let model = try await IntentSupport.model()
-        if let campusPlace, let known = CampusPlaces.place(id: campusPlace.rawValue) {
-            model.navigate(to: known)
-            return .result()
-        }
         let text = (place ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { throw $place.needsValueError("Where do you want to go?") }
         model.navigate(to: text)
@@ -284,8 +254,8 @@ enum IntentSupport {
 /// action in the Shortcuts app, and assignable to the Action button by building a one-step shortcut
 /// around it — or replace one of these ten. `RecenterIntent`, `SetOptionIntent` and (since the
 /// Talk-to-Waymark swap) `NavigateToCIFIntent` are the worked examples of the first choice: the
-/// Guide card button for the last one is unchanged, and "Take me to CIF in Waymark" reaches the
-/// same route-file waypoint by Siri.
+/// Guide card button for the last one is unchanged (waymark: the campus-place phrases that reached
+/// the CIF waypoint by Siri are gone; "Take me somewhere" → "CIF" does under `isr_cif`).
 struct CaneKitShortcuts: AppShortcutsProvider {
     /// The ten shortcuts, in display order.
     static var appShortcuts: [AppShortcut] {
@@ -294,10 +264,8 @@ struct CaneKitShortcuts: AppShortcutsProvider {
                     shortTitle: "Where am I",
                     systemImageName: "eye")
         AppShortcut(intent: TakeMeToIntent(),
-                    phrases: ["Take me to \(\.$campusPlace) in \(.applicationName)",
-                              "Take me to \(\.$campusPlace) with \(.applicationName)",
-                              "\(.applicationName) take me to \(\.$campusPlace)",
-                              "Take me somewhere in \(.applicationName)",
+                    // waymark: the three `\(\.$campusPlace)` phrases were removed (file header).
+                    phrases: ["Take me somewhere in \(.applicationName)",
                               "Take me somewhere with \(.applicationName)"],
                     shortTitle: "Take me to…",
                     systemImageName: "mappin.and.ellipse")
