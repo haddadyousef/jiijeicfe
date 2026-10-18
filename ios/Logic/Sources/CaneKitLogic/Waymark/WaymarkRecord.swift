@@ -52,17 +52,31 @@ public enum WaymarkRecord {
             ("label_id", string(labelID)),
             ("outcome", string(outcome.rawValue)),
             ("sensor", string(sensor.rawValue)),
-            ("dist_m", number(distM)),
-            ("along_m", number(alongM)),
-            ("gps_acc_m", number(gpsAccuracyM)),
-            ("speed_mps", number(speedMps)),
-            ("tilt_deg", number(tiltDeg)),
+            // E1 review B3: GeoFix's −1 ("invalid") and non-finite values become null (the schema
+            // says ≥ 0 or null); readings are rounded to 2 decimals (Float noise).
+            ("dist_m", number(round2(nonNegative(distM)))),
+            ("along_m", number(round2(alongM))),
+            ("gps_acc_m", number(round2(nonNegative(gpsAccuracyM)))),
+            ("speed_mps", number(round2(nonNegative(speedMps)))),
+            ("tilt_deg", number(round2(tiltDeg))),
             ("torso_cover", bool(torsoCover)),
             ("head_cover", bool(headCover)),
             ("build", string(build)),
             ("ts", string(isoUTC(timestampUTC))),
         ]
         return "{" + fields.map { "\"\($0.0)\":\($0.1)" }.joined(separator: ",") + "}"
+    }
+
+    /// nil for nil, non-finite or negative values.
+    static func nonNegative(_ v: Double?) -> Double? {
+        guard let v, v.isFinite, v >= 0 else { return nil }
+        return v
+    }
+
+    /// Rounded to 2 decimals; nil for nil or non-finite values.
+    static func round2(_ v: Double?) -> Double? {
+        guard let v, v.isFinite else { return nil }
+        return (v * 100).rounded() / 100
     }
 
     /// A JSON string literal (quotes, backslashes and control characters escaped).

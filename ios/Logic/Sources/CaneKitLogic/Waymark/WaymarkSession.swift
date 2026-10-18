@@ -96,7 +96,7 @@ public struct WaymarkSession: Sendable {
     private var logged: Set<String> = []
 
     /// Search radius around the fix: anything farther cannot be a `WaymarkAhead` hit.
-    static let searchRadiusM = WaymarkAhead.lookaheadMaxM + WaymarkAhead.corridorHalfWidthM
+    public static let searchRadiusM = WaymarkAhead.lookaheadMaxM + WaymarkAhead.corridorHalfWidthM
 
     /// - Parameter priors: a decoded bundle (`WaymarkPriorSet.decode`).
     public init(priors: WaymarkPriorSet) {
@@ -170,6 +170,12 @@ public struct WaymarkSession: Sendable {
         var belief = beliefs[labelID] ?? WaymarkBelief()
         belief.update(outcome, sensor: sensor, type: prior.type, now: nowUTC)
         beliefs[labelID] = belief
+    }
+
+    /// Puts back beliefs saved by an earlier run (E1, `beliefs.json`). Ids this bundle does not
+    /// have are dropped, so a regenerated bundle cannot carry stale evidence onto other labels.
+    public mutating func restore(_ saved: [String: WaymarkBelief]) {
+        beliefs = saved.filter { byID[$0.key] != nil }
     }
 
     /// The label with this id, if loaded.

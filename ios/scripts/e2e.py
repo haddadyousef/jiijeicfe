@@ -27,6 +27,12 @@ Scenarios (see SCENARIOS below):
                   every corner gets a described sentence; the report lists per-corner descriptions,
                   sign-scan text and hazard-watch replies. Not in "all" (needs the git-ignored
                   JPEGs); run with --scenario streetview.
+    waymark_ave   (Waymark X-e2e, D-35) the Seattle Ave route (the default demo route, not pinned to
+                  UIUC) replayed from waymark/demo/route_trace.json at ≤ 2.5 m/s with W's SYNTHETIC
+                  waymark/demo/test_priors.json (WAYMARK_PRIORS_FILE) and WAYMARK_ENABLED=1 → the generic
+                  route checks + check_stress + check_waymark (6-label bundle loads, ≥ 2 Waymark lines at
+                  .scene with lookup / latency timings, no contradiction without LiDAR, no coordinates in
+                  evidence records). Opt-in (not in "all"): `make e2e-waymark`.
     indoor_isr    (Step 66) CANEKIT_INDOOR_ROUTE=1 + CANEKIT_INDOOR_SIM_STEPS_PER_S=3 with the GPS
                   parked at the ISR door → indoor `advanced` in order, one `exit`, one `handover`, then
                   `route start` (the app's own walk simulator takes over there; the run stops).
@@ -97,6 +103,8 @@ BUNDLE = os.environ.get("WAYMARK_BUNDLE", "com.example.waymark-dev.waymark")
 STREETVIEW = IOS / "scripts/streetview"
 # Step 66 stress campaign: traces/*.json + routes/*.json from scripts/stress/build_routes.py.
 STRESS = IOS / "scripts/stress"
+# Waymark X-e2e (D-35 item 3): W's demo files at the repo root.
+WAYMARK_DEMO = IOS.parent / "waymark/demo"
 # The bundled ISR indoor draft that CANEKIT_INDOOR_ROUTE=1 starts (its step count and exit are read).
 INDOOR_ISR = IOS / "CaneKit/Resources/indoor_isr.json"
 # Mean Earth radius in metres (same spherical model as CaneKitLogic's GeoMath haversine).
@@ -329,7 +337,7 @@ def launch_and_wait_for_route(udid: str, attempts: int = 3, extra_env: dict[str,
 # `check` does. Raises (via `sh` / launch) on install or launch failure.
 def run_scenario(udid: str, name: str, points: list[tuple[float, float]], speed: float,
                  route_file: str | None = None, segments: list[list[tuple[float, float]]] | None = None,
-                 gap_s: float = 0.0, log_name: str | None = None) -> dict:
+                 gap_s: float = 0.0, log_name: str | None = None, env: dict[str, str] | None = None) -> dict:
     # Step 66: `route_file` → CANEKIT_ROUTE_FILE (a non-bundled route through the demo hook);
     # `segments` replays the path in pieces with `gap_s` seconds of no GPS between them (a dropout:
     # simctl stops sending fixes when a path ends); `log_name` names the copied log.
@@ -344,6 +352,7 @@ def run_scenario(udid: str, name: str, points: list[tuple[float, float]], speed:
         extra["SIMCTL_CHILD_CANEKIT_HAZARD_WATCH"] = "1"
     if route_file:
         extra["SIMCTL_CHILD_CANEKIT_ROUTE_FILE"] = route_file
+    extra.update(env or {})                       # waymark_ave: default route + priors + feature on
     started = launch_and_wait_for_route(udid, extra_env=extra)
     segs = segments or [points]
     for i, seg in enumerate(segs):
@@ -601,7 +610,9 @@ def check_stress(events: list[dict], wps: list[dict], max_lpm: float) -> tuple[l
             arrival_m = round(dist((fixes[-1]["lat"], fixes[-1]["lon"]), (wps[-1]["lat"], wps[-1]["lon"])), 1)
             if arrival_m > 25:
                 fails.append(f"arrived {arrival_m} m from the last waypoint (max 25)")
-    lines = [e for e in events if e.get("kind") == "speech" and not e.get("repeat")]
+    # Waymark lines are counted separately (`waymark_lines`): two different reports may both say
+    # "Reported obstacle ahead." with no waypoint between them, and they are not route chatter.
+    lines = [e for e in events if e.get("kind") == "speech" and not e.get("repeat") and e.get("source") != "waymark"]
     t0 = starts[0]["t"] if starts else 0.0
     t1 = arrived[0]["t"] if arrived else (events[-1].get("t", t0) if events else t0)
     walk = [e for e in lines if t0 <= e.get("t", 0) <= t1]
@@ -615,7 +626,7 @@ def check_stress(events: list[dict], wps: list[dict], max_lpm: float) -> tuple[l
     for e in events:
         if e.get("kind") == "waypoint":
             advanced = True
-        elif e.get("kind") == "speech" and not e.get("repeat"):
+        elif e.get("kind") == "speech" and not e.get("repeat") and e.get("source") != "waymark":
             txt = e.get("text")
             if txt == last and not advanced and txt not in exempt_consecutive:
                 dups.append(last)
@@ -626,6 +637,39 @@ def check_stress(events: list[dict], wps: list[dict], max_lpm: float) -> tuple[l
     metrics = {"walk_s": round(t1 - t0, 1), "lines": len(walk), "lines_per_min": lpm, "arrival_m": arrival_m,
                "veers": sum(s.startswith("Veer") for s in said), "passed": sum(s.startswith("Passed") for s in said),
                "gps_weak": sum("GPS" in s for s in said), "duplicates": len(dups)}
+    return fails, metrics
+
+
+def check_waymark(events: list[dict]) -> tuple[list[str], dict]:
+    """X-e2e (D-35 item 3): sidewalk memory on the Ave replay with W's SYNTHETIC test_priors.json.
+    The simulator has no LiDAR, so no pass can gather frames: any `contradicted` is a bug."""
+    fails: list[str] = []
+    loads = [e for e in events if e.get("kind") == "waymark_load"]
+    if not loads or loads[0].get("error"):
+        fails.append(f"waymark_load failed or missing: {loads[:1]}")
+    elif int(loads[0].get("labels", 0)) != 6 or "SYNTHETIC" not in str(loads[0].get("source", "")):
+        fails.append(f"expected the 6-label SYNTHETIC bundle, got {loads[0]}")
+    cues = [e for e in events if e.get("kind") == "waymark_cue"]
+    decided = [e for e in cues if e.get("line")]
+    said = [e for e in events if e.get("kind") == "speech" and e.get("source") == "waymark"]
+    if len(said) < 2:
+        fails.append(f"only {len(said)} Waymark lines spoken (want ≥ 2 of the 6 planted labels); "
+                     f"silences: {sorted({e.get('suppressed_reason') for e in cues if e.get('suppressed_reason')})}")
+    if any(e.get("priority") != "scene" for e in said):
+        fails.append(f"a Waymark line was not at .scene: {[e.get('priority') for e in said]}")
+    if any(not isinstance(e.get("lookup_ms"), (int, float)) for e in cues):
+        fails.append("a waymark_cue record has no numeric lookup_ms")
+    if any(not isinstance(e.get("latency_ms"), (int, float)) for e in decided):
+        fails.append("a spoken waymark_cue record has no numeric latency_ms")
+    evidence = [e for e in events if e.get("kind") == "waymark_evidence"]
+    if any(e.get("outcome") == "contradicted" for e in evidence):
+        fails.append(f"contradicted evidence without LiDAR: {[e for e in evidence if e.get('outcome') == 'contradicted'][:2]}")
+    if any(k in e for e in evidence for k in ("lat", "lon", "lng", "latitude", "longitude")):
+        fails.append("a waymark_evidence record carries a coordinate (D-14)")
+    metrics = {"labels": loads[0].get("labels") if loads else None, "load_ms": loads[0].get("load_ms") if loads else None,
+               "decided_speak": len(decided), "spoken": len(said), "spoken_lines": [e.get("text") for e in said],
+               "silences": sorted(e.get("suppressed_reason") for e in cues if e.get("suppressed_reason")),
+               "evidence": [(e.get("label_id"), e.get("outcome"), e.get("reason")) for e in evidence]}
     return fails, metrics
 
 
@@ -673,7 +717,7 @@ def main() -> int:
     ap.add_argument("--sim", default="iPhone 17 Pro Max")
     ap.add_argument("--scenario", default="all",
                     choices=["all", "clean", "missed_fence", "gps_jitter", "wrong_turn", "streetview", "indoor_isr",
-                             "stress_all"] + [f"stress_{n}" for n in stress_names()])
+                             "waymark_ave", "stress_all"] + [f"stress_{n}" for n in stress_names()])
     ap.add_argument("--trace", type=Path, help="Step 66: replay this trace JSON / GPX with the stress checks")
     ap.add_argument("--speed", type=float, default=4.0, help="m/s (4 keeps each run ~4 min)")
     ap.add_argument("--seed", type=int, default=7, help="gps_jitter noise; stress jitter and dropout positions")
@@ -711,7 +755,14 @@ def main() -> int:
     for name in names:
         extra: dict = {}
         trace = None
-        if name.startswith("stress_") or name.startswith("trace_"):
+        if name == "waymark_ave":
+            trace = load_trace(WAYMARK_DEMO / "route_trace.json")
+            trace["route"] = "../waymark/demo/route.json"          # relative to ios/, for route_waypoints
+            wspeed = min(args.speed, 2.5)                            # Waymark needs quiet gaps to speak into
+            segments, extra["perturbation"] = perturb(trace["points"], args.seed, 0.0, wspeed, 0)
+            flat = segments[0]
+            path_m = path_length(flat)
+        elif name.startswith("stress_") or name.startswith("trace_"):
             trace = load_trace(args.trace if args.trace else STRESS / "traces" / f"{name[len('stress_'):]}.json")
             segments, extra["perturbation"] = perturb(trace["points"], args.seed, args.jitter_m, args.speed, args.dropouts)
             extra["route"] = trace["route"]
@@ -725,6 +776,17 @@ def main() -> int:
             if name == "indoor_isr":
                 res = run_indoor(udid)
                 fails, extra["indoor"] = check_indoor(res["events"])
+            elif name == "waymark_ave":
+                wps = route_waypoints(trace["route"])
+                env = {"SIMCTL_CHILD_WAYMARK_DEMO_ROUTE": "ave",       # not isr_cif: the default Ave route
+                       "SIMCTL_CHILD_WAYMARK_PRIORS_FILE": str(WAYMARK_DEMO / "test_priors.json"),
+                       "SIMCTL_CHILD_WAYMARK_ENABLED": "1"}
+                res = run_scenario(udid, name, flat, wspeed, segments=segments, log_name=f"{name}-s{args.seed}", env=env)
+                fails = check(name, res["events"], res["seconds"])
+                more, extra["stress"] = check_stress(res["events"], wps, args.max_lines_per_min)
+                fails += more
+                more, extra["waymark"] = check_waymark(res["events"])
+                fails += more
             elif trace is not None:
                 wps = route_waypoints(trace["route"])
                 route_file = None if trace["route"] == "bundled" else str(IOS / trace["route"])

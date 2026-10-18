@@ -12,6 +12,7 @@
 //
 
 import Foundation
+import UIKit
 import CaneKitLogic
 
 extension AppModel {
@@ -40,6 +41,10 @@ extension AppModel {
         waymark.onLog = { [weak self] kind, fields in
             self?.logger.event(kind, fields)
         }
+        // E1: spotter feedback ("No sidewalk report within 15 m.") is spoken to VoiceOver users.
+        waymark.onAnnounce = { message in
+            UIAccessibility.post(notification: .announcement, argument: message)
+        }
         // The first line must come out in the natural voice and on time (A1 review M3).
         waymark.onLoaded = { [weak self] in
             self?.speech.prefetch(WaymarkLines.all)
@@ -47,8 +52,32 @@ extension AppModel {
     }
 
     /// Applies the stored "Sidewalk memory" switch. Called once from `start()`.
+    /// `WAYMARK_ENABLED=1` (automation: e2e.py `waymark_ave`) turns it on for this launch without
+    /// touching the stored setting.
     func applyWaymarkSwitch() {
-        waymark.enabled = waymarkEnabled
+        waymark.enabled = waymarkEnabled || ProcessInfo.processInfo.environment["WAYMARK_ENABLED"] == "1"
+    }
+
+    /// E1: one `LaneReport` into the evidence tracker. Trusted = the gyro gate, depth live and
+    /// normal tracking; minima only over lanes whose band the camera can see (`…Coverage`);
+    /// coverage flags are the centre lane's.
+    /// - Parameter report: the frame `handle(_:)` just received.
+    func ingestWaymarkDepth(_ report: LaneReport) {
+        guard waymark.enabled else { return }
+        let g = report.grid
+        func nearest(_ values: [Float], _ cover: [Bool]) -> Double {
+            var m = Double.infinity
+            for i in values.indices where i < cover.count && cover[i] && values[i].isFinite {
+                m = min(m, Double(values[i]))
+            }
+            return m
+        }
+        waymark.ingest(depth: WaymarkDepthSample(
+            trusted: report.isTrusted && report.depthAvailable && report.trackingNormal,
+            torsoMinM: nearest(g.torso, g.torsoCoverage), headMinM: nearest(g.head, g.headCoverage),
+            torsoCover: g.torsoCoverage.count > 1 && g.torsoCoverage[1],
+            headCover: g.headCoverage.count > 1 && g.headCoverage[1],
+            tiltDeg: report.cameraTiltDownDeg.map(Double.init)))
     }
 
     /// One GPS fix into the Waymark engine with the base app's current gating state.

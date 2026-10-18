@@ -496,7 +496,7 @@ starts closed whatever was stored).
 |---|---|---|
 | Guide, idle | Guide card, microphone, Where am I / Start route, Where to (destination, Navigate to CIF) | **Demo**: Simulate walk |
 | Guide, walking | everything, unchanged (Route tools: Recenter, beacon / headphone pills, Simulate walk) | — (a test contract and two warning pills live here) |
-| Details | status, Obstacles grid, Hazards card (incl. Sidewalk memory); Hands-free and Camera cards whenever any of their switches is on | **Hands-free and camera** (only while all off); **Diagnostics** (Recent activity / Scene engine) |
+| Details | status, Obstacles grid, Sidewalk memory card, Hazards card; Hands-free and Camera cards whenever any of their switches is on | **Hands-free and camera** (only while all off); **Diagnostics** (Recent activity / Scene engine) |
 | Settings | Alerts, Voice, Phone on cane, Vibration | **Family alerts**; **Testing tools** (Watch, Record an indoor route, This phone) |
 | Profile | unchanged | — |
 

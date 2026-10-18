@@ -55,10 +55,45 @@ final class WaymarkEngine {
     private(set) var lastLine: String?
     /// Lines spoken since launch.
     private(set) var spokenCount = 0
+    /// E1: a spotter tap waiting out its undo window (the card's toast). Nil when none.
+    private(set) var pendingTap: SpotterTap?
+    /// E1: the last evidence outcome in words ("Confirmed: obstacle, 3 m"), for the card.
+    private(set) var lastEvidence: String?
+    /// E1: evidence lines written since launch.
+    private(set) var evidenceCount = 0
+    /// E1: why the last spotter tap did nothing ("No sidewalk report within 15 m."), cleared by the next.
+    private(set) var spotterMessage: String?
+
+    /// A spotter tap held for `undoSeconds` before it counts (design doc §9.3).
+    struct SpotterTap: Equatable {
+        /// Distinguishes taps (a new tap replaces an old one).
+        let token: Int
+        /// The label tapped.
+        let labelID: String
+        /// Label type in words ("missing curb ramp").
+        let typeWord: String
+        /// Straight-line distance at the tap, metres.
+        let distM: Double
+        /// Confirm or Not there.
+        let outcome: WaymarkOutcome
+        /// The verdict to commit.
+        let verdict: WaymarkEvidenceVerdict
+    }
+
+    /// How long a spotter tap can be undone (design doc §9.3: 10 s).
+    static let undoSeconds = 10.0
 
     /// Mirrors `AppModel.waymarkEnabled`. Turning it on loads the bundle the first time.
     var enabled = false {
-        didSet { if enabled { load() } }
+        didSet {
+            if enabled { load() } else { stopEvidence() }   // E1 review H2: nothing carries over
+        }
+    }
+
+    /// E1 review H3: true while `AppModel` simulates a walk. Synthetic fixes with real LiDAR frames
+    /// must never become evidence, so passes, ground events and spotter taps are skipped meanwhile.
+    var simulating = false {
+        didSet { if simulating { tracker.reset() } }
     }
 
     /// Speaks a line; returns whether the queue took it. AppModel wires it to
@@ -66,11 +101,33 @@ final class WaymarkEngine {
     @ObservationIgnored var onSpeak: ((String) -> Bool)?
     /// Called once after a successful load (AppModel prefetches the lines for the natural voice).
     @ObservationIgnored var onLoaded: (() -> Void)?
+    /// Speaks a short VoiceOver announcement (spotter feedback). AppModel wires it to UIAccessibility.
+    @ObservationIgnored var onAnnounce: ((String) -> Void)?
     /// Writes a trip-log record. AppModel wires it to `logger.event`.
     @ObservationIgnored var onLog: ((String, [String: Any]) -> Void)?
 
     /// The pure core; nil until the bundle has loaded.
     @ObservationIgnored private var session: WaymarkSession?
+    /// E1: LiDAR passes and curb events (pure, CaneKitLogic).
+    @ObservationIgnored private var tracker = WaymarkEvidenceTracker()
+    /// E1: `Documents/waymark/` files.
+    @ObservationIgnored private let store = WaymarkStore()
+    /// E1: the last fix, its heading and route legs (spotter taps and ground events use them).
+    @ObservationIgnored private var lastFix: GeoFix?
+    @ObservationIgnored private var lastHeading: Double?
+    @ObservationIgnored private var lastLegs: [Coordinate]?
+    /// E1: spotter tap counter.
+    @ObservationIgnored private var tapToken = 0
+    /// E1 review M5: saved beliefs for ids this bundle does not have, kept so a different bundle
+    /// (e.g. the simulator's `WAYMARK_PRIORS_FILE`) never erases them from `beliefs.json`.
+    @ObservationIgnored private var foreignBeliefs: [String: WaymarkBelief] = [:]
+    /// E1: `CFBundleShortVersionString (CFBundleVersion)` for the evidence `build` field.
+    @ObservationIgnored private let build: String = {
+        let info = Bundle.main.infoDictionary
+        let v = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let b = info?["CFBundleVersion"] as? String ?? "?"
+        return "waymark \(v) (\(b))"
+    }()
     /// Heading from successive fixes (the engine's own; the base app's smoother is not shared).
     @ObservationIgnored private var course = CourseSmoother()
     /// A LiDAR cue is on right now (`AppModel.activeCue != .clear`).
@@ -101,7 +158,10 @@ final class WaymarkEngine {
                 }
             }.value
             // Index build is part of "load and index" (eval contract), so it stays inside the timing.
-            let made = decoded.map { WaymarkSession(priors: $0) }
+            var made = decoded.map { WaymarkSession(priors: $0) }
+            let saved = store.loadBeliefs()
+            made?.restore(saved)                      // E1: evidence survives a relaunch
+            if let made { foreignBeliefs = saved.filter { made.prior($0.key) == nil } }
             let loadMs = (ProcessInfo.processInfo.systemUptime - started) * 1000
             if let made {
                 session = made
@@ -139,6 +199,9 @@ final class WaymarkEngine {
             fixFresh: NavigationHealth.isFresh(timestamp: fix.timestamp, now: now.timeIntervalSinceReferenceDate),
             secondsSinceLidarCue: sinceLidar, nowUTC: now.timeIntervalSince1970, headingDeg: heading, legs: legs,
             speechIdle: speechIdle)
+        lastFix = fix
+        lastHeading = heading
+        lastLegs = legs
         let step = session!.step(fix: fix, context: context)
         let lookupMs = Self.round1((ProcessInfo.processInfo.systemUptime - t0) * 1000)
         if let line = step.spoken, onSpeak?(line.text) == true {
@@ -151,6 +214,141 @@ final class WaymarkEngine {
             fields["lookup_ms"] = lookupMs
             if record["line"] != nil { fields["latency_ms"] = latencyMs }
             onLog?("waymark_cue", fields)
+        }
+        // E1: LiDAR passes (design doc §9.1 / §9.2); never from a simulated walk (review H3).
+        guard !simulating else { return }
+        let near = session!.index.within(WaymarkSession.searchRadiusM, of: fix.coordinate)
+        let gates = WaymarkEvidenceGates(speedMps: fix.speed, gpsAccuracyM: fix.accuracy, fixFresh: context.fixFresh)
+        for verdict in tracker.step(labels: near, at: fix.coordinate, headingDeg: heading, legs: legs, gates: gates) {
+            commit(verdict)
+        }
+    }
+
+    /// E1: one LiDAR frame (every `LaneReport`, ~30 Hz). Cheap: counts and minima only.
+    func ingest(depth sample: WaymarkDepthSample) {
+        guard enabled, session != nil, !simulating else { return }
+        tracker.add(sample)
+    }
+
+    /// E1: a LiDAR ground hazard was confirmed. Curb-like kinds (drop-off, step up) confirm the
+    /// nearest curb-ramp / missing-curb-ramp label ahead (design doc §9.1 row 2).
+    /// - Parameter curbLike: the hazard's kind is `.dropOff` or `.stepUp`.
+    func groundEvent(curbLike: Bool) {
+        guard curbLike, enabled, !simulating, let session, let fix = lastFix else { return }
+        let near = session.index.within(WaymarkSession.searchRadiusM, of: fix.coordinate)
+        let gates = WaymarkEvidenceGates(speedMps: fix.speed, gpsAccuracyM: fix.accuracy,
+                                         fixFresh: NavigationHealth.isFresh(timestamp: fix.timestamp,
+                                                                            now: Date().timeIntervalSinceReferenceDate))
+        if let verdict = tracker.groundEvent(labels: near, at: fix.coordinate, headingDeg: lastHeading,
+                                             legs: lastLegs, gates: gates) {
+            commit(verdict)
+        }
+    }
+
+    /// E1: the spotter's Confirm / Not there (design doc §9.3). Applies to the nearest label with a
+    /// spoken line within 15 m; held `undoSeconds` before it counts (a new tap commits the old one).
+    /// - Parameter outcome: `.confirmed` or `.contradicted`.
+    func spotter(_ outcome: WaymarkOutcome) {
+        guard let session, let fix = lastFix,
+              NavigationHealth.isFresh(timestamp: fix.timestamp, now: Date().timeIntervalSinceReferenceDate) else {
+            say(session == nil ? "Turn on Sidewalk memory first." : "Waiting for a fresh GPS fix.")
+            return
+        }
+        guard !simulating else { say("Not saved during a simulated walk."); return }
+        let near = session.index.within(WaymarkSpotter.reachM, of: fix.coordinate)
+        guard let target = WaymarkSpotter.target(labels: near, at: fix.coordinate, headingDeg: lastHeading) else {
+            say("No sidewalk report within 15 m.")
+            return
+        }
+        // Review H5: a new tap on the same label replaces the pending one (the natural fix for a
+        // mis-tap); a tap on another label commits the old one first.
+        if let old = pendingTap, old.labelID != target.prior.id { commit(old.verdict) }
+        spotterMessage = nil
+        tapToken += 1
+        let token = tapToken
+        let verdict = WaymarkEvidenceVerdict(labelID: target.prior.id, outcome: outcome, sensor: .spotter,
+                                             distM: target.distM, alongM: target.alongM,
+                                             gpsAccuracyM: fix.accuracy, speedMps: fix.speed,
+                                             tiltDeg: tracker.lastSample?.tiltDeg,
+                                             torsoCover: tracker.lastSample?.torsoCover,
+                                             headCover: tracker.lastSample?.headCover)
+        pendingTap = SpotterTap(token: token, labelID: target.prior.id, typeWord: Self.words(target.prior.type),
+                                distM: target.distM, outcome: outcome, verdict: verdict)
+        onLog?("waymark_spotter", ["action": "tap", "label_id": target.prior.id, "outcome": outcome.rawValue])
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(Self.undoSeconds))
+            guard let self, let tap = self.pendingTap, tap.token == token else { return }
+            self.pendingTap = nil
+            self.commit(tap.verdict)
+        }
+    }
+
+    /// Shows and announces why a spotter tap did nothing (review M4).
+    private func say(_ message: String) {
+        spotterMessage = message
+        onAnnounce?(message)
+    }
+
+    /// E1 review H2: the feature went off — drop open passes, the last fix, a pending tap (not
+    /// committed: the helper switched the feature off inside the undo window) and any message.
+    private func stopEvidence() {
+        tracker.reset()
+        lastFix = nil; lastHeading = nil; lastLegs = nil
+        if let tap = pendingTap { onLog?("waymark_spotter", ["action": "dropped_feature_off", "label_id": tap.labelID]) }
+        pendingTap = nil
+        spotterMessage = nil
+    }
+
+    /// E1: cancels the pending spotter tap (the toast's Undo).
+    func undoSpotter() {
+        guard let tap = pendingTap else { return }
+        pendingTap = nil
+        onLog?("waymark_spotter", ["action": "undo", "label_id": tap.labelID])
+    }
+
+    /// E1: applies one outcome: belief update, `evidence.jsonl` line, `beliefs.json`, a
+    /// `waymark_evidence` trip-log record (label id, outcome, sensor, distances — no coordinates).
+    private func commit(_ v: WaymarkEvidenceVerdict) {
+        guard session != nil, enabled else { return }
+        let now = Date().timeIntervalSince1970
+        session!.record(v.outcome, sensor: v.sensor, labelID: v.labelID, nowUTC: now)
+        let line = WaymarkRecord.evidence(labelID: v.labelID, outcome: v.outcome, sensor: v.sensor, distM: v.distM,
+                                          alongM: v.alongM, gpsAccuracyM: v.gpsAccuracyM, speedMps: v.speedMps,
+                                          tiltDeg: v.tiltDeg, torsoCover: v.torsoCover, headCover: v.headCover,
+                                          build: build, timestampUTC: now)
+        var fields: [String: Any] = ["label_id": v.labelID, "outcome": v.outcome.rawValue, "sensor": v.sensor.rawValue]
+        if let d = v.distM, d.isFinite { fields["dist_m"] = Self.round1(d) }
+        if let a = v.alongM, a.isFinite { fields["along_m"] = Self.round1(a) }
+        if let r = v.reason { fields["reason"] = r }                       // review M3
+        if let error = store.appendEvidence(line) { fields["write_error"] = error }
+        // Unverifiable changes no belief (review), so only decisive outcomes rewrite beliefs.json;
+        // ids from other bundles are written back unchanged (review M5).
+        if v.outcome != .unverifiable,
+           let error = store.saveBeliefs(foreignBeliefs.merging(session!.beliefs) { _, mine in mine }) {
+            fields["beliefs_error"] = error
+        }
+        onLog?("waymark_evidence", fields)
+        evidenceCount += 1
+        let type = session!.prior(v.labelID).map { Self.words($0.type) } ?? "report"
+        let verb: String
+        switch v.outcome {
+        case .confirmed: verb = "Confirmed"
+        case .contradicted: verb = "Not there"
+        case .unverifiable: verb = "Couldn't check"
+        }
+        lastEvidence = "\(verb): \(type)" + (v.distM.map { ", \(Int($0.rounded())) m" } ?? "")
+    }
+
+    /// A label type in everyday words.
+    static func words(_ type: WaymarkLabelType) -> String {
+        switch type {
+        case .obstacle: "obstacle"
+        case .missingCurbRamp: "missing curb ramp"
+        case .curbRamp: "curb ramp"
+        case .surfaceProblem: "surface problem"
+        case .noSidewalk: "no sidewalk"
+        case .crosswalk: "crosswalk"
+        case .other: "report"
         }
     }
 
@@ -172,12 +370,15 @@ final class WaymarkEngine {
     /// A route began: labels may be announced again on this route.
     func routeStarted() {
         session?.routeStarted()
+        tracker.routeStarted()
         course.reset()
     }
 
-    /// A route ended (Stop, arrival or a replacement route).
+    /// A route ended (Stop, arrival or a replacement route). Open LiDAR passes close (E1).
     func routeEnded() {
         session?.routeEnded()
+        guard enabled else { tracker.reset(); return }
+        for verdict in tracker.routeEnded() { commit(verdict) }
     }
 
     /// `WAYMARK_PRIORS_FILE` when set (simulator / e2e), else the bundled file.

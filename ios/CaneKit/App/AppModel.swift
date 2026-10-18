@@ -205,7 +205,9 @@ final class AppModel {
 
     // MARK: - On-Device Walk Simulation
     /// True while simulating walking the route indoors on this device.
-    var isSimulatingWalk = false
+    var isSimulatingWalk = false {
+        didSet { waymark.simulating = isSimulatingWalk }  // waymark: no evidence from a simulated walk
+    }
     /// Speed for the on-device walk simulator (metres per second). Default 1.4 m/s.
     var simulationSpeedMps: Double = 1.4
     /// Background task driving simulated walk fixes.
@@ -480,7 +482,7 @@ final class AppModel {
     var hazardWatchEnabled: Bool = Settings.bool("hazardWatchEnabled", default: false) {
         didSet { Settings.set(hazardWatchEnabled, "hazardWatchEnabled"); hazards.watchEnabled = hazardWatchEnabled }
     }
-    /// waymark: "Sidewalk memory" (Sense → Hazards). Default OFF until tuned on a walk; cleared
+    /// waymark: "Sidewalk memory" (Details → Sidewalk memory card). Default OFF until tuned on a walk; cleared
     /// after a crash loop (`LaunchRecovery.optionalFeatureKeys`).
     var waymarkEnabled: Bool = Settings.bool("waymarkEnabled", default: false) {  // waymark:
         didSet { Settings.set(waymarkEnabled, "waymarkEnabled"); waymark.enabled = waymarkEnabled }  // waymark:
@@ -2036,6 +2038,7 @@ final class AppModel {
     /// (`cueChangeNeeds400ms`, `hysteresisHoldsUntilPlusFifteenCentimetres`,
     /// `centerApproachFiresThenUpdatesDistance`).
     private func handle(_ report: LaneReport) {
+        ingestWaymarkDepth(report)           // waymark: E1 LiDAR evidence (counts and minima only)
         // A session interruption/failure can leave GPS guidance alive while depth has stopped.
         // Clear any latched obstacle cue immediately; recovery is announced only when this same
         // frame proves normal tracking, valid depth and the sweep trust bit.
@@ -2683,6 +2686,7 @@ final class AppModel {
         }
         speech.say(g.spokenLine, .safety, ttl: 3)
         waymark.lidarPulse()                 // waymark: 5 s quiet after a ground-hazard line
+        waymark.groundEvent(curbLike: g.kind == .dropOff || g.kind == .stepUp)  // waymark: E1 curb evidence
         let processor = depth.processor
         let dist = Double(g.distance)
         let delta = Double(g.delta)

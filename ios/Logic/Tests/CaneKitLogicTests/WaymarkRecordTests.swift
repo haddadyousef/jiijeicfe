@@ -66,3 +66,13 @@ import Testing
                                       torsoCover: nil, headCover: nil, build: "waymark-0.1", timestampUTC: 0)
     #expect(line == #"{"schema":"waymark.evidence.v1","label_id":"ps:1","outcome":"unverifiable","sensor":"spotter","dist_m":null,"along_m":null,"gps_acc_m":null,"speed_mps":null,"tilt_deg":null,"torso_cover":null,"head_cover":null,"build":"waymark-0.1","ts":"1970-01-01T00:00:00Z"}"#)
 }
+
+@Test func evidenceNeverWritesNegativeOrNoisyNumbers() {
+    // E1 review B3: GeoFix uses -1 for "invalid" (standing still); the schema needs >= 0 or null.
+    // Float-derived readings are rounded to 2 decimals.
+    let line = WaymarkRecord.evidence(labelID: "ps:1", outcome: .confirmed, sensor: .spotter, distM: 0.8999999761581421,
+                                      alongM: -1.2345, gpsAccuracyM: -1, speedMps: -1, tiltDeg: 5.300000190734863,
+                                      torsoCover: nil, headCover: nil, build: "b", timestampUTC: 1_792_200_000)
+    #expect(line.contains("\"speed_mps\":null") && line.contains("\"gps_acc_m\":null"))
+    #expect(line.contains("\"dist_m\":0.9") && line.contains("\"tilt_deg\":5.3") && line.contains("\"along_m\":-1.23"))
+}

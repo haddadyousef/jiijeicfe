@@ -3498,6 +3498,15 @@ marked `// waymark:`.
   field evidence; `routeStarted()` / `routeEnded()`.
 - Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
 
+- `WaymarkEvidence.swift` (E1) — `WaymarkDepthSample`, `WaymarkEvidenceGates` (`hold`),
+  `WaymarkEvidenceVerdict` (+ `reason`), `WaymarkEvidenceTracker` (`add(_:)` per LaneReport,
+  `step(labels:at:headingDeg:legs:gates:)` per fix: signed along / cross, labels ≤ 3 m sideways, window
+  ±(8 m + GPS ≤ 12 m), passes opened from the front; gated confirm < 2.0 m; contradict only on a finished
+  clean pass (≥ 14.4 m walked, no reversal / jump, ≥ 15 frames, nothing < 2.5 m); else unverifiable with a
+  reason; `groundEvent(...gates:)` confirms the nearest *missing* curb ramp −8…+11.5 m, ≤ 4 m sideways;
+  `routeStarted()`, `routeEnded()`, `reset()`, `lastSample`), `WaymarkSpotter.target(labels:at:headingDeg:)` (nearest
+  speakable label within 15 m). `WaymarkSession.restore(_:)` puts back saved beliefs (known ids only).
+
 ### App — `ios/CaneKit/Waymark/`
 - `WaymarkEngine.swift` — `@MainActor @Observable`. `load()` (off-main decode of
   `WAYMARK_PRIORS_FILE` or the bundled `waymark_priors.json`, logs `waymark_load {labels, load_ms}`),
@@ -3505,7 +3514,22 @@ marked `// waymark:`.
   `waymark_cue` + `lookup_ms`, + `latency_ms` when spoken), `lidarCue(active:)`, `lidarPulse()`,
   `routeStarted()`, `routeEnded()`; `state`, `lastLine`, `spokenCount` for the UI; outputs
   `onSpeak` (returns whether the queue took the line), `onLog`, `onLoaded`.
-- `AppModel+Waymark.swift` — `wireWaymark()` (init: `speech.nonResumable`, `onSpeak` →
+- E1 in `WaymarkEngine`: `ingest(depth:)`, `groundEvent(curbLike:)`, `spotter(_:)` (10 s undo,
+  `pendingTap`, `undoSpotter()`), `commit` → belief, `evidence.jsonl`, `beliefs.json`, `waymark_evidence`
+  log record (no coordinates); `lastEvidence`, `evidenceCount`, `spotterMessage` for the card.
+- `ios/scripts/e2e.py` `waymark_ave` (X-e2e) — `check_waymark(events)`; `run_scenario(..., env=)`; the
+  app's `WAYMARK_ENABLED=1` launch hook (`AppModel.applyWaymarkSwitch`). `make e2e-waymark`.
+- `ios/scripts/waymark_export.py` (E2) — `export(evidence_paths, log_paths, out)`, `valid_evidence`,
+  `coord_keys` / `strip_coords`, `verify_no_coordinates`, `selftest()`; outputs the eval harness's
+  `evidence.jsonl` + `waymark_records.jsonl`; never a coordinate (exit 2 if one survives).
+- `WaymarkStore.swift` (E1) — `Documents/waymark/evidence.jsonl` (append) and `beliefs.json` (atomic);
+  `appendEvidence`, `saveBeliefs`, `loadBeliefs`; errors returned as "domain code" (no paths).
+- `WaymarkEngine.simulating` (mirrors `AppModel.isSimulatingWalk`): no evidence while true; `enabled = false`
+  resets the tracker and drops a pending tap; `onAnnounce` for spotter feedback; beliefs of ids not in
+  the bundle are kept in `beliefs.json`.
+- `WaymarkCard.swift` (A2 / E1) — Details card: the "Sidewalk memory" switch (moved from HazardsCard),
+  status line, "Confirm" / "Not there" tiles with the undo toast, saved-checks line.
+- `AppModel+Waymark.swift` — `ingestWaymarkDepth(_:)` (every `handle(_ report:)`), `wireWaymark()` (init: `speech.nonResumable`, `onSpeak` →
   `speech.say(line, .scene, ttl: 6)`, `onLog` → `logger.event`, `onLoaded` → prefetch the lines),
   `applyWaymarkSwitch()` (`start()`), `ingestWaymark(_:)` (every `location.onFix`; GPS-weak only
   while navigating; an indoor script counts as indoors).

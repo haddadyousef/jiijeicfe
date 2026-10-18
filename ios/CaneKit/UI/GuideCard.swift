@@ -195,7 +195,7 @@ struct GuideCard: View {
             // Step 58: the voice shell's giant microphone. Its label is "Talk to Waymark" /
             // "Listening…" / "Starting…" / "Thinking…"; the assistant's last answer
             // ("Assistant: …") is its status line.
-            VoiceTile()
+            VoiceTile(heightFraction: walking ? 0.30 : 0.40)   // UI v2: tiles above the fold
 
             // The compact row directly under the microphone — the only place the Guide puts three
             // buttons in a row (design.md §6.1 exception): tiles, so "Stop route" wraps instead of

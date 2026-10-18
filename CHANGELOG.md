@@ -2,6 +2,49 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark X-e2e — the Ave replay with sidewalk memory on (Sat Oct 17)
+
+- `e2e.py --scenario waymark_ave` / `make e2e-waymark` (D-35 item 3): replays W's `route_trace.json` on
+  the default (Ave) route at ≤ 2.5 m/s with `WAYMARK_PRIORS_FILE` = W's SYNTHETIC `test_priors.json`
+  and `WAYMARK_ENABLED=1` (new launch-only hook in `applyWaymarkSwitch`). Checks: the generic route
+  checks, `check_stress`, and `check_waymark` (6-label SYNTHETIC bundle, ≥ 2 Waymark lines at `.scene`,
+  `lookup_ms` / `latency_ms` present, no contradiction without LiDAR, no coordinate in evidence records).
+  `check_stress` now counts Waymark lines separately (two reports may share a line).
+
+## Waymark E2 — export without coordinates (Sat Oct 17)
+
+- `ios/scripts/waymark_export.py` (D-14): `--evidence evidence.jsonl --log canekit-*.jsonl --out DIR` writes
+  `evidence.jsonl` (valid `waymark.evidence.v1` lines, de-duplicated) and `waymark_records.jsonl`
+  (`waymark_load` / `_cue` / `_evidence` / `_spotter` records only, coordinate-like keys removed) plus a
+  counts-only `export_report.json`; re-reads its output and exits 2 if any coordinate survived.
+  `--selftest`: 8 checks on a built-in sample, all ok; the 8 golden evidence lines pass unchanged.
+
+## Waymark E1 — evidence from the walk (Sat Oct 17)
+
+- `WaymarkEvidenceTracker` (Logic, 13 tests): LiDAR passes for obstacles, curb events for ramp
+  labels, one verdict per label per route (design doc §9.1 / §9.2); `WaymarkSpotter` (§9.3).
+- App: every LaneReport and ground hazard feeds the tracker; outcomes update the beliefs and are
+  written to `Documents/waymark/evidence.jsonl` + `beliefs.json` and logged as `waymark_evidence`
+  (no coordinates). Beliefs are restored on load.
+- Details: new **Sidewalk memory** card (the switch moved here) with **Confirm** / **Not there** for a
+  walking helper, a 10 s Undo toast and a saved-checks line.
+
+- **Review of the first cut (adversarial, every finding checked; 9 new tests):** B1 contradictions now
+  need a finished pass (approached from the front, out behind a ±(8 m + GPS) window, ≥ 14.4 m walked,
+  no reversal or GPS jump, ≥ 15 gated frames); B2 only labels ≤ 3 m to the side are judged; B3
+  negative / non-finite numbers are null and readings rounded in every evidence line; H1 confirmations
+  need the §9.2 gates; H2 switching off resets passes and drops a pending tap; H3 nothing from a
+  simulated walk; H4 a curb event confirms only a *missing* curb ramp (gated, ≤ 4 m sideways; W to
+  confirm the reading of §9.1); H5 a second tap on the same label replaces the first; M1 `along_m` of
+  the deciding reading; M2 tilt / cover on ground and spotter lines; M3 `reason` on unverifiable
+  `waymark_evidence` records; M4 spotter needs a fresh fix and speaks why a tap did nothing; M5 beliefs
+  of other bundles are kept; M6 Undo is a real 60 pt target and each tap is announced; error strings
+  carry no container path. Rejected: moving the 30 Hz depth hook below the safety work — it is a few
+  comparisons on three-element arrays, no allocation (kept at the top, where it cannot be skipped by
+  an early return).
+
+Test on the phone: turn on Sidewalk memory, walk past a report, tap Confirm, see the toast; either
+tap Undo (nothing is saved) or wait 10 s (Files → Waymark → waymark/evidence.jsonl gains a line).
 ## Waymark UI v2 + Seattle default route (Sat Oct 17)
 
 Owner (Akash, 16:10): "not just the colours — button format and the whole app format simpler and
