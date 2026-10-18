@@ -6,6 +6,7 @@
   - [x] 3. Learning visible (before → after, source); persistence checked (relaunch in the tour).
   - [x] 4. Demo cleanup: Where am I tile, neutral Profile (4b), no UIUC in the default build (4a).
   - [x] 5. Verification runs and STATUS_M entry (uitest: pre-existing CaneKitIslandTour failure, see STATUS_M).
+  - [x] `CaneKitIslandTour.testDynamicIsland` green: Stop route was under the navigation bar after the Simulate walk swipe (test `scrollTo` fix).
   - [ ] Phone run on akeesh (unavailable at 22:40); F1 field walk; merge `waymark/judge-demo` to `main`.
 
 - [x] Step 69 — adversarial audit hardening (Tue Sep 22)
