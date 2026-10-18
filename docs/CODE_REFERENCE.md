@@ -3516,6 +3516,19 @@ marked `// waymark:`.
   whole percent: likely ≥ 70, uncertain ≥ 40, else doubtful; `word`, `shape`), `WaymarkGlance.isSpoken`, `.imagery`, `.votes`, `.confidence`, `.confidenceSpoken`,
   `WaymarkSession.confidence(of:nowUTC:)`.
 - Tests: `Waymark*Tests.swift` (incl. `WaymarkGoldenTests` replaying `waymark/contracts/golden/`).
+- `WaymarkLearning.swift` (judge demo task 3) — `struct WaymarkLearning` {labelID, type, outcome, sensor, pBefore,
+  pAfter, `changed`}; `WaymarkGlance.source(_:)`, `learningLine(_:)`, `learningSpoken(_:)`.
+  `WaymarkSession.record(_:sensor:labelID:nowUTC:) -> WaymarkLearning?` (@discardableResult; unverifiable = no-op,
+  before == after). Tests `WaymarkLearningTests` (incl. the beliefs JSON round trip WaymarkStore uses).
+- `WaymarkLearningShown.swift` (task 3) — `WaymarkLearning.round3(_:)`, `.tripLogFields` (p_before / p_after),
+  `.kept(_:over:)` (unverifiable never replaces a decisive learning); `WaymarkSession.isChecked(_:)`;
+  `WaymarkGlance.checkedBefore`, `pinSpoken(type:p:checked:)`, `pinLearningDetail(learning:checked:)`,
+  `learningDetailSpoken(learning:checked:)`, `learningSymbol(_:)`, `storedCaption(folder:savedLabels:)` (nil until
+  saved). Tests `WaymarkLearningShownTests`, `WaymarkReviewFixTests`.
+- `WaymarkStoreFolder.swift` (task 3) — `enum WaymarkStoreFolder`: `standard` ("waymark"), `maxLength`, `sanitized(_:)`,
+  `name(subdir:uiTest:)`, `testPrefix` ("wm-ui-"), `staleTestFolders(_:active:uiTest:)` (never "waymark").
+- `ios/Logic/Sources/CaneKitLogic/StoredBool.swift` (task 3 review) — `StoredBool.parse(_:) -> Bool?` (Bool, or the
+  yes/no/true/false/1/0 strings a launch argument arrives as); caller `Settings.bool(_:default:)` in AppModel.swift.
 - `ios/Logic/Sources/CaneKitLogic/CampusGate.swift` (judge demo, UIUC gate) — `enum CampusGate`, the pure switch
   between the default (Seattle) build and the UIUC demo: `enabled(environment:)` (`WAYMARK_DEMO_ROUTE=isr_cif`),
   `indoorEnabled(environment:)` (or `CANEKIT_INDOOR_ROUTE=1`), `allows(_:campusEnabled:)` and
@@ -3563,6 +3576,12 @@ marked `// waymark:`.
   / "… on · N reports", opens the sheet), `WaymarkAheadCard` (walking, not indoors, under Stop route: nearest
   report, "40 m · 72 % likely"; "Waiting for a fresh GPS fix" once the fix is older than
   `NavigationHealth.maxFixAge`, re-checked every 2 s), `WaymarkSheet` (`WaymarkCard` in a sheet with Done). Caller: `GuideCard`.
+- Task 3 in the app: `WaymarkEngine.lastLearning`, `learned` (both via `WaymarkLearning.kept`), `storeFolderName`,
+  `isChecked(_:)`, `savedLabelCount`; `MapPin.checked` / `.learning`; `commit(_:)` logs p_before / p_after; `load()` calls
+  `store.removeStaleTestFolders()`. `WaymarkStore.folderName` (`WAYMARK_STORE_SUBDIR` under `CANEKIT_UITEST=1`),
+  `removeStaleTestFolders()` (UI tests only). `WaymarkCard.learningRow(_:)` (identifier `waymark-learning`) + storage
+  caption. `WaymarkAheadCard` third line (`pinLearningDetail`). `WaymarkPinMark.checked` (dot badge); map details line
+  (identifier `waymark-pin-learning`). `CaneKitWaymarkTour.learningShots()`, `selectHydrantPin()` (shots 08–10).
 - `WaymarkMapView.swift` (judge demo) — the map of reports in a sheet: `MapPolyline` route, `UserAnnotation`,
   one 44 pt `Annotation` button per `WaymarkEngine.MapPin` (identifier `waymark-pin-<id>`, `.isSelected`),
   legend, tapped-pin details (VoiceOver focus moves there), camera framed once on route + pins, pins reloaded

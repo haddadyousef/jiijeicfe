@@ -11,6 +11,10 @@
 //      route: the nearest report ahead in the same order the spoken line uses
 //      (`WaymarkSession.Step.nearest`), with its distance and belief ("Reported obstacle · 40 m ·
 //      72 % likely"). Placed under the control deck so Repeat / Next / Recenter / Stop never move.
+//      Task 3: when this phone has learned something about the report shown, a third line says
+//      what (`WaymarkGlance.pinLearningDetail`, as on the map: this launch's "Not there · 50 % →
+//      43 % · spotter" from `learned[id]`, else "Checked on this phone before"). Review: it was
+//      tied to `lastLearning`, which a spotter tap 10 s back has usually walked past.
 //    · `WaymarkSheet` — the Sidewalk memory card in a sheet with Done.
 //  Every word comes from `WaymarkGlance` (CaneKitLogic, tested); the views only read `AppModel`.
 //  Nothing here speaks through the speech queue. Owner / caller: `GuideCard`.
@@ -80,6 +84,12 @@ struct WaymarkAheadCard: View {
         let title = title(shown, now: now)
         let facts = shown.map { WaymarkGlance.aheadFacts(alongM: $0.alongM, p: $0.p) }.flatMap { $0.isEmpty ? nil : $0 }
         let spoken = shown.map { WaymarkGlance.aheadSpoken(type: $0.type, alongM: $0.alongM, p: $0.p) } ?? title + "."
+        // Task 3 (review): what this phone learned about the report shown — this launch's learning
+        // for that label, else "Checked on this phone before" — the map pin's same words.
+        let learnedHere = shown.flatMap { model.waymark.learned[$0.labelID] }
+        let checked = shown.map { model.waymark.isChecked($0.labelID) } ?? false
+        let learningText = WaymarkGlance.pinLearningDetail(learning: learnedHere, checked: checked)
+        let learningSpoken = WaymarkGlance.learningDetailSpoken(learning: learnedHere, checked: checked)
         return Button(action: open) {
             HStack(alignment: .center, spacing: CKSpacing.md) {
                 // Task 2: a report shows its map pin (band colour + shape, type glyph), so the card
@@ -107,6 +117,14 @@ struct WaymarkAheadCard: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }
+                    if let learningText {
+                        Text(learningText)
+                            .font(CKFont.secondary.weight(.semibold))
+                            .foregroundStyle(CKColor.textPrimary)
+                            .monospacedDigit()
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.8)
+                    }
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
@@ -123,7 +141,7 @@ struct WaymarkAheadCard: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Sidewalk memory. \(spoken)")
+        .accessibilityLabel("Sidewalk memory. \(spoken)" + (learningSpoken.map { " \($0)" } ?? ""))
         .accessibilityHint("Opens Sidewalk memory: reports, map and spotter buttons")
         .accessibilityAddTraits([.isButton, .updatesFrequently])
     }

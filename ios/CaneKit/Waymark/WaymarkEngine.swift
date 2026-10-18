@@ -21,7 +21,14 @@
 //    · `waymark_load {labels, load_ms, source}` or `{error, load_ms}`;
 //    · `waymark_cue` = `WaymarkRecord.cue` fields + `lookup_ms` (candidate lookup and decision for
 //      that fix) and, on a spoken line, `latency_ms` (GPS fix timestamp → the `say` call; the queue
-//      is idle by rule, so dispatch follows at once — `speech_dispatch` has the exact moment).
+//      is idle by rule, so dispatch follows at once — `speech_dispatch` has the exact moment);
+//    · `waymark_evidence` = label id, outcome, sensor, distances and (judge demo task 3)
+//      `p_before` / `p_after` to 3 dp (`WaymarkLearning.tripLogFields`). These two are trip-log
+//      only: the `evidence.jsonl` line (`waymark.evidence.v1`, additionalProperties false) is unchanged.
+//
+//  Judge demo task 3, learning made visible: every committed outcome keeps what it did to the
+//  label's belief (`lastLearning`, `learned` per label this launch) for the Sidewalk memory card,
+//  the Guide's ahead card and the map; `MapPin.checked` says the phone holds field evidence for it.
 //
 //  Inputs: `WAYMARK_PRIORS_FILE` (absolute path, simulator / e2e only) else the bundled
 //  `waymark_priors.json`. Owner: `AppModel` (`waymark`, wired in `AppModel+Waymark.swift`).
@@ -70,6 +77,14 @@ final class WaymarkEngine {
     /// `GeoFix.timestamp` of the fix behind `nearest` (reference-date seconds), so the card can say
     /// "Waiting for a fresh GPS fix" once it is older than `NavigationHealth.maxFixAge` (review 2).
     private(set) var nearestFixTimestamp: TimeInterval?
+    /// Judge demo task 3: what the last committed outcome did to its label's belief ("Not there ·
+    /// 50 % → 43 % · spotter"). An unverifiable outcome (before == after) is shown only while no
+    /// decisive one has been recorded this launch (`WaymarkLearning.kept`, review). Nil before the
+    /// first this launch.
+    private(set) var lastLearning: WaymarkLearning?
+    /// Judge demo task 3: the last decisive outcome per label id (else the last unverifiable one),
+    /// this launch only (the map's pin details, the Guide's ahead card).
+    private(set) var learned: [String: WaymarkLearning] = [:]
 
     /// A spotter tap held for `undoSeconds` before it counts (design doc §9.3).
     struct SpotterTap: Equatable {
@@ -166,6 +181,7 @@ final class WaymarkEngine {
             }.value
             // Index build is part of "load and index" (eval contract), so it stays inside the timing.
             var made = decoded.map { WaymarkSession(priors: $0) }
+            store.removeStaleTestFolders()            // task 3 review: UI tests only, no-op otherwise
             let saved = store.loadBeliefs()
             made?.restore(saved)                      // E1: evidence survives a relaunch
             if let made { foreignBeliefs = saved.filter { made.prior($0.key) == nil } }
@@ -298,6 +314,11 @@ final class WaymarkEngine {
         let prior: WaymarkPrior
         /// Belief p at the moment the pins were computed.
         let p: Double
+        /// Task 3: field evidence for this label is stored on this phone (`WaymarkSession.isChecked`,
+        /// restored from `beliefs.json`, so it survives a relaunch).
+        var checked = false
+        /// Task 3: what this launch's last outcome for the label did, if any.
+        var learning: WaymarkLearning?
         /// The label id.
         var id: String { prior.id }
     }
@@ -311,7 +332,8 @@ final class WaymarkEngine {
         guard let session else { return [] }
         let now = Date().timeIntervalSince1970
         return WaymarkMapSelection.labels(index: session.index, route: route, walker: walker).map {
-            MapPin(prior: $0, p: session.confidence(of: $0.id, nowUTC: now) ?? .nan)
+            MapPin(prior: $0, p: session.confidence(of: $0.id, nowUTC: now) ?? .nan,
+                   checked: session.isChecked($0.id), learning: learned[$0.id])
         }
     }
 
@@ -340,11 +362,12 @@ final class WaymarkEngine {
     }
 
     /// E1: applies one outcome: belief update, `evidence.jsonl` line, `beliefs.json`, a
-    /// `waymark_evidence` trip-log record (label id, outcome, sensor, distances — no coordinates).
+    /// `waymark_evidence` trip-log record (label id, outcome, sensor, distances, p before / after —
+    /// no coordinates). Task 3: keeps what it did in `lastLearning` / `learned`.
     private func commit(_ v: WaymarkEvidenceVerdict) {
         guard session != nil, enabled else { return }
         let now = Date().timeIntervalSince1970
-        session!.record(v.outcome, sensor: v.sensor, labelID: v.labelID, nowUTC: now)
+        let learning = session!.record(v.outcome, sensor: v.sensor, labelID: v.labelID, nowUTC: now)
         let line = WaymarkRecord.evidence(labelID: v.labelID, outcome: v.outcome, sensor: v.sensor, distM: v.distM,
                                           alongM: v.alongM, gpsAccuracyM: v.gpsAccuracyM, speedMps: v.speedMps,
                                           tiltDeg: v.tiltDeg, torsoCover: v.torsoCover, headCover: v.headCover,
@@ -353,6 +376,8 @@ final class WaymarkEngine {
         if let d = v.distM, d.isFinite { fields["dist_m"] = Self.round1(d) }
         if let a = v.alongM, a.isFinite { fields["along_m"] = Self.round1(a) }
         if let r = v.reason { fields["reason"] = r }                       // review M3
+        // Task 3: trip log only — never the evidence.jsonl line (schema additionalProperties false).
+        for (key, value) in learning?.tripLogFields ?? [:] { fields[key] = value }
         if let error = store.appendEvidence(line) { fields["write_error"] = error }
         // Unverifiable changes no belief (review), so only decisive outcomes rewrite beliefs.json;
         // ids from other bundles are written back unchanged (review M5).
@@ -361,6 +386,11 @@ final class WaymarkEngine {
             fields["beliefs_error"] = error
         }
         onLog?("waymark_evidence", fields)
+        if let learning {                                                   // task 3
+            // Review: an unverifiable pass never hides a decisive change (`WaymarkLearning.kept`).
+            learned[learning.labelID] = WaymarkLearning.kept(learning, over: learned[learning.labelID])
+            lastLearning = WaymarkLearning.kept(learning, over: lastLearning)
+        }
         evidenceCount += 1
         let type = session!.prior(v.labelID).map { Self.words($0.type) } ?? "report"
         let verb: String
@@ -404,6 +434,16 @@ final class WaymarkEngine {
         guard enabled else { tracker.reset(); return }
         for verdict in tracker.routeEnded() { commit(verdict) }
     }
+
+    /// Task 3: the `Documents/` sub-folder in use (`waymark`, or the UI-test folder), for the card.
+    var storeFolderName: String { WaymarkStore.folderName }
+
+    /// Task 3 review: field evidence for `id` is stored on this phone (`WaymarkSession.isChecked`).
+    func isChecked(_ id: String) -> Bool { session?.isChecked(id) ?? false }
+
+    /// Task 3 review: how many label beliefs `beliefs.json` holds (this bundle's and foreign ids),
+    /// so the card's "Saved on this phone" caption appears only once something is saved.
+    var savedLabelCount: Int { (session?.beliefs.count ?? 0) + foreignBeliefs.count }
 
     /// `WAYMARK_PRIORS_FILE` when set (simulator / e2e), else the bundled file.
     private static func bundleURL() -> URL? {

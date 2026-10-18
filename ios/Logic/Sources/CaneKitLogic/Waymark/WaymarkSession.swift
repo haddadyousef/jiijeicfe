@@ -197,13 +197,23 @@ public struct WaymarkSession: Sendable {
     }
 
     /// Adds one piece of field evidence (spotter tap, LiDAR / ground / vision check, E1).
-    /// Unknown label ids are ignored; `.unverifiable` changes nothing (`WaymarkBelief.update`).
+    /// Unknown label ids are ignored; `.unverifiable` changes nothing (`WaymarkBelief.update`) —
+    /// not the stored belief, not its clock.
     /// - Parameters: outcome, sensor, the label id and UTC seconds.
-    public mutating func record(_ outcome: WaymarkOutcome, sensor: WaymarkSensor, labelID: String, nowUTC: Double) {
-        guard let prior = byID[labelID], outcome != .unverifiable else { return }
+    /// - Returns: judge demo task 3 — p before and after at `nowUTC` with the outcome and source
+    ///   (equal before and after for `.unverifiable`), or nil for an unknown id.
+    @discardableResult
+    public mutating func record(_ outcome: WaymarkOutcome, sensor: WaymarkSensor, labelID: String,
+                                nowUTC: Double) -> WaymarkLearning? {
+        guard let prior = byID[labelID] else { return nil }
         var belief = beliefs[labelID] ?? WaymarkBelief()
-        belief.update(outcome, sensor: sensor, type: prior.type, now: nowUTC)
-        beliefs[labelID] = belief
+        let before = belief.read(prior: prior, now: nowUTC).p
+        if outcome != .unverifiable {
+            belief.update(outcome, sensor: sensor, type: prior.type, now: nowUTC)
+            beliefs[labelID] = belief
+        }
+        return WaymarkLearning(labelID: labelID, type: prior.type, outcome: outcome, sensor: sensor,
+                               pBefore: before, pAfter: belief.read(prior: prior, now: nowUTC).p)
     }
 
     /// Puts back beliefs saved by an earlier run (E1, `beliefs.json`). Ids this bundle does not

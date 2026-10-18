@@ -10,8 +10,15 @@
 //      with an Undo in a toast that names the report and its distance, so a mis-tap can be taken
 //      back; a line says why a tap did nothing ("No sidewalk report within 15 m.");
 //    · how many checks were saved and the last one ("Confirmed: obstacle, 3 m");
-//    · judge demo: "Map of reports" opens `WaymarkMapView` (pins coloured and shaped by confidence).
-//  Everything is words; the buttons are `CKBigButton` tiles. No XCUITest queries this card yet.
+//    · judge demo: "Map of reports" opens `WaymarkMapView` (pins coloured and shaped by confidence);
+//    · judge demo task 3: once an outcome is committed, a "learning" row under the spotter buttons —
+//      the label's pin (band of p after) + "Reported obstacle" + "Not there · 50 % → 43 % · spotter"
+//      (`WaymarkGlance.learningLine`; VoiceOver hears `learningSpoken`) — and, once a belief is
+//      saved, a caption naming the file it is kept in ("Saved on this phone:
+//      Documents/waymark/beliefs.json"). A "Couldn't check" pass never replaces a decisive row
+//      (`WaymarkLearning.kept`); the row's pin dot is the map's "checked" (a stored belief).
+//  Everything is words; the buttons are `CKBigButton` tiles. CaneKitWaymarkTour queries the switch,
+//  "Map of reports", "Not there", the toast text and the learning row (identifier "waymark-learning").
 //  Owner / caller: `SensePage` in ContentView.swift (after "What's ahead"). Reads
 //  `model.waymarkEnabled` and `model.waymark` (`WaymarkEngine`).
 //
@@ -67,9 +74,15 @@ struct WaymarkCard: View {
                 if let message = model.waymark.spotterMessage {
                     CKErrorText(text: message, systemImage: "exclamationmark.circle")
                 }
+                if let learning = model.waymark.lastLearning { learningRow(learning) }   // task 3
                 if model.waymark.evidenceCount > 0 || model.waymark.lastEvidence != nil {
-                    caption("\(model.waymark.evidenceCount) checks saved this session"
+                    caption("\(model.waymark.evidenceCount) \(model.waymark.evidenceCount == 1 ? "check" : "checks") saved this session"
                             + (model.waymark.lastEvidence.map { ". Last: \($0)." } ?? "."))
+                }
+                // Review: only once a belief is saved (none before the first decisive outcome).
+                if let stored = WaymarkGlance.storedCaption(folder: model.waymark.storeFolderName,
+                                                            savedLabels: model.waymark.savedLabelCount) {
+                    caption(stored)
                 }
             }
         }
@@ -104,6 +117,36 @@ struct WaymarkCard: View {
         .padding(CKSpacing.md)
         .background(CKColor.accent.opacity(0.10), in: RoundedRectangle(cornerRadius: CKRadius.tile, style: .continuous))
         .onAppear { UIAccessibility.post(notification: .announcement, argument: words) }
+    }
+
+    /// Task 3: what the last committed outcome did — the label's pin in its new band, the report and
+    /// "Not there · 50 % → 43 % · spotter". One VoiceOver element saying it in words.
+    private func learningRow(_ l: WaymarkLearning) -> some View {
+        HStack(alignment: .center, spacing: CKSpacing.md) {
+            // Review: the same "checked" as the map pin (a stored belief), not "this outcome changed it".
+            WaymarkPinMark(band: WaymarkConfidenceBand(p: l.pAfter), type: l.type, size: 34,
+                           checked: model.waymark.isChecked(l.labelID))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(WaymarkGlance.reported(l.type))
+                    .font(CKFont.body.weight(.bold))
+                    .foregroundStyle(CKColor.textPrimary)
+                Text(WaymarkGlance.learningLine(l))
+                    .font(CKFont.body.weight(.semibold))
+                    .foregroundStyle(CKColor.textPrimary)
+                    .monospacedDigit()
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(CKSpacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CKColor.surfaceRaised, in: RoundedRectangle(cornerRadius: CKRadius.tile, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: CKRadius.tile, style: .continuous)
+                    .strokeBorder(CKColor.border, lineWidth: 1))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(WaymarkGlance.reported(l.type)). \(WaymarkGlance.learningSpoken(l))")
+        .accessibilityIdentifier("waymark-learning")
     }
 
     /// The status line under the switch.

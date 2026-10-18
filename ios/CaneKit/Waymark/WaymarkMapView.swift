@@ -10,6 +10,12 @@
 //  safe lane ladder, never the rose of STOP), with a type glyph.
 //  Types never spoken (crosswalk, other) are drawn dimmed (plan 5.2).
 //  Tapping a pin shows its type, confidence, street-imagery date and Project Sidewalk votes.
+//  Task 3 (learning made visible): a pin with field evidence stored on this phone
+//  (`MapPin.checked`, survives a relaunch) carries a small dot badge (text colour, ringed in the
+//  surface colour, so it reads in light and dark mode; a shape cue, not colour alone) and its
+//  VoiceOver label ends ", checked on this phone"; its details add this launch's learning line
+//  ("Not there · 50 % → 43 % · spotter") or "Checked on this phone before", with an icon by
+//  outcome (`WaymarkGlance.learningSymbol`: check seal, xmark seal, question mark, clock).
 //
 //  These are Waymark reports, not the hazards the cane logged on a walk (that count lives on the
 //  Details page's Hazards card as "N logged this walk"); the header says so.
@@ -58,12 +64,12 @@ struct WaymarkMapView: View {
                             detailsFocused = true
                         } label: {
                             WaymarkPinMark(band: WaymarkConfidenceBand(p: pin.p), type: pin.prior.type,
-                                           selected: selectedID == pin.id)
+                                           selected: selectedID == pin.id, checked: pin.checked)
                                 .frame(width: 44, height: 44)      // review 2: a 44 pt target
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("\(WaymarkGlance.reported(pin.prior.type)), \(WaymarkGlance.confidenceSpoken(pin.p))")
+                        .accessibilityLabel(WaymarkGlance.pinSpoken(type: pin.prior.type, p: pin.p, checked: pin.checked))
                         .accessibilityHint("Shows this report's details")
                         .accessibilityIdentifier("waymark-pin-\(pin.id)")
                         .accessibilityAddTraits(selectedID == pin.id ? .isSelected : [])
@@ -159,7 +165,8 @@ struct WaymarkMapView: View {
         VStack(alignment: .leading, spacing: CKSpacing.sm) {
             if let pin = selected {
                 HStack(alignment: .center, spacing: CKSpacing.md) {
-                    WaymarkPinMark(band: WaymarkConfidenceBand(p: pin.p), type: pin.prior.type, size: 34)
+                    WaymarkPinMark(band: WaymarkConfidenceBand(p: pin.p), type: pin.prior.type, size: 34,
+                                   checked: pin.checked)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(WaymarkGlance.reported(pin.prior.type))
                             .font(CKFont.cardTitle)
@@ -178,6 +185,18 @@ struct WaymarkMapView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Close details")
+                }
+                // Task 3: what this phone learned about the report (this launch, else earlier).
+                if let learned = WaymarkGlance.pinLearningDetail(learning: pin.learning, checked: pin.checked) {
+                    // Review: the icon follows the outcome (a check seal beside "Not there" misled).
+                    Label(learned, systemImage: WaymarkGlance.learningSymbol(pin.learning))
+                        .font(CKFont.body.weight(.semibold))
+                        .foregroundStyle(CKColor.textPrimary)
+                        .monospacedDigit()
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityLabel(WaymarkGlance.learningDetailSpoken(learning: pin.learning,
+                                                                               checked: pin.checked) ?? learned)
+                        .accessibilityIdentifier("waymark-pin-learning")
                 }
                 detailLine(WaymarkGlance.imagery(pin.prior.imageryDate), "camera")
                 detailLine(WaymarkGlance.votes(agree: pin.prior.nAgree, disagree: pin.prior.nDisagree), "person.2")
@@ -221,10 +240,14 @@ struct WaymarkPinMark: View {
     var size: CGFloat = 24
     /// The pin is the selected one.
     var selected = false
+    /// Task 3: field evidence is stored on this phone — a small dot badge (text colour, ringed in
+    /// the surface colour), top right.
+    var checked = false
 
-    /// Shape and glyph.
+    /// Shape and glyph (and the checked badge).
     var body: some View {
         let s = selected ? size * 1.3 : size
+        let dot = max(8, s * 0.34)
         ZStack {
             switch band.shape {
             case .filledCircle:
@@ -248,6 +271,14 @@ struct WaymarkPinMark: View {
             }
         }
         .frame(width: s, height: s)
+        .overlay(alignment: .topTrailing) {
+            if checked {
+                Circle().fill(CKColor.textPrimary)
+                    .overlay(Circle().strokeBorder(CKColor.surface, lineWidth: max(1.5, dot * 0.2)))
+                    .frame(width: dot, height: dot)
+                    .offset(x: dot * 0.2, y: -dot * 0.2)
+            }
+        }
         .opacity(type.map(WaymarkGlance.isSpoken) == false ? 0.45 : 1)
         .accessibilityHidden(type == nil)
     }

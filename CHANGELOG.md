@@ -2,6 +2,45 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark judge demo 3 — learning made visible (Sat Oct 17)
+
+- Sidewalk memory shows what it learned. After a confirmed / not-there / couldn't-check outcome (LiDAR or the spotter's
+  Confirm / Not there), the Sidewalk memory card (Details page and the Guide's sheet) shows the report's pin in its new
+  confidence band, "Reported obstacle" and e.g. "Not there · 50 % → 43 % · spotter" (VoiceOver: "Spotter said not
+  there. Confidence went from 50 to 43 percent."). Unverifiable stays a no-op and says so: "Couldn't check ·
+  confidence unchanged at 50 % · LiDAR"; it never replaces an earlier decisive result (`WaymarkLearning.kept`).
+- Map of reports: a report this phone has checked carries a dot badge (shape cue) and ", checked on this phone" in
+  VoiceOver; its details show this launch's learning line, else "Checked on this phone before". Guide ahead card:
+  a third line whenever the shown report has been checked.
+- Where the belief lives (checked, task 3): `Documents/waymark/beliefs.json` (`WaymarkStore.saveBeliefs`, atomic write
+  after every confirmed or contradicted outcome; read on load by `WaymarkStore.loadBeliefs` → `WaymarkSession.restore`).
+  Every outcome, unverifiable too, appends one `waymark.evidence.v1` line to `Documents/waymark/evidence.jsonl` (the
+  E2 export input). The card says so once something is saved. Proof: `CaneKitWaymarkTour` taps "Not there" next to the
+  real fire-hydrant obstacle ps:13292406 (5 agree / 5 disagree, p 0.50 → 6/14 = 0.43, plan 5.3 spotter weight 2),
+  waits out the 10 s undo, then terminates and relaunches the app: the pin still reads 43 % and "Checked on this phone
+  before" (shots wm-08 learning-card, wm-09 learning-pin, wm-10 learning-relaunch). Simulator GPS, a scripted spotter
+  tap — interface evidence, not field evidence.
+- Trip log: `waymark_evidence` records gain `p_before` / `p_after` (3 dp). The evidence.jsonl line is unchanged
+  (schema `additionalProperties: false`).
+- UI tests only: `WAYMARK_STORE_SUBDIR` (sanitised; honoured only with `CANEKIT_UITEST=1`) moves the store to a
+  throwaway `Documents/wm-ui-<8>/`, so tours never touch the real beliefs.json; stale test folders are removed at load
+  (UI tests only, never `waymark`).
+- Base-app fix found on the way: `Settings.bool` read a launch argument ("-waymarkEnabled NO" arrives as the string
+  "NO") as unset, so the UI tests' off-mask silently did nothing. `StoredBool.parse` (tested) accepts Bool or
+  yes/no/true/false/1/0.
+- Written by a workflow agent in its own worktree (Logic layer test-first here: `WaymarkLearningTests`, red in
+  `j3-red.log`; agent red runs `j3-test-red.log`, `t3fix-test-red.log`). Independent review (separate agent):
+  fixed M1 (the -waymarkEnabled mask, above), L-ahead-card (uses the shown report's own learning), L-unverifiable
+  overwrote a decisive row (`kept`), L-caption shown before any save / too long, L-icon always a check seal
+  (`learningSymbol`), L-test folders piled up, L-GPS nudge order, L-doc wording; rejected: asserting the visible
+  "50 % → 43 %" string in XCUITest (the row's VoiceOver label is the spoken sentence; exposing both would read the
+  numbers twice; the string is pinned by Logic tests and visible in wm-08 / wm-09).
+- Agent checks: `make test` 1100 passed, `make gen`, `make sim`, `make tour-waymark` (iPhone 18 Pro Max) all exit 0.
+  Not verified: the ahead card's third line on screen (spotter taps are refused during a simulated walk); a real
+  device; p_before / p_after in a real trip log.
+- test on device: walk past a report with Sidewalk memory on, tap "Not there", wait 10 s → the card shows "Not there ·
+  N % → M % · spotter"; quit and reopen the app → Map of reports, that pin says "Checked on this phone before".
+
 ## Waymark judge demo 4a — no University of Illinois in the default build (Sat Oct 17)
 
 - One switch, `CampusGate` (CaneKitLogic, tests first: `CampusGateTests`): the UIUC content — the campus gazetteer,
