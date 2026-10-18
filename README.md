@@ -6,8 +6,7 @@ hazards in Seattle's U District and gets sharper with every walk, because it lea
 still true today.**
 
 Built at DubHacks '26 by **Yousef Haddad** (UW CS; data, evaluation, plan) and **Akash Tadikonda**
-(iOS app). Waymark runs on **OpenCane**, an existing iPhone smart-cane app (see
-[Built on OpenCane](#built-on-opencane)).
+(iOS app). 
 
 ## The problem
 
@@ -79,31 +78,11 @@ walker's position ─► labels ahead ─► belief (Beta, ages with time) ─�
   from labels. 88 % of the labels use imagery from 2019 or earlier, which is exactly why the app checks
   them. One UI test (the Dynamic Island tour) fails and also failed before Waymark's latest changes.
 
-## Built on OpenCane
-
-Waymark is built on **OpenCane**, an existing iPhone smart-cane app (pre-existing; github.com/aritroBh/OpenCane
-at `fe86e10`, used with the authors' permission). OpenCane provides the LiDAR obstacle detection, haptics,
-navigation, speech and the Apple Watch app.
-
-**What we built at DubHacks '26:** Waymark's sidewalk memory. That is the Project Sidewalk (CC0) labels for
-Seattle as offline priors, spoken only as reports and never over the cane's own warnings; the belief model
-and cost-weighted thresholds; evidence from LiDAR passes and a sighted spotter that visibly updates
-confidence; the map of reports; the Python data pipeline, data contracts and evaluation tool; and a
-UW / U District demo route.
-
-Since OpenCane `fe86e10`: 233 files changed, +22,804 / −1,125 lines, 89 commits, 82 of them `waymark:`.
-Everything under `waymark/` and every file named `Waymark…` is new. `waymark/docs/PROVENANCE.md` has the
-commands to see exactly what changed. OpenCane's own README is kept in
-[`docs/OPENCANE_README.md`](docs/OPENCANE_README.md).
-
-Inside the code the app is still called **CaneKit** (the Xcode project, targets and module). That is a
-code name inherited from OpenCane and kept so that every command below matches the files.
-
 ## Data and credits
 
 - Labels: **UW Project Sidewalk** (CC0), Seattle. No labeler ids are stored.
 - Street geometry: **© OpenStreetMap contributors** (ODbL), via Project Sidewalk.
-- Base app: **OpenCane** by Aritro and collaborators (see [`docs/OPENCANE_README.md`](docs/OPENCANE_README.md)).
+
 
 ## Repo map
 
@@ -116,8 +95,8 @@ code name inherited from OpenCane and kept so that every command below matches t
 | [`waymark/demo/`](waymark/demo/) | The Ave route in the app's format, replay trace, GPX, synthetic test labels |
 | [`waymark/field/`](waymark/field/) | Checklist for the paper checking walk |
 | [`ios/CaneKit/Waymark/`](ios/CaneKit/Waymark/), [`ios/Logic/Sources/CaneKitLogic/Waymark/`](ios/Logic/Sources/CaneKitLogic/Waymark/) | Waymark's app code and its tested logic |
-| [`ios/`](ios/) | The app (OpenCane base, code name CaneKit). See [`ios/README.md`](ios/README.md) |
-| [`docs/`](docs/), [`AGENTS.md`](AGENTS.md), [`hardware/`](hardware/) | OpenCane's docs, engineering rules and phone-mount hardware |
+| [`ios/`](ios/) . See [`ios/README.md`](ios/README.md) |
+| [`docs/`](docs/), [`AGENTS.md`](AGENTS.md), [`hardware/`](hardware/)
 
 ## Quick start
 
