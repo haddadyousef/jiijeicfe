@@ -1,5 +1,10 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 689977f | wall: Sun 2026-10-25 01:52 PT
+
+**Scheduled check-in 01:50: checked Mac at `689977f` (`main`).** No change since 23:48: only my check-ins on `main`; `waymark/rebrand` f8ecbc7 and `waymark/island-fix` e53ef65 unchanged (last Mac push Sun 07:25, about one hundred and sixty-one hours); no `STATUS_M` entry or handoff since Sat 23:40; no `walk1_*` results (only the checklist and raw stops); README unchanged (no OpenCane mention, "Measured on real sidewalks" line still present). Open: Mac green rerun on the rebrand merge; Yousef on D-39 and D-40; Walk 1 results. Overnight and quiet; next check in 120 minutes (about 03:52).
+
+---
 ## repo: 786df54 | wall: Sat 2026-10-24 23:50 PT
 
 **Scheduled check-in 23:48: checked Mac at `786df54` (`main`).** No change since 21:46: only my check-ins on `main`; `waymark/rebrand` f8ecbc7 and `waymark/island-fix` e53ef65 unchanged (last Mac push Sun 07:25, about one hundred and fifty-nine hours); no `STATUS_M` entry or handoff since Sat 23:40; no `walk1_*` results (only the checklist and raw stops); README unchanged (no OpenCane mention, "Measured on real sidewalks" line still present). Open: Mac green rerun on the rebrand merge; Yousef on D-39 and D-40; Walk 1 results. Overnight and quiet; next check in 120 minutes (about 01:50).
