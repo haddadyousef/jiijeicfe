@@ -2,6 +2,35 @@
 
 Build log for the hackathon. One entry per step; each ends with what to test on the phone.
 
+## Waymark: Dynamic Island UI test green again (Sun Oct 18)
+
+- `CaneKitIslandTour.testDynamicIsland` had failed since UI v3 (also at 0d9dca1): after the swipe that brings
+  "Simulate walk" into view, "Stop route" sat at y 50–126 under the translucent navigation bar (62–116). XCUITest
+  still called it hittable, so both Stop taps landed on the bar, the route never stopped and "Start route" never came
+  back. The tour's `scrollTo` now treats an element under the navigation bar as not tappable (`isTappable`,
+  `isUnderNavigationBar`) and swipes it back down. Test-only change; no app code or accessibility label changed.
+- Mac (iPhone 18 Pro Max simulator, UIUC location): `make test` 1128 passed; `make island` passed (52 s); `make uitest`
+  TEST SUCCEEDED — 14 executed, 0 failures, 1 skipped (Street View, by design).
+- test on device: n/a (UI test only).
+
+## Waymark judge demo 5b — island test green: Stop route was under the navigation bar (Sun Oct 18)
+
+- `CaneKitIslandTour.testDynamicIsland` failed at the "Start route reappears" assertion since UI v3. Cause, from a
+  screenshot plus `app.debugDescription` at each Stop tap (`island-diag1.log`): the swipe up that `scrollTo` uses to
+  reach "Simulate walk" leaves "Stop route" at y 50–126, under the translucent navigation bar (62–116). XCUITest
+  still calls it hittable, so `scrollTo` did nothing and both taps (0.58 s apart, well inside the 3 s window) landed
+  on the bar. The button still read "Tap twice to end" after the first tap: it never armed and the route never
+  stopped. Stopping the simulation first could not help because the scroll position was the same. The Live Activity
+  and `app.activate()` played no part.
+- Fix (test only; the app, the ⚠ labels and the two-tap Stop are unchanged): the island test's `scrollTo` counts an
+  element whose top edge is above the navigation bar's bottom edge as not tappable (`isTappable` /
+  `isUnderNavigationBar`). Such an element skips the swipes up and is swiped back down.
+- Evidence (logs `waymark/logs/mac/`, exit codes): `make test` 1128 passed exit 0; `make island` exit 0 (iPhone 18 Pro
+  Max, 40.1140,−88.2249; after-stop shot taken); `make sim` exit 0; `make uitest` same SIM / location exit 0, 13
+  passed, 1 skipped (Street View), 0 failed of 14. The other suites' `scrollTo` copies have the same blind spot but
+  pass today; left unchanged.
+- test on device: n/a (UI test harness only); on the phone, Stop route still needs two taps within 3 s.
+
 ## Waymark judge demo 4b — Where am I tile above the dock, neutral Profile (Sat Oct 17)
 
 - Guide (idle): the "Where am I / Describe what's ahead" tile was cut in half by the floating tab dock on a Pro Max
