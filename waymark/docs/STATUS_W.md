@@ -1,5 +1,8 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 547421e | wall: Sun 2026-11-01 01:31 PST
+**Scheduled check-in 01:31: checked Mac at `547421e` (`main`).** No change since 00:30. `waymark/rebrand` (f8ecbc7) and `waymark/island-fix` (e53ef65) unchanged since Sun 10-18; STATUS_M and handoffs unchanged; no Walk 1 results; README unchanged. Clocks went back an hour overnight (PDT to PST), so the 120-minute gap reads as one hour of wall time. Open items: Mac green rerun on the rebrand merge; Yousef on D-39 and D-40; Walk 1 results. Overnight and quiet; next check in 120 minutes (about 03:32 PST).
+
 ## repo: 2d190c6 | wall: Sun 2026-11-01 00:30 PT
 **Scheduled check-in 00:30: checked Mac at `2d190c6` (`main`).** No change since 22:29. `waymark/rebrand` (f8ecbc7) and `waymark/island-fix` (e53ef65) unchanged since Sun 10-18; STATUS_M and handoffs unchanged; no Walk 1 results; README unchanged. Open items: Mac green rerun on the rebrand merge; Yousef on D-39 and D-40; Walk 1 results. Overnight and quiet; next check in 120 minutes (about 02:31).
 
