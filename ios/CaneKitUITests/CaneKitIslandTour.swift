@@ -128,16 +128,35 @@ final class CaneKitIslandTour: XCTestCase {
         add(a)
     }
 
-    /// Swipes until `element` is hittable: up to four swipes up, then up to eight down. Step 58's
+    /// Swipes until `element` is tappable: up to four swipes up, then up to eight down. Step 58's
     /// voice tile fills the top of the Guide, so route controls start below the fold (and one
     /// swipe too many can push the compact row above it). Returns the element for chaining.
+    ///
+    /// waymark: "tappable" also means clear of the navigation bar. The swipe up that brings
+    /// "Simulate walk" into view leaves "Stop route" at y 50–126 under the translucent bar
+    /// (62–116); XCUITest still calls it hittable, so both Stop taps landed on the bar, the route
+    /// never armed and "Start route" never came back (island-diag1, 2026-10-17). An element under
+    /// the bar skips the swipes up (they only push it further under) and is swiped back down.
     @discardableResult
     private func scrollTo(_ element: XCUIElement) -> XCUIElement {
         var ups = 0
-        while ups < 4, !(element.exists && element.isHittable) { app.swipeUp(); ups += 1 }
+        while ups < 4, !isTappable(element), !isUnderNavigationBar(element) { app.swipeUp(); ups += 1 }
         var downs = 0
-        while downs < 8, !(element.exists && element.isHittable) { app.swipeDown(); downs += 1 }
+        while downs < 8, !isTappable(element) { app.swipeDown(); downs += 1 }
         return element
+    }
+
+    /// Exists, hittable and not under the navigation bar.
+    private func isTappable(_ element: XCUIElement) -> Bool {
+        element.exists && element.isHittable && !isUnderNavigationBar(element)
+    }
+
+    /// True when `element`'s top edge is above the navigation bar's bottom edge (its tap point
+    /// would land on the bar). False when either is missing.
+    private func isUnderNavigationBar(_ element: XCUIElement) -> Bool {
+        let bar = app.navigationBars.firstMatch
+        guard element.exists, bar.exists else { return false }
+        return element.frame.minY < bar.frame.maxY
     }
 
     /// Spins the run loop for `s` seconds so the island animation and ActivityKit settle.
