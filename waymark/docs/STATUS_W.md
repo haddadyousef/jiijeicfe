@@ -1,5 +1,8 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: 3c561b4 | wall: Tue 2026-11-10 14:04 PST
+**Scheduled check-in 14:04: checked Mac at `3c561b4` (`main`).** No change since 12:02 (my own log commit is the head). `waymark/rebrand` (f8ecbc7) and `waymark/island-fix` (e53ef65) unchanged since Sun 10-18; STATUS_M and handoffs unchanged; no Walk 1 results; README unchanged. Open items: Mac green rerun on the rebrand merge; Yousef on D-39 and D-40; Walk 1 results. Quiet; next check in 120 minutes (about 16:05 PST).
+
 ## repo: f8d169a | wall: Tue 2026-11-10 12:02 PST
 **Scheduled check-in 12:02: checked Mac at `f8d169a` (`main`).** No change since 10:01 (my own log commit is the head). `waymark/rebrand` (f8ecbc7) and `waymark/island-fix` (e53ef65) unchanged since Sun 10-18; STATUS_M and handoffs unchanged; no Walk 1 results; README unchanged. Open items: Mac green rerun on the rebrand merge; Yousef on D-39 and D-40; Walk 1 results. Quiet; next check in 120 minutes (about 14:03 PST).
 
