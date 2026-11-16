@@ -1,5 +1,8 @@
 # Windows session status (single writer: Windows session). Newest entry on top.
 
+## repo: ff61c58 | wall: Mon 2026-11-16 13:26 PST
+**Scheduled check-in 13:26: checked Mac at `ff61c58` (`main`).** No change since 11:24 (my own log commit is the head). `waymark/rebrand` (f8ecbc7) and `waymark/island-fix` (e53ef65) unchanged since Sun 10-18; no Walk 1 results; README unchanged. Housekeeping note: this workspace is now a shallow clone, so `git log` on STATUS_M and M_NOTES shows the shallow-boundary commit (`cae69d1`) instead of 747dd02 / d2898e0. The file contents are byte-identical to the earlier blobs (7eaa706 / df47fe7), so the Mac has not written anything. GitHub lists only 3 branches (main, island-fix, rebrand); PRs 1-8 were merged Oct 17-18 and the events feed shows no delete events, so the earlier "13 remote branches" count was stale tracking refs. Open items: Mac green rerun on the rebrand merge; Yousef on D-39 and D-40; Walk 1 results. Quiet; next check in 120 minutes (about 15:27 PST).
+
 ## repo: f0b06d8 | wall: Mon 2026-11-16 11:24 PST
 **Scheduled check-in 11:24: checked Mac at `f0b06d8` (`main`).** No change since 09:22 (my own log commit is the head). `waymark/rebrand` (f8ecbc7) and `waymark/island-fix` (e53ef65) unchanged since Sun 10-18; STATUS_M and handoffs unchanged; no Walk 1 results; README unchanged. Open items: Mac green rerun on the rebrand merge; Yousef on D-39 and D-40; Walk 1 results. Quiet; next check in 120 minutes (about 13:25 PST).
 
